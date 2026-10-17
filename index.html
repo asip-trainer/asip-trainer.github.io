@@ -87,11 +87,11 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .taskh { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
 .taskh h2 { margin: 0 auto 0 0; }
 .linkbtn { padding: 4px 0; border: 0; background: none; color: var(--accent); font-size: 13px; font-weight: 650; cursor: pointer; }
-.sets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.sets { display: grid; gap: 6px; }
 .set { min-width: 0; padding: 6px 8px; border-radius: 8px; background: var(--bg); }
 .set b { display: block; font: 700 18px/1.25 var(--mono); font-variant-numeric: tabular-nums; }
 .set.ok b { color: var(--go); }
-.setline { grid-column: 1 / -1; font-size: 13px; color: var(--muted); }
+.setline { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); }
 .callf { margin-top: 8px; font-size: 14px; }
 .callf b { font-family: var(--mono); font-size: 15px; }
 
@@ -199,7 +199,7 @@ td.nogo { color: var(--nogo); font-weight: 700; }
 fieldset { margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
 legend { padding: 0 4px; font-weight: 650; }
 .opt { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; }
-.cust { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 0 26px; }
+.cust { display: grid; grid-template-columns: minmax(0, 160px); gap: 8px; margin: 4px 0 0 26px; }
 .cust input { width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: 600 15px var(--mono); }
 .err { color: var(--nogo); font-size: 13px; }
 @media (prefers-reduced-motion: reduce) { .knob { transition: none; } .hint { animation: none; } }
@@ -222,7 +222,6 @@ legend { padding: 0 4px; font-weight: 650; }
   <section class="card" id="task" aria-label="Task card">
     <div class="taskh"><h2>Task card</h2><button class="linkbtn" id="newCard">New card</button></div>
     <div class="sets" id="sets"></div>
-    <div class="callf" id="callF"></div>
   </section>
 
   <section class="coach" id="coach" aria-live="polite">
@@ -280,8 +279,8 @@ legend { padding: 0 4px; font-weight: 650; }
     <ul>
       <li>One clock for the whole drill: <b>5:00</b>. It starts when you press Start.</li>
       <li>No coach, no key highlights, no 7-second bar, no ✓ marks until the end.</li>
-      <li>Do the steps in score-sheet order: Set mode to SC → Set FCTN to load → Set CHAN 1-3 → Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds (channels 1–3) → Set FCTN to SQ. ON → Set CHAN to CHAN 1-3. Set mode to SC and Set FCTN to load may be done in either order. Any other step out of order is a NO-GO for that measure.</li>
-      <li>The call frequency appears at step 3. The exam ends when the radio is set to communicate in SC mode, or at 5:00.</li>
+      <li>Do the steps in score-sheet order. Set mode to SC, Set power to HI, Set COMSEC to PT and Set FCTN to load may be done in any order, all before Set CHAN 1. Then Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Set FCTN to SQ. ON → Set CHAN to CHAN 1. A step out of order is a NO-GO for that measure.</li>
+      <li>One channel (CH 1). The exam ends when the radio is set to communicate in SC mode, or at 5:00.</li>
     </ul>
     <div class="txrow"><button class="btn" id="exBack">Back to Guided</button><button class="btn primary" id="exStart">Start exam</button></div>
   </div>
@@ -300,11 +299,11 @@ legend { padding: 0 4px; font-weight: 650; }
     <h2 id="setT">Settings</h2>
     <button class="btn x" data-close="mSet" aria-label="Close">✕</button>
     <fieldset>
-      <legend>Frequencies on the task card</legend>
+      <legend>Frequency on the task card</legend>
       <label class="opt"><input type="radio" name="fm" id="fmR" value="random"> Random each card</label>
-      <label class="opt"><input type="radio" name="fm" id="fmS" value="sheet"> Score-sheet example: 81.000 · 55.000 · 57.000</label>
+      <label class="opt"><input type="radio" name="fm" id="fmS" value="sheet"> Score-sheet example: 81.000</label>
       <label class="opt"><input type="radio" name="fm" id="fmC" value="custom"> My own (5 digits, e.g. 81000):</label>
-      <div class="cust"><input id="cf1" inputmode="numeric" maxlength="5" aria-label="CH 1 frequency"><input id="cf2" inputmode="numeric" maxlength="5" aria-label="CH 2 frequency"><input id="cf3" inputmode="numeric" maxlength="5" aria-label="CH 3 frequency"></div>
+      <div class="cust"><input id="cf1" inputmode="numeric" maxlength="5" aria-label="Channel 1 frequency"></div>
       <p class="err" id="setErr" hidden></p>
     </fieldset>
     <p class="muted" id="bestTxt"></p>
@@ -316,28 +315,29 @@ legend { padding: 0 4px; font-weight: 650; }
   <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="refT">
     <h2 id="refT">Cheat sheet · AN/PRC-119F (RT-1523E ASIP)</h2>
     <button class="btn x" data-close="mRef" aria-label="Close">✕</button>
-    <h3>Score-sheet steps and the keys for each</h3>
+    <h3>Score-sheet steps and the keys for each (one channel)</h3>
     <ol>
-      <li><b>Obtained required SC frequencies.</b> The grader gives you 3 frequencies for 3 channels.
+      <li><b>Obtained required SC frequencies.</b> The grader gives you the frequency for channel 1.
         <ul>
           <li>Prepare radio for Single Channel Frequencies loading.</li>
           <li>Set mode to SC: <code>MENU</code> ×4 (VOL → CHAN → PWR → MODE), then <code>CHG</code> (the 7 key) until <code>MODE SC</code>.</li>
+          <li>Set power to HI: <code>MENU</code> ×3 (VOL → CHAN → PWR), then <code>CHG</code> until <code>PWR HI</code> (LO → M → HI).</li>
+          <li>Set COMSEC to PT: <code>MENU</code> ×5 (… → MODE → CMSC), then <code>CHG</code> until <code>CMSC PT</code> (CT → TD → RV → PT).</li>
           <li>Set FCTN to load: knob to <code>LD</code>.</li>
-          <li>Set CHAN 1-3: <code>MENU</code> ×2 (VOL → CHAN), then press <code>1</code>.</li>
+          <li>Set CHAN 1: <code>MENU</code> ×2 (VOL → CHAN), then press <code>1</code>.</li>
         </ul>
-        Set mode to SC and Set FCTN to load can be done in either order: MENU works with FCTN at SQ ON or LD. Set CHAN comes after both.</li>
+        The radio starts at the TM defaults (MODE FH, COMSEC CT, PWR LO). The first four can be done in any order, because MENU works with FCTN at SQ ON or LD. Set CHAN 1 comes after all four.</li>
       <li><b>Load SC frequencies.</b>
         <ul>
-          <li>Press FREQ: <code>FREQ</code> shows what the channel holds now.</li>
+          <li>Press FREQ: <code>FREQ</code> shows what channel 1 holds now.</li>
           <li>Press CLR: <code>CLR</code> clears the display to <code>-----</code>.</li>
           <li>Enter 5 digits SC frequencies: 81.000 is <code>81000</code>.</li>
           <li>Store SC frequencies. Press STO within 7 seconds: <code>STO</code>; the display blinks once.</li>
-          <li>Stored Channels 1-3: <code>MENU</code> ×2 → <code>2</code> and repeat, then <code>MENU</code> ×2 → <code>3</code> and repeat.</li>
         </ul></li>
-      <li><b>Prepare to Communicate.</b> The grader gives you 1 of the 3 frequencies to call the distant station.
+      <li><b>Prepare to Communicate.</b>
         <ul>
           <li>Set FCTN to SQ. ON: knob to <code>SQ ON</code>.</li>
-          <li>Set CHAN to CHAN 1-3: <code>MENU</code> ×2, then the channel that holds that frequency.</li>
+          <li>Set CHAN to CHAN 1: you are already on it after loading.</li>
           <li>Communicate in SC Mode.</li>
         </ul></li>
     </ol>
@@ -385,7 +385,7 @@ const validFreq = f => /^\d{5}$/.test(f) && +f >= 30000 && +f <= 87975 && +f % 2
 
 /* ---------- settings (this browser only) ---------- */
 const STORE = 'asip-trainer-v1';
-const S = { freqMode: 'random', custom: ['81000', '55000', '57000'], best: null };
+const S = { freqMode: 'random', custom: ['81000'], best: null };
 try { Object.assign(S, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { /* storage blocked */ }
 if (typeof S.best !== 'number') S.best = null;
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { /* storage blocked */ } };
@@ -395,13 +395,12 @@ let MODE = 'guided', SC, R, P, DEV, NOTES, W, T0 = null, endAt = 0, ended = fals
 let tHandle, fHandle, testHandle, knobRot = null;
 
 function makeCard() {
-  let freqs;
-  if (S.freqMode === 'sheet') freqs = ['81000', '55000', '57000'];
-  else if (S.freqMode === 'custom' && S.custom.every(validFreq) && new Set(S.custom).size === 3) freqs = S.custom.slice();
-  else { freqs = []; while (freqs.length < 3) { const f = randFreq(); if (!freqs.includes(f)) freqs.push(f); } }
-  return { freqs, pwr: pick(['LO', 'M', 'HI']), callCh: 1 + rnd(3) };
+  let f = randFreq();
+  if (S.freqMode === 'sheet') f = '81000';
+  else if (S.freqMode === 'custom' && validFreq(S.custom[0])) f = S.custom[0];
+  return { freqs: [f], pwr: 'HI', callCh: 1 };
 }
-/* Radio as handed over: on (SQ ON), still in the default FH mode, PT and power already set per the card. */
+/* Radio as handed over: on (SQ ON) with the TM default settings: MODE FH, COMSEC CT, PWR LO. */
 function freshRadio() {
   const ch = {}, net = {};
   CHANS.forEach(c => {
@@ -409,7 +408,7 @@ function freshRadio() {
     do { f = Math.random() < .3 ? '00000' : randFreq(); } while (SC.freqs.includes(f));
     ch[c] = f; net[c] = pad(rnd(1000), 3);
   });
-  return { fctn: 'SQ ON', mode: 'FH', cmsc: 'PT', pwr: SC.pwr, vol: 5, chan: pick(['MAN', '2', '3', '4', '5', '6', 'CUE']), ch, net, disp: 'idle', menu: 0, entry: '', flash: '', after: 'idle', tried: new Set() };
+  return { fctn: 'SQ ON', mode: 'FH', cmsc: 'CT', pwr: 'LO', vol: 5, chan: pick(['MAN', '2', '3', '4', '5', '6', 'CUE']), ch, net, disp: 'idle', menu: 0, entry: '', flash: '', after: 'idle', tried: new Set() };
 }
 
 /* ---------- radio behaviour ---------- */
@@ -518,45 +517,47 @@ function lcdText() {
 
 /* ---------- score-sheet order: one step at a time, in the sheet's sequence ---------- */
 const MEASURE = { 1: '1 · Obtained required SC frequencies', 2: '2 · Load SC frequencies', 3: '3 · Prepare to Communicate' };
+/* One channel (CH 1). Steps 0-3 prepare the radio and may be done in any order; from Set CHAN 1 on, the order is strict. */
+const PREP = 4, LOAD = 5, SQ = 6, CALL = 7;
 const STEPS = [
   { m: 1, label: 'Set mode to SC', done: () => R.mode === 'SC' },
+  { m: 1, label: 'Set power to HI', done: () => R.pwr === 'HI' },
+  { m: 1, label: 'Set COMSEC to PT', done: () => R.cmsc === 'PT' },
   { m: 1, label: 'Set FCTN to load', done: () => R.fctn === 'LD' },
   { m: 1, label: 'Set CHAN 1', done: () => R.chan === '1' },
   { m: 2, label: 'Stored Channel 1', done: () => R.ch['1'] === SC.freqs[0] },
-  { m: 2, label: 'Set CHAN 2', done: () => R.chan === '2' },
-  { m: 2, label: 'Stored Channel 2', done: () => R.ch['2'] === SC.freqs[1] },
-  { m: 2, label: 'Set CHAN 3', done: () => R.chan === '3' },
-  { m: 2, label: 'Stored Channel 3', done: () => R.ch['3'] === SC.freqs[2] },
   { m: 3, label: 'Set FCTN to SQ. ON', done: () => R.fctn === 'SQ ON' },
-  { m: 3, label: 'Set CHAN to the call channel', done: () => R.chan === String(SC.callCh) },
+  { m: 3, label: 'Set CHAN to CHAN 1', done: () => R.chan === '1' },
 ];
-/* Which step an action belongs to; an action whose step is later than P is out of order. */
+/* Which step an action belongs to; an action whose step is later than the next open step is out of order. */
 function stepOf(ev, Q) {
   switch (ev.type) {
     case 'mode': return ev.v === 'SC' ? 0 : null;
-    case 'fctn': return ev.v === 'LD' ? 1 : (ev.v === 'SQ ON' && Q >= 2) ? 8 : null;
-    case 'chan': return Q >= 8 ? (ev.v === String(SC.callCh) ? 9 : null) : ({ 1: 2, 2: 4, 3: 6 }[ev.v] ?? null);
-    case 'sto': return ev.sc ? ({ 1: 3, 2: 5, 3: 7 }[ev.chan] ?? null) : null;
+    case 'pwr': return ev.v === 'HI' ? 1 : null;
+    case 'cmsc': return ev.v === 'PT' ? 2 : null;
+    case 'fctn': return ev.v === 'LD' ? 3 : (ev.v === 'SQ ON' && Q >= PREP) ? SQ : null;
+    case 'chan': return ev.v === '1' ? (Q >= CALL ? CALL : PREP) : null;
+    case 'sto': return ev.sc && ev.chan === '1' ? LOAD : null;
   }
   return null;
 }
 /* A store with a wrong value still counts as done for the order check; the value is graded in measure 2. */
-const attempted = k => [3, 5, 7].includes(k) && R.tried.has(String((k - 1) / 2));
-const isReady = () => R.fctn === 'SQ ON' && R.mode === 'SC' && R.chan === String(SC.callCh) && SC.freqs.every((f, i) => R.ch[i + 1] === f);
+const attempted = k => k === LOAD && R.tried.has('1');
+const isReady = () => R.fctn === 'SQ ON' && R.mode === 'SC' && R.pwr === 'HI' && R.cmsc === 'PT' && R.chan === '1' && R.ch['1'] === SC.freqs[0];
 function event(ev) {
   if (!ended) {
     let Q = P;
     while (Q < STEPS.length && (STEPS[Q].done() || attempted(Q))) Q++;
     const j = stepOf(ev, Q);
     let dev = null;
-    /* Set mode to SC and Set FCTN to load may be done in either order (references differ); the rest is strict. */
-    if (j !== null && j > Q && !(j === 1 && Q === 0)) {
+    if (j !== null && j > Q && !(j < PREP && Q < PREP)) {
       dev = `${STEPS[j].label} before ${STEPS[Q].label}`;
-      if (!DEV.some(d => d.text === dev)) DEV.push({ m: STEPS[j].m, text: dev });
+      /* one entry per skipped step, so a forgotten step is not repeated for every later key */
+      if (!DEV.some(d => d.skip === Q)) DEV.push({ m: STEPS[j].m, skip: Q, text: dev });
     }
     while (P < STEPS.length && STEPS[P].done()) P++;
     const r = react(ev, dev);
-    if (r || ['freq', 'clr', 'sto', 'fctn', 'chan', 'mode'].includes(ev.type)) W = r;
+    if (r || ['freq', 'clr', 'sto', 'fctn', 'chan', 'mode', 'pwr', 'cmsc'].includes(ev.type)) W = r;
   }
   renderAll();
   if (!ended && P >= STEPS.length && isReady() && (MODE === 'guided' || T0)) finish('done');
@@ -575,14 +576,14 @@ function react(ev, dev) {
     case 'freq': return R.mode === 'SC' ? null : 'F ### is the FH net ID, so MODE is not SC yet.';
     case 'sto': {
       if (!ev.sc) return 'MODE is not SC, so STO saved an FH net ID, not an SC frequency.';
-      const i = +ev.chan - 1;
-      if (!(i >= 0 && i < 3)) return `That went into ${ev.chan}. The card uses channels 1–3.`;
-      if (ev.v === SC.freqs[i]) return null;
-      NOTES.push(`Stored ${ev.v} in channel ${ev.chan} (card: ${SC.freqs[i]}).`);
-      return `Channel ${ev.chan} now holds ${ev.v}, but the card says ${SC.freqs[i]}. Load it again.`;
+      if (ev.chan !== '1') return `That went into ${ev.chan}. The card uses channel 1.`;
+      if (ev.v === SC.freqs[0]) return null;
+      NOTES.push(`Stored ${ev.v} in channel 1 (card: ${SC.freqs[0]}).`);
+      return `Channel 1 now holds ${ev.v}, but the card says ${SC.freqs[0]}. Load it again.`;
     }
-    case 'mode': return ev.v === 'SC' || P === 0 ? null : 'MODE must stay SC.';
-    case 'pwr': case 'cmsc': return `${ev.type.toUpperCase()} changed to ${ev.v}. The sheet only sets MODE and CHAN from MENU, so press MENU to move on.`;
+    case 'mode': return ev.v === 'SC' || P <= 0 ? null : 'MODE must stay SC.';
+    case 'pwr': return ev.v === 'HI' || P <= 1 ? null : 'PWR must stay HI.';
+    case 'cmsc': return ev.v === 'PT' || P <= 2 ? null : 'COMSEC must stay PT.';
     case 'fctn': return ['LD', 'SQ ON'].includes(ev.v) ? null : `${ev.v} is not used on this sheet. The sheet uses LD (load) and SQ ON.`;
     case 'other': return `${keyName(ev.id)} is not used on this sheet.`;
   }
@@ -591,12 +592,13 @@ function react(ev, dev) {
 
 /* ---------- coach (Guided mode): the sheet's own words first, then how to do it on the ASIP ---------- */
 const inFreq = () => R.disp === 'freq' || R.disp === 'entry';
-function modeGoal() {
-  const g = { do: 'Set mode to SC.' };
-  if (R.disp === 'menu' && MENU[R.menu] === 'MODE') return { ...g, how: 'Press CHG (the 7 key) until the display shows MODE SC.', target: 'k7' };
-  if (inFreq()) return { ...g, how: 'Press CLR to leave the frequency display, then MENU.', target: 'CLR' };
-  if (R.disp === 'menu') return { ...g, how: 'Press MENU until MODE shows.', target: 'CLR' };
-  return { ...g, how: 'Press MENU until MODE shows (MENU ×4: VOL → CHAN → PWR → MODE).', target: 'CLR' };
+const MENU_SET = { MODE: ['SC', 'Set mode to SC.'], PWR: ['HI', 'Set power to HI.'], CMSC: ['PT', 'Set COMSEC to PT.'] };
+function menuGoal(item) {
+  const [val, text] = MENU_SET[item], n = MENU.indexOf(item) + 1;
+  if (R.disp === 'menu' && MENU[R.menu] === item) return { do: text, how: `Press CHG (the 7 key) until the display shows ${item} ${val}.`, target: 'k7' };
+  if (inFreq()) return { do: text, how: 'Press CLR to leave the frequency display, then MENU.', target: 'CLR' };
+  if (R.disp === 'menu') return { do: text, how: `Press MENU until ${item} shows.`, target: 'CLR' };
+  return { do: text, how: `Press MENU until ${item} shows (MENU ×${n}: ${MENU.slice(0, n).join(' → ')}).`, target: 'CLR' };
 }
 function chanGoal(n, text) {
   if (R.disp === 'menu' && MENU[R.menu] === 'CHAN') return { do: text, how: `Press ${n}.`, target: 'k' + n };
@@ -605,11 +607,11 @@ function chanGoal(n, text) {
   return { do: text, how: `CHAN ${n}: press MENU until CHAN shows (MENU ×2: VOL → CHAN), then press ${n}.`, target: 'CLR' };
 }
 const fctnGoal = (pos, text) => ({ do: text, how: `Turn the FCTN knob to ${pos}.`, target: 'pos:' + pos });
-function loadGoal(i) {
-  const n = String(i + 1), f = SC.freqs[i];
+function loadGoal() {
+  const f = SC.freqs[0];
   if (R.fctn !== 'LD') return fctnGoal('LD', 'Set FCTN to load.');
-  if (R.mode !== 'SC') return modeGoal();
-  if (R.chan !== n) return chanGoal(n, 'Set CHAN 1-3.');
+  if (R.mode !== 'SC') return menuGoal('MODE');
+  if (R.chan !== '1') return chanGoal('1', 'Set CHAN 1.');
   if (R.disp === 'flash') return R.after === 'entry'
     ? { do: 'Enter 5 digits SC frequencies.', how: `That was not a valid frequency. Enter ${f} again.`, target: null }
     : { do: 'Store SC frequencies.', how: 'Stored. The display blinks once.', target: null };
@@ -617,35 +619,37 @@ function loadGoal(i) {
   if (R.disp === 'entry') {
     if (!f.startsWith(R.entry)) return { do: 'Press CLR.', how: `${R.entry} is a typo. Clear it and enter ${f} again.`, target: 'CLR' };
     if (R.entry.length < 5) return { do: 'Enter 5 digits SC frequencies.', how: `Type ${f} for ${fmt(f)}.`, target: 'k' + f[R.entry.length] };
-    return { do: 'Press STO within 7 seconds.', how: `This stores the frequency in channel ${n}. The display blinks once.`, target: 'STO' };
+    return { do: 'Press STO within 7 seconds.', how: 'This stores the frequency in channel 1. The display blinks once.', target: 'STO' };
   }
-  return { do: 'Press FREQ.', how: `The display shows what channel ${n} holds now.`, target: 'FREQ' };
+  return { do: 'Press FREQ.', how: 'The display shows what channel 1 holds now.', target: 'FREQ' };
 }
 /* Every step was done once, but something changed afterwards. */
 function fixGoal() {
   if (R.fctn !== 'SQ ON') return fctnGoal('SQ ON', 'Set FCTN to SQ. ON.');
-  if (R.mode !== 'SC') return modeGoal();
-  const bad = SC.freqs.findIndex((f, i) => R.ch[i + 1] !== f);
-  if (bad >= 0) return { do: 'Stored Channels 1-3.', how: `Channel ${bad + 1} no longer holds ${fmt(SC.freqs[bad])}. Load it again with FCTN at LD.`, target: 'pos:LD' };
-  return chanGoal(String(SC.callCh), 'Set CHAN to CHAN 1-3.');
+  if (R.mode !== 'SC') return menuGoal('MODE');
+  if (R.pwr !== 'HI') return menuGoal('PWR');
+  if (R.cmsc !== 'PT') return menuGoal('CMSC');
+  if (R.ch['1'] !== SC.freqs[0]) return { do: 'Store SC frequencies.', how: `Channel 1 no longer holds ${fmt(SC.freqs[0])}. Load it again with FCTN at LD.`, target: 'pos:LD' };
+  return chanGoal('1', 'Set CHAN to CHAN 1.');
 }
 function coachData() {
-  const call = String(SC.callCh), cf = fmt(SC.freqs[SC.callCh - 1]);
-  if (ended) return { step: MEASURE[3], do: 'Communicate in SC Mode.', how: `Done in ${mmss(endAt)}: SC mode, FCTN at SQ ON, CHAN ${call} (${cf}). Try Exam mode next.`, target: null };
+  const f = fmt(SC.freqs[0]);
+  if (ended) return { step: MEASURE[3], do: 'Communicate in SC Mode.', how: `Done in ${mmss(endAt)}: SC mode, COMSEC PT, power HI, FCTN at SQ ON, CHAN 1 on ${f}. Try Exam mode next.`, target: null };
   let step = MEASURE[STEPS[Math.min(P, STEPS.length - 1)].m], g;
-  const ch = [0, 0, 0, 1, 2, 2, 3, 3][P];
-  if (ch) step += ` · Channel ${ch}: ${fmt(SC.freqs[ch - 1])}`;
+  if (P === LOAD) step += ` · Channel 1: ${f}`;
   if (P < STEPS.length && !on()) {
-    g = P === 0 ? { do: 'Set mode to SC.', how: `FCTN is at ${R.fctn}. Turn the knob to SQ ON or LD so MENU works.`, target: 'pos:SQ ON' }
-      : P <= 7 ? fctnGoal('LD', 'Set FCTN to load.') : fctnGoal('SQ ON', 'Set FCTN to SQ. ON.');
+    g = P < 3 ? { do: STEPS[P].label + '.', how: `FCTN is at ${R.fctn}. Turn the knob to SQ ON or LD so MENU works.`, target: 'pos:SQ ON' }
+      : P < SQ ? fctnGoal('LD', 'Set FCTN to load.') : fctnGoal('SQ ON', 'Set FCTN to SQ. ON.');
   } else {
     switch (P) {
-      case 0: g = modeGoal(); break;
-      case 1: g = fctnGoal('LD', 'Set FCTN to load.'); break;
-      case 2: case 4: case 6: g = R.fctn === 'LD' ? chanGoal(String(P / 2), 'Set CHAN 1-3.') : fctnGoal('LD', 'Set FCTN to load.'); break;
-      case 3: case 5: case 7: g = loadGoal((P - 3) / 2); break;
-      case 8: g = fctnGoal('SQ ON', 'Set FCTN to SQ. ON.'); break;
-      case 9: g = chanGoal(call, 'Set CHAN to CHAN 1-3.'); g.how = `The grader gives you ${cf}, which is in channel ${call}. ${g.how}`; break;
+      case 0: g = menuGoal('MODE'); break;
+      case 1: g = menuGoal('PWR'); break;
+      case 2: g = menuGoal('CMSC'); break;
+      case 3: g = fctnGoal('LD', 'Set FCTN to load.'); break;
+      case PREP: g = R.fctn === 'LD' ? chanGoal('1', 'Set CHAN 1.') : fctnGoal('LD', 'Set FCTN to load.'); break;
+      case LOAD: g = loadGoal(); break;
+      case SQ: g = fctnGoal('SQ ON', 'Set FCTN to SQ. ON.'); break;
+      case CALL: g = chanGoal('1', 'Set CHAN to CHAN 1.'); g.how = `The distant station is on ${f}, which is in channel 1. ${g.how}`; break;
       default: g = fixGoal();
     }
   }
@@ -687,16 +691,12 @@ function renderCoach() {
   if (el) el.classList.add('hint');
 }
 function renderTask() {
-  const show = MODE === 'guided' || ended;
-  $('#sets').innerHTML = SC.freqs.map((f, i) => `<div class="set${show && R.ch[i + 1] === f ? ' ok' : ''}"><span class="lbl"><span class="wide">Setting ${i + 1} · </span>CH ${i + 1}</span><b>${fmt(f)}</b></div>`).join('')
-    + `<div class="setline">All three: Single Channel · Plain Text · Power ${SC.pwr}</div>`;
-  $('#callF').innerHTML = P >= 8 || ended || ['1', '2', '3'].every(c => R.tried.has(c))
-    ? `Grader: call the distant station on <b>${fmt(SC.freqs[SC.callCh - 1])}</b>`
-    : '<span class="muted">Call frequency: given at step 3.</span>';
+  const f = SC.freqs[0], ok = (MODE === 'guided' || ended) && R.ch['1'] === f;
+  $('#sets').innerHTML = `<div class="set${ok ? ' ok' : ''}"><span class="lbl">Setting 1 · Channel 1</span><b>${fmt(f)}</b><span class="setline">Single Channel · Plain Text · Power ${SC.pwr}</span></div>`;
 }
 const M2 = ['Press FREQ.', 'Press CLR.', 'Enter 5 digits SC frequencies.', 'Store SC frequencies.', 'Press STO within 7 seconds.'];
 function loadSub() {
-  if (![3, 5, 7].includes(P) || R.fctn !== 'LD' || R.mode !== 'SC' || R.chan !== String((P - 1) / 2)) return -1;
+  if (P !== LOAD || R.fctn !== 'LD' || R.mode !== 'SC' || R.chan !== '1') return -1;
   if (R.disp === 'freq') return 1;
   if (R.disp === 'entry') return R.entry.length < 5 ? 2 : 4;
   return 0;
@@ -705,19 +705,17 @@ function renderScore() {
   const card = $('#scoreCard');
   card.hidden = MODE === 'exam' && !ended;
   if (card.hidden) return;
-  const cur = P < STEPS.length ? STEPS[P].m : 3, ls = loadSub(), loaded = P > 7, ok3 = P > 9 && isReady();
-  const chOk = i => R.ch[i + 1] === SC.freqs[i];
+  const cur = P < STEPS.length ? STEPS[P].m : 3, ls = loadSub(), loaded = P > LOAD, ok3 = P > CALL && isReady();
   const li = (t, done, now) => `<li class="${done ? 'ok' : now ? 'now' : ''}">${t}</li>`;
+  const prep = k => li(STEPS[k].label + '.', P > k || STEPS[k].done(), P === k);
   const m = (n, title, done, subs) => `<li class="m${done ? ' done' : cur === n ? ' cur' : ''}"><span class="num">${n}</span><div><div class="mt">${title}</div><ul class="subs">${subs}</ul></div></li>`;
   $('#score').innerHTML =
-    m(1, 'Obtained required SC frequencies.', P > 2,
-      li('Prepare radio for Single Channel Frequencies loading.', P > 2) + li('Set mode to SC.', P > 0, P === 0) +
-      li('Set FCTN to load.', P > 1 || (P === 0 && R.fctn === 'LD'), P === 1) + li('Set CHAN 1-3.', P > 2, P === 2)) +
+    m(1, 'Obtained required SC frequencies.', P > PREP,
+      li('Prepare radio for Single Channel Frequencies loading.', P > PREP) + prep(0) + prep(1) + prep(2) + prep(3) + li('Set CHAN 1.', P > PREP, P === PREP)) +
     m(2, 'Load SC frequencies.', loaded,
-      M2.map((t, i) => li(t, loaded, ls === i || (ls === 4 && i === 3))).join('') +
-      `<li class="${loaded ? 'ok' : (P === 4 || P === 6) ? 'now' : ''}">Stored Channels 1-3. <span class="chips">${[0, 1, 2].map(i => `<span class="chip${chOk(i) ? ' ok' : ''}">CH ${i + 1}${chOk(i) ? ' ✓' : ''}</span>`).join('')}</span></li>`) +
+      M2.map((t, i) => li(t, loaded, ls === i || (ls === 4 && i === 3))).join('') + li('Stored Channel 1.', loaded)) +
     m(3, 'Prepare to Communicate.', ok3,
-      li('Set FCTN to SQ. ON.', P > 8, P === 8) + li('Set CHAN to CHAN 1-3.', P > 9, P === 9) + li('Communicate in SC Mode.', ok3, P > 9 && !ok3));
+      li('Set FCTN to SQ. ON.', P > SQ, P === SQ) + li('Set CHAN to CHAN 1.', P > CALL, P === CALL) + li('Communicate in SC Mode.', ok3, P > CALL && !ok3));
 }
 
 /* ---------- clock, finish and exam result ---------- */
@@ -744,15 +742,18 @@ function finish(why) {
 }
 function results(why) {
   const dev = m => DEV.filter(d => d.m === m).map(d => `Out of order: ${d.text}.`);
-  const chBad = SC.freqs.map((f, i) => R.ch[i + 1] === f ? '' : `Channel ${i + 1} holds ${R.ch[i + 1]}; the card says ${f}.`).filter(Boolean);
-  const call = String(SC.callCh), prep = [];
+  const f = SC.freqs[0], m1 = [], prep = [];
+  if (P <= PREP) m1.push(`Not completed: ${STEPS[P].label}.`);
+  if (P > 1 && R.pwr !== 'HI') m1.push(`PWR is ${R.pwr}, not HI.`);
+  if (P > 2 && R.cmsc !== 'PT') m1.push(`COMSEC is ${R.cmsc}, not PT.`);
+  const m2 = R.ch['1'] === f ? [] : [`Channel 1 holds ${R.ch['1']}; the card says ${f}.`];
   if (R.fctn !== 'SQ ON') prep.push(`FCTN is at ${R.fctn}, not SQ ON.`);
-  if (R.chan !== call) prep.push(`CHAN is ${R.chan}; the call frequency ${fmt(SC.freqs[SC.callCh - 1])} is in CHAN ${call}.`);
+  if (R.chan !== '1') prep.push(`CHAN is ${R.chan}, not 1.`);
   if (R.mode !== 'SC') prep.push(`MODE is ${R.mode}, not SC.`);
   const rows = [
-    [1, 'Obtained required SC frequencies.', 'Set mode to SC → Set FCTN to load → Set CHAN 1-3', P > 2 && !dev(1).length, [...(P > 2 ? [] : ['Not completed.']), ...dev(1)]],
-    [2, 'Load SC frequencies.', 'Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Stored Channels 1-3', !chBad.length && !dev(2).length, [...chBad, ...dev(2)]],
-    [3, 'Prepare to Communicate.', 'Set FCTN to SQ. ON → Set CHAN to CHAN 1-3 → Communicate in SC Mode', !prep.length && !dev(3).length, [...prep, ...dev(3)]],
+    [1, 'Obtained required SC frequencies.', 'Set mode to SC, Set power to HI, Set COMSEC to PT, Set FCTN to load (any order) → Set CHAN 1', !m1.length && !dev(1).length, [...m1, ...dev(1)]],
+    [2, 'Load SC frequencies.', 'Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Stored Channel 1', !m2.length && !dev(2).length, [...m2, ...dev(2)]],
+    [3, 'Prepare to Communicate.', 'Set FCTN to SQ. ON → Set CHAN to CHAN 1 → Communicate in SC Mode', !prep.length && !dev(3).length, [...prep, ...dev(3)]],
   ];
   const timeOk = why === 'done' && endAt <= 300, go = rows.every(r => r[3]) && timeOk;
   if (go && (!S.best || endAt < S.best)) { S.best = endAt; save(); }
@@ -787,18 +788,18 @@ function setMode(m) {
 function startExam(card) { newRun(card); T0 = Date.now(); renderAll(); tick(); }
 function openSettings() {
   $('#fm' + { random: 'R', sheet: 'S', custom: 'C' }[S.freqMode]).checked = true;
-  ['cf1', 'cf2', 'cf3'].forEach((id, i) => { $('#' + id).value = S.custom[i] || ''; });
+  $('#cf1').value = S.custom[0] || '';
   $('#setErr').hidden = true;
   $('#bestTxt').textContent = S.best ? `Best Exam GO time on this device: ${mmss(S.best)}` : 'No Exam GO recorded on this device yet.';
   openModal('mSet');
 }
 function saveSettings() {
   const fm = $('input[name="fm"]:checked').value;
-  const cust = ['cf1', 'cf2', 'cf3'].map(id => $('#' + id).value.replace(/\D/g, ''));
-  if (fm === 'custom' && (!cust.every(validFreq) || new Set(cust).size < 3)) {
+  const cust = [$('#cf1').value.replace(/\D/g, '')];
+  if (fm === 'custom' && !validFreq(cust[0])) {
     const e = $('#setErr');
     e.hidden = false;
-    e.textContent = 'Enter three different 5-digit SC frequencies from 30000 to 87975, in steps of 25 (e.g. 81000, 55000, 57025).';
+    e.textContent = 'Enter a 5-digit SC frequency from 30000 to 87975, in steps of 25 (e.g. 81000).';
     return;
   }
   S.freqMode = fm;
@@ -873,7 +874,7 @@ function bind() {
   $('#btnRef').addEventListener('click', () => openModal('mRef'));
   $('#btnSet').addEventListener('click', openSettings);
   $('#setSave').addEventListener('click', saveSettings);
-  ['cf1', 'cf2', 'cf3'].forEach(id => $('#' + id).addEventListener('focus', () => { $('#fmC').checked = true; }));
+  $('#cf1').addEventListener('focus', () => { $('#fmC').checked = true; });
   $$('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.close)));
   $$('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m && m.id !== 'mIntro') closeModal(m.id); }));
   document.addEventListener('keydown', onKey);
