@@ -202,7 +202,22 @@ legend { padding: 0 4px; font-weight: 650; }
 .cust { display: grid; grid-template-columns: minmax(0, 160px); gap: 8px; margin: 4px 0 0 26px; }
 .cust input { width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: 600 15px var(--mono); }
 .err { color: var(--nogo); font-size: 13px; }
-@media (prefers-reduced-motion: reduce) { .knob { transition: none; } .hint { animation: none; } }
+/* NO-GO: recycled to Charlie Company */
+.modal.charlie { align-items: center; background: rgba(12, 14, 8, .82); }
+.ccard { position: relative; width: 100%; max-width: 460px; margin: auto 0; padding: 20px 18px 18px; overflow: hidden; border-radius: 18px; text-align: center; color: #f1efe0; background: radial-gradient(120% 90% at 50% 0%, #3d4628, #1c2112 70%); box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.ccard .eyebrow { font: 700 11px/1 var(--ui); letter-spacing: .16em; text-transform: uppercase; color: #c9c7a4; }
+.guidon { display: block; width: 180px; max-width: 60%; height: auto; margin: 10px auto 0; overflow: visible; }
+.guidon .flag { transform-origin: 14px 56px; animation: wave 2.4s ease-in-out infinite; }
+@keyframes wave { 0%, 100% { transform: skewY(0deg) scaleX(1); } 50% { transform: skewY(-4deg) scaleX(.96); } }
+.ccard h2.ct { margin: 6px 0 2px; font: 800 30px/1.05 var(--stencil); letter-spacing: .04em; text-transform: uppercase; color: #fff; text-wrap: balance; }
+.ccard p { margin: 6px 0 0; font-size: 14.5px; color: #dcdac6; }
+.ccard .orders { margin: 12px auto 0; max-width: 34ch; padding: 10px 12px; border: 1px dashed rgba(241,239,224,.35); border-radius: 10px; font: 600 12.5px/1.5 var(--mono); color: #e9e7d4; text-align: left; }
+.stamp { position: absolute; right: 12px; top: 52px; padding: 4px 10px; border: 4px solid #e2432f; border-radius: 8px; color: #e2432f; font: 900 28px/1 var(--stencil); letter-spacing: .08em; transform: rotate(-14deg); opacity: .92; animation: slam .5s cubic-bezier(.2, 1.6, .4, 1) .25s both; }
+@keyframes slam { from { transform: rotate(-14deg) scale(2.6); opacity: 0; } to { transform: rotate(-14deg) scale(1); opacity: .92; } }
+.ccard .txrow { justify-content: center; margin-top: 16px; }
+.ccard .btn { border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #f1efe0; }
+.ccard .btn.primary { margin-left: 0; border-color: #e2432f; background: #e2432f; color: #fff; }
+@media (prefers-reduced-motion: reduce) { .knob { transition: none; } .hint, .guidon .flag, .stamp { animation: none; } }
 </style>
 </head>
 <body>
@@ -277,10 +292,10 @@ legend { padding: 0 4px; font-weight: 650; }
   <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="exT">
     <h2 id="exT">Exam mode</h2>
     <ul>
-      <li>One clock for the whole drill: <b>5:00</b>. It starts when you press Start.</li>
+      <li>One clock for the whole drill: <b>1:30</b>. It starts when you press Start.</li>
       <li>No coach, no key highlights, no 7-second bar, no ✓ marks until the end.</li>
       <li>Set FCTN to load first. Mode SC, power HI, COMSEC PT and CHAN 1 can be set in any order; only the settings have to be right (mode and channel must be set before you load). Then Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Set FCTN to SQ. ON. Using MENU before LD, or turning to SQ ON before loading, is an order error and a NO-GO for that measure.</li>
-      <li>One channel (CH 1). The exam ends when the radio is set to communicate in SC mode, or at 5:00.</li>
+      <li>One channel (CH 1). The exam ends when the radio is set to communicate in SC mode, or at 1:30. A NO-GO sends you to Charlie Company.</li>
     </ul>
     <div class="txrow"><button class="btn" id="exBack">Back to Guided</button><button class="btn primary" id="exStart">Start exam</button></div>
   </div>
@@ -291,6 +306,26 @@ legend { padding: 0 4px; font-weight: 650; }
     <h2 id="resT">Exam result</h2>
     <div id="resBody"></div>
     <div class="txrow" style="margin-top:14px"><button class="btn" data-close="mRes">Review radio</button><button class="btn" id="resGuided">Guided mode</button><button class="btn" id="resSame">Retry same card</button><button class="btn primary" id="resNew">New card</button></div>
+  </div>
+</div>
+
+<div class="modal charlie" id="mCharlie" hidden>
+  <div class="ccard" role="dialog" aria-modal="true" aria-labelledby="chT">
+    <div class="eyebrow">NO-GO · Recycle orders</div>
+    <svg class="guidon" viewBox="0 0 200 112" aria-hidden="true">
+      <rect x="8" y="4" width="6" height="106" rx="3" fill="#8a6a3c"/>
+      <circle cx="11" cy="6" r="6" fill="#d4b13c"/>
+      <g class="flag">
+        <path d="M14 12 H192 L158 54 L192 96 H14 Z" fill="#b3261e"/>
+        <path d="M14 12 H192 L158 54 L192 96 H14 Z" fill="none" stroke="#ffffff" stroke-opacity=".2" stroke-width="2"/>
+        <text x="84" y="74" text-anchor="middle" font-family="DIN Condensed, Arial Narrow, Arial, sans-serif" font-weight="800" font-size="56" fill="#ffffff">C</text>
+      </g>
+    </svg>
+    <div class="stamp" aria-hidden="true">NO-GO</div>
+    <h2 class="ct" id="chT">Welcome to Charlie Company!</h2>
+    <p id="chStats"></p>
+    <div class="orders">REPORT TO: C Co, 3rd Platoon<br>TIME: 0430 tomorrow<br>BRING: ruck, ASIP, and a faster thumb on STO</div>
+    <div class="txrow"><button class="btn" id="chWhy">See what went wrong</button><button class="btn primary" id="chRetry">Recycle: try again</button></div>
   </div>
 </div>
 
@@ -341,7 +376,7 @@ legend { padding: 0 4px; font-weight: 650; }
           <li>Communicate in SC Mode.</li>
         </ul></li>
     </ol>
-    <p class="muted">Steps 4–5 (radio check, 10–20 word message) are voice steps and are not drilled here. Standard: within 5 minutes, 100% accuracy.</p>
+    <p class="muted">Steps 4–5 (radio check, 10–20 word message) are voice steps and are not drilled here. The score sheet allows 5 minutes; this trainer's Exam clock is 1:30.</p>
     <h3>Notes</h3>
     <p><code>MENU</code> and <code>CLR</code> share one key. If no key is pressed for 7 seconds, the display times out and drops what you typed.</p>
     <p>FCTN knob: drag it, or tap its right half to turn clockwise and its left half counterclockwise. On a computer you can also type digits, <code>F</code> = FREQ, <code>C</code> or <code>M</code> = MENU/CLR, <code>S</code> = STO.</p>
@@ -393,6 +428,7 @@ const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } cat
 /* ---------- run state ---------- */
 let MODE = 'guided', SC, R, P, DEV, NOTES, W, T0 = null, endAt = 0, ended = false;
 let tHandle, fHandle, testHandle, knobRot = null;
+const LIMIT = 90; // Exam clock in seconds (the score sheet allows 5 minutes)
 
 function makeCard() {
   let f = randFreq();
@@ -731,9 +767,9 @@ const elapsed = () => T0 ? (Date.now() - T0) / 1000 : 0;
 function tick() {
   const el = $('#clock');
   if (MODE === 'exam') {
-    const left = Math.max(0, 300 - (ended ? endAt : elapsed()));
-    el.textContent = mmss(T0 ? left : 300);
-    el.classList.toggle('warn', !!T0 && left < 60);
+    const left = Math.max(0, LIMIT - (ended ? endAt : elapsed()));
+    el.textContent = mmss(T0 ? left : LIMIT);
+    el.classList.toggle('warn', !!T0 && left < 30);
     if (T0 && !ended && left <= 0) finish('time');
   } else {
     el.textContent = mmss(ended ? endAt : elapsed());
@@ -762,14 +798,17 @@ function results(why) {
     [2, 'Load SC frequencies.', 'Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Stored Channel 1', !m2.length && !dev(2).length, [...m2, ...dev(2)]],
     [3, 'Prepare to Communicate.', 'Set FCTN to SQ. ON → Set CHAN to CHAN 1 → Communicate in SC Mode', !prep.length && !dev(3).length, [...prep, ...dev(3)]],
   ];
-  const timeOk = why === 'done' && endAt <= 300, go = rows.every(r => r[3]) && timeOk;
+  const timeOk = why === 'done' && endAt <= LIMIT, go = rows.every(r => r[3]) && timeOk;
   if (go && (!S.best || endAt < S.best)) { S.best = endAt; save(); }
-  $('#resBody').innerHTML = `<p><span class="verdict ${go ? 'go' : 'nogo'}">${go ? 'GO' : 'NO-GO'}</span>&nbsp; Time ${mmss(endAt)} <span class="muted">(standard 5:00${S.best ? ` · your best GO ${mmss(S.best)}` : ''})</span></p>
+  $('#resBody').innerHTML = `<p><span class="verdict ${go ? 'go' : 'nogo'}">${go ? 'GO' : 'NO-GO'}</span>&nbsp; Time ${mmss(endAt)} <span class="muted">(limit ${mmss(LIMIT)}${S.best ? ` · your best GO ${mmss(S.best)}` : ''})</span></p>
     <div class="tbl"><table><tr><th>#</th><th>Performance measure</th><th>Result</th></tr>
     ${rows.map(r => `<tr><td>${r[0]}</td><td><b>${esc(r[1])}</b><div class="muted">${esc(r[2])}</div>${r[4].length ? `<ul class="fb">${r[4].map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</td><td class="${r[3] ? 'go' : 'nogo'}">${r[3] ? 'GO' : 'NO-GO'}</td></tr>`).join('')}
-    <tr><td>⏱</td><td><b>Performed within 5 minutes.</b>${why === 'time' ? '<ul class="fb"><li>Time ran out.</li></ul>' : ''}</td><td class="${timeOk ? 'go' : 'nogo'}">${timeOk ? 'GO' : 'NO-GO'}</td></tr></table></div>
+    <tr><td>⏱</td><td><b>Performed within ${mmss(LIMIT)}.</b>${why === 'time' ? '<ul class="fb"><li>Time ran out.</li></ul>' : ''}</td><td class="${timeOk ? 'go' : 'nogo'}">${timeOk ? 'GO' : 'NO-GO'}</td></tr></table></div>
     ${NOTES.length ? `<h3>Notes (not scored)</h3><ul>${NOTES.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}`;
-  openModal('mRes');
+  if (go) return openModal('mRes');
+  const gos = rows.filter(r => r[3]).length + (timeOk ? 1 : 0);
+  $('#chStats').textContent = (why === 'time' ? `Time ran out at ${mmss(LIMIT)}` : `Time ${mmss(endAt)} (limit ${mmss(LIMIT)})`) + ` · ${gos} of 4 GO`;
+  openModal('mCharlie');
 }
 
 /* ---------- runs, modes, settings ---------- */
@@ -857,7 +896,7 @@ function buildRadio() {
 }
 function onKey(e) {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.key === 'Escape') { $$('.modal').forEach(m => { if (!m.hidden && m.id !== 'mIntro') closeModal(m.id); }); return; }
+  if (e.key === 'Escape') { $$('.modal').forEach(m => { if (!m.hidden && !['mIntro', 'mCharlie'].includes(m.id)) closeModal(m.id); }); return; }
   if ($$('.modal').some(m => !m.hidden) || e.target.closest('input')) return;
   const k = e.key.toLowerCase();
   const id = /^[0-9]$/.test(k) ? 'k' + k : k === 'f' ? 'FREQ' : (k === 'c' || k === 'm') ? 'CLR' : k === 's' ? 'STO' : null;
@@ -883,7 +922,9 @@ function bind() {
   $('#setSave').addEventListener('click', saveSettings);
   $('#cf1').addEventListener('focus', () => { $('#fmC').checked = true; });
   $$('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.close)));
-  $$('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m && m.id !== 'mIntro') closeModal(m.id); }));
+  $$('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m && !['mIntro', 'mCharlie'].includes(m.id)) closeModal(m.id); }));
+  $('#chWhy').addEventListener('click', () => { closeModal('mCharlie'); openModal('mRes'); });
+  $('#chRetry').addEventListener('click', () => { closeModal('mCharlie'); startExam(SC); });
   document.addEventListener('keydown', onKey);
   document.addEventListener('touchstart', () => {}, { passive: true });
 }
