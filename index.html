@@ -279,7 +279,7 @@ legend { padding: 0 4px; font-weight: 650; }
     <ul>
       <li>One clock for the whole drill: <b>5:00</b>. It starts when you press Start.</li>
       <li>No coach, no key highlights, no 7-second bar, no ✓ marks until the end.</li>
-      <li>Do the steps in score-sheet order. Set mode to SC, Set power to HI, Set COMSEC to PT and Set FCTN to load may be done in any order, all before Set CHAN 1. Then Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Set FCTN to SQ. ON → Set CHAN to CHAN 1. A step out of order is a NO-GO for that measure.</li>
+      <li>Do the steps in order: Set FCTN to load first; then Set mode to SC, Set power to HI and Set COMSEC to PT in any order; then Set CHAN 1 → Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Set FCTN to SQ. ON → Set CHAN to CHAN 1. A step out of order is a NO-GO for that measure.</li>
       <li>One channel (CH 1). The exam ends when the radio is set to communicate in SC mode, or at 5:00.</li>
     </ul>
     <div class="txrow"><button class="btn" id="exBack">Back to Guided</button><button class="btn primary" id="exStart">Start exam</button></div>
@@ -320,13 +320,13 @@ legend { padding: 0 4px; font-weight: 650; }
       <li><b>Obtained required SC frequencies.</b> The grader gives you the frequency for channel 1.
         <ul>
           <li>Prepare radio for Single Channel Frequencies loading.</li>
+          <li>Set FCTN to load: knob to <code>LD</code>.</li>
           <li>Set mode to SC: <code>MENU</code> ×4 (VOL → CHAN → PWR → MODE), then <code>CHG</code> (the 7 key) until <code>MODE SC</code>.</li>
           <li>Set power to HI: <code>MENU</code> ×3 (VOL → CHAN → PWR), then <code>CHG</code> until <code>PWR HI</code> (LO → M → HI).</li>
           <li>Set COMSEC to PT: <code>MENU</code> ×5 (… → MODE → CMSC), then <code>CHG</code> until <code>CMSC PT</code> (CT → TD → RV → PT).</li>
-          <li>Set FCTN to load: knob to <code>LD</code>.</li>
           <li>Set CHAN 1: <code>MENU</code> ×2 (VOL → CHAN), then press <code>1</code>.</li>
         </ul>
-        The radio starts at the TM defaults (MODE FH, COMSEC CT, PWR LO). The first four can be done in any order, because MENU works with FCTN at SQ ON or LD. Set CHAN 1 comes after all four.</li>
+        Turn FCTN to LD first. The radio starts at the TM defaults (MODE FH, COMSEC CT, PWR LO); MENU works with FCTN at LD, so set mode, power and COMSEC there, in any order. Set CHAN 1 comes after all of them.</li>
       <li><b>Load SC frequencies.</b>
         <ul>
           <li>Press FREQ: <code>FREQ</code> shows what channel 1 holds now.</li>
@@ -517,13 +517,14 @@ function lcdText() {
 
 /* ---------- score-sheet order: one step at a time, in the sheet's sequence ---------- */
 const MEASURE = { 1: '1 · Obtained required SC frequencies', 2: '2 · Load SC frequencies', 3: '3 · Prepare to Communicate' };
-/* One channel (CH 1). Steps 0-3 prepare the radio and may be done in any order; from Set CHAN 1 on, the order is strict. */
+/* One channel (CH 1). FCTN to load comes first; the three MENU settings (steps 1-3) may then be done in any order;
+   from Set CHAN 1 on, the order is strict. */
 const PREP = 4, LOAD = 5, SQ = 6, CALL = 7;
 const STEPS = [
+  { m: 1, label: 'Set FCTN to load', done: () => R.fctn === 'LD' },
   { m: 1, label: 'Set mode to SC', done: () => R.mode === 'SC' },
   { m: 1, label: 'Set power to HI', done: () => R.pwr === 'HI' },
   { m: 1, label: 'Set COMSEC to PT', done: () => R.cmsc === 'PT' },
-  { m: 1, label: 'Set FCTN to load', done: () => R.fctn === 'LD' },
   { m: 1, label: 'Set CHAN 1', done: () => R.chan === '1' },
   { m: 2, label: 'Stored Channel 1', done: () => R.ch['1'] === SC.freqs[0] },
   { m: 3, label: 'Set FCTN to SQ. ON', done: () => R.fctn === 'SQ ON' },
@@ -532,10 +533,10 @@ const STEPS = [
 /* Which step an action belongs to; an action whose step is later than the next open step is out of order. */
 function stepOf(ev, Q) {
   switch (ev.type) {
-    case 'mode': return ev.v === 'SC' ? 0 : null;
-    case 'pwr': return ev.v === 'HI' ? 1 : null;
-    case 'cmsc': return ev.v === 'PT' ? 2 : null;
-    case 'fctn': return ev.v === 'LD' ? 3 : (ev.v === 'SQ ON' && Q >= PREP) ? SQ : null;
+    case 'fctn': return ev.v === 'LD' ? 0 : (ev.v === 'SQ ON' && Q >= PREP) ? SQ : null;
+    case 'mode': return ev.v === 'SC' ? 1 : null;
+    case 'pwr': return ev.v === 'HI' ? 2 : null;
+    case 'cmsc': return ev.v === 'PT' ? 3 : null;
     case 'chan': return ev.v === '1' ? (Q >= CALL ? CALL : PREP) : null;
     case 'sto': return ev.sc && ev.chan === '1' ? LOAD : null;
   }
@@ -550,7 +551,7 @@ function event(ev) {
     while (Q < STEPS.length && (STEPS[Q].done() || attempted(Q))) Q++;
     const j = stepOf(ev, Q);
     let dev = null;
-    if (j !== null && j > Q && !(j < PREP && Q < PREP)) {
+    if (j !== null && j > Q && !(j >= 1 && j < PREP && Q >= 1)) {
       dev = `${STEPS[j].label} before ${STEPS[Q].label}`;
       /* one entry per skipped step, so a forgotten step is not repeated for every later key */
       if (!DEV.some(d => d.skip === Q)) DEV.push({ m: STEPS[j].m, skip: Q, text: dev });
@@ -581,9 +582,9 @@ function react(ev, dev) {
       NOTES.push(`Stored ${ev.v} in channel 1 (card: ${SC.freqs[0]}).`);
       return `Channel 1 now holds ${ev.v}, but the card says ${SC.freqs[0]}. Load it again.`;
     }
-    case 'mode': return ev.v === 'SC' || P <= 0 ? null : 'MODE must stay SC.';
-    case 'pwr': return ev.v === 'HI' || P <= 1 ? null : 'PWR must stay HI.';
-    case 'cmsc': return ev.v === 'PT' || P <= 2 ? null : 'COMSEC must stay PT.';
+    case 'mode': return ev.v === 'SC' || P <= 1 ? null : 'MODE must stay SC.';
+    case 'pwr': return ev.v === 'HI' || P <= 2 ? null : 'PWR must stay HI.';
+    case 'cmsc': return ev.v === 'PT' || P <= 3 ? null : 'COMSEC must stay PT.';
     case 'fctn': return ['LD', 'SQ ON'].includes(ev.v) ? null : `${ev.v} is not used on this sheet. The sheet uses LD (load) and SQ ON.`;
     case 'other': return `${keyName(ev.id)} is not used on this sheet.`;
   }
@@ -638,14 +639,14 @@ function coachData() {
   let step = MEASURE[STEPS[Math.min(P, STEPS.length - 1)].m], g;
   if (P === LOAD) step += ` · Channel 1: ${f}`;
   if (P < STEPS.length && !on()) {
-    g = P < 3 ? { do: STEPS[P].label + '.', how: `FCTN is at ${R.fctn}. Turn the knob to SQ ON or LD so MENU works.`, target: 'pos:SQ ON' }
+    g = P >= 1 && P < PREP ? { do: STEPS[P].label + '.', how: `FCTN is at ${R.fctn}. Turn the knob back to LD so MENU works.`, target: 'pos:LD' }
       : P < SQ ? fctnGoal('LD', 'Set FCTN to load.') : fctnGoal('SQ ON', 'Set FCTN to SQ. ON.');
   } else {
     switch (P) {
-      case 0: g = menuGoal('MODE'); break;
-      case 1: g = menuGoal('PWR'); break;
-      case 2: g = menuGoal('CMSC'); break;
-      case 3: g = fctnGoal('LD', 'Set FCTN to load.'); break;
+      case 0: g = fctnGoal('LD', 'Set FCTN to load.'); break;
+      case 1: g = menuGoal('MODE'); break;
+      case 2: g = menuGoal('PWR'); break;
+      case 3: g = menuGoal('CMSC'); break;
       case PREP: g = R.fctn === 'LD' ? chanGoal('1', 'Set CHAN 1.') : fctnGoal('LD', 'Set FCTN to load.'); break;
       case LOAD: g = loadGoal(); break;
       case SQ: g = fctnGoal('SQ ON', 'Set FCTN to SQ. ON.'); break;
@@ -744,14 +745,14 @@ function results(why) {
   const dev = m => DEV.filter(d => d.m === m).map(d => `Out of order: ${d.text}.`);
   const f = SC.freqs[0], m1 = [], prep = [];
   if (P <= PREP) m1.push(`Not completed: ${STEPS[P].label}.`);
-  if (P > 1 && R.pwr !== 'HI') m1.push(`PWR is ${R.pwr}, not HI.`);
-  if (P > 2 && R.cmsc !== 'PT') m1.push(`COMSEC is ${R.cmsc}, not PT.`);
+  if (P > 2 && R.pwr !== 'HI') m1.push(`PWR is ${R.pwr}, not HI.`);
+  if (P > 3 && R.cmsc !== 'PT') m1.push(`COMSEC is ${R.cmsc}, not PT.`);
   const m2 = R.ch['1'] === f ? [] : [`Channel 1 holds ${R.ch['1']}; the card says ${f}.`];
   if (R.fctn !== 'SQ ON') prep.push(`FCTN is at ${R.fctn}, not SQ ON.`);
   if (R.chan !== '1') prep.push(`CHAN is ${R.chan}, not 1.`);
   if (R.mode !== 'SC') prep.push(`MODE is ${R.mode}, not SC.`);
   const rows = [
-    [1, 'Obtained required SC frequencies.', 'Set mode to SC, Set power to HI, Set COMSEC to PT, Set FCTN to load (any order) → Set CHAN 1', !m1.length && !dev(1).length, [...m1, ...dev(1)]],
+    [1, 'Obtained required SC frequencies.', 'Set FCTN to load → Set mode to SC, Set power to HI, Set COMSEC to PT (any order) → Set CHAN 1', !m1.length && !dev(1).length, [...m1, ...dev(1)]],
     [2, 'Load SC frequencies.', 'Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Stored Channel 1', !m2.length && !dev(2).length, [...m2, ...dev(2)]],
     [3, 'Prepare to Communicate.', 'Set FCTN to SQ. ON → Set CHAN to CHAN 1 → Communicate in SC Mode', !prep.length && !dev(3).length, [...prep, ...dev(3)]],
   ];
