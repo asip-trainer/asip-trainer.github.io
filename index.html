@@ -294,7 +294,7 @@ legend { padding: 0 4px; font-weight: 650; }
     <ul>
       <li>One clock for the whole drill: <b>1:30</b>. It starts when you press Start.</li>
       <li>No coach, no key highlights, no 7-second bar, no ✓ marks until the end.</li>
-      <li>Set FCTN to load first. Mode SC, power HI, COMSEC PT and CHAN 1 can be set in any order; only the settings have to be right (mode and channel must be set before you load). Then Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Set FCTN to SQ. ON. Using MENU before LD, or turning to SQ ON before loading, is an order error and a NO-GO for that measure.</li>
+      <li>Set FCTN to load first. Mode SC, power HI, COMSEC PT and CHAN 1 can be set in any order; only the settings have to be right (mode and channel must be set before you load). Fastest: one pass through MENU, CHAN 1 → PWR HI → MODE SC → CMSC PT. Then Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Set FCTN to SQ. ON. Using MENU before LD, or turning to SQ ON before loading, is an order error and a NO-GO for that measure.</li>
       <li>One channel (CH 1). The exam ends when the radio is set to communicate in SC mode, or at 1:30. A NO-GO sends you to Charlie Company.</li>
     </ul>
     <div class="txrow"><button class="btn" id="exBack">Back to Guided</button><button class="btn primary" id="exStart">Start exam</button></div>
@@ -356,12 +356,13 @@ legend { padding: 0 4px; font-weight: 650; }
         <ul>
           <li>Prepare radio for Single Channel Frequencies loading.</li>
           <li>Set FCTN to load: knob to <code>LD</code>.</li>
-          <li>Set mode to SC: <code>MENU</code> ×4 (VOL → CHAN → PWR → MODE), then <code>CHG</code> (the 7 key) until <code>MODE SC</code>.</li>
-          <li>Set power to HI: <code>MENU</code> ×3 (VOL → CHAN → PWR), then <code>CHG</code> until <code>PWR HI</code> (LO → M → HI).</li>
-          <li>Set COMSEC to PT: <code>MENU</code> ×5 (… → MODE → CMSC), then <code>CHG</code> until <code>CMSC PT</code> (CT → TD → RV → PT).</li>
-          <li>Set CHAN 1: <code>MENU</code> ×2 (VOL → CHAN), then press <code>1</code>.</li>
+          <li>Then one pass through MENU (VOL → CHAN → PWR → MODE → CMSC):</li>
+          <li>Set CHAN 1: <code>MENU</code> twice, press <code>1</code>.</li>
+          <li>Set power to HI: <code>MENU</code> once, <code>CHG</code> twice (LO → M → HI).</li>
+          <li>Set mode to SC: <code>MENU</code> once, <code>CHG</code> twice (FH → FHM → SC).</li>
+          <li>Set COMSEC to PT: <code>MENU</code> once, <code>CHG</code> 3 times (CT → TD → RV → PT).</li>
         </ul>
-        Turn FCTN to LD first. The radio starts at the TM defaults (MODE FH, COMSEC CT, PWR LO). After LD, mode, power, COMSEC and CHAN 1 can be set in any order; only the settings have to be right. Mode must be SC and CHAN must be 1 before you load, or the frequency won't go into channel 1. Power and COMSEC don't affect loading; they only need to be right before you talk.</li>
+        The radio starts at the TM defaults (CHAN not 1, PWR LO, MODE FH, COMSEC CT). After LD, these four can be set in any order and only the settings count; following the MENU order is simply the fastest (5 MENU presses). Mode must be SC and CHAN must be 1 before you load. Power and COMSEC don't affect loading. From the COMSEC screen you can press <code>FREQ</code> right away.</li>
       <li><b>Load SC frequencies.</b>
         <ul>
           <li>Press FREQ: <code>FREQ</code> shows what channel 1 holds now.</li>
@@ -555,13 +556,14 @@ function lcdText() {
 const MEASURE = { 1: '1 · Obtained required SC frequencies', 2: '2 · Load SC frequencies', 3: '3 · Prepare to Communicate' };
 /* One channel (CH 1). Order rules: FCTN to load first, and SQ ON only after loading. Mode, power, COMSEC and CHAN 1
    may be set in any order; they are graded by the final settings. Power and COMSEC may even be set after loading. */
-const PREP = 4, LOAD = 5, SQ = 6, CALL = 7;
+/* Steps 1-4 follow the MENU order (VOL → CHAN → PWR → MODE → CMSC), so the coach sets all four in one pass. */
+const CHAN1 = 1, PREP = 4, LOAD = 5, SQ = 6, CALL = 7;
 const STEPS = [
   { m: 1, label: 'Set FCTN to load', done: () => R.fctn === 'LD' },
-  { m: 1, label: 'Set mode to SC', done: () => R.mode === 'SC' },
-  { m: 1, label: 'Set power to HI', done: () => R.pwr === 'HI' },
-  { m: 1, label: 'Set COMSEC to PT', done: () => R.cmsc === 'PT' },
   { m: 1, label: 'Set CHAN 1', done: () => R.chan === '1' },
+  { m: 1, label: 'Set power to HI', done: () => R.pwr === 'HI' },
+  { m: 1, label: 'Set mode to SC', done: () => R.mode === 'SC' },
+  { m: 1, label: 'Set COMSEC to PT', done: () => R.cmsc === 'PT' },
   { m: 2, label: 'Stored Channel 1', done: () => R.ch['1'] === SC.freqs[0] },
   { m: 3, label: 'Set FCTN to SQ. ON', done: () => R.fctn === 'SQ ON' },
   { m: 3, label: 'Set CHAN to CHAN 1', done: () => R.chan === '1' },
@@ -570,10 +572,10 @@ const STEPS = [
 function stepOf(ev, Q) {
   switch (ev.type) {
     case 'fctn': return ev.v === 'LD' ? 0 : (ev.v === 'SQ ON' && Q >= 1) ? SQ : null;
-    case 'mode': return ev.v === 'SC' ? 1 : null;
     case 'pwr': return ev.v === 'HI' ? 2 : null;
-    case 'cmsc': return ev.v === 'PT' ? 3 : null;
-    case 'chan': return ev.v === '1' ? (Q >= CALL ? CALL : PREP) : null;
+    case 'mode': return ev.v === 'SC' ? 3 : null;
+    case 'cmsc': return ev.v === 'PT' ? 4 : null;
+    case 'chan': return ev.v === '1' ? (Q >= CALL ? CALL : CHAN1) : null;
     case 'sto': return ev.sc && ev.chan === '1' ? LOAD : null;
   }
   return null;
@@ -581,7 +583,7 @@ function stepOf(ev, Q) {
 /* A store with a wrong value still counts as done for the order check; the value is graded in measure 2. */
 const attempted = k => k === LOAD && R.tried.has('1');
 /* power and COMSEC never hold up the next step; only their final values count */
-const anytime = k => k === 2 || k === 3;
+const anytime = k => k === 2 || k === 4;
 const isReady = () => R.fctn === 'SQ ON' && R.mode === 'SC' && R.pwr === 'HI' && R.cmsc === 'PT' && R.chan === '1' && R.ch['1'] === SC.freqs[0];
 function event(ev) {
   if (!ended) {
@@ -620,9 +622,9 @@ function react(ev, dev) {
       NOTES.push(`Stored ${ev.v} in channel 1 (card: ${SC.freqs[0]}).`);
       return `Channel 1 now holds ${ev.v}, but the card says ${SC.freqs[0]}. Load it again.`;
     }
-    case 'mode': return ev.v === 'SC' || P <= 1 ? null : 'MODE must stay SC.';
     case 'pwr': return ev.v === 'HI' || P <= 2 ? null : 'PWR must stay HI.';
-    case 'cmsc': return ev.v === 'PT' || P <= 3 ? null : 'COMSEC must stay PT.';
+    case 'mode': return ev.v === 'SC' || P <= 3 ? null : 'MODE must stay SC.';
+    case 'cmsc': return ev.v === 'PT' || P <= 4 ? null : 'COMSEC must stay PT.';
     case 'fctn': return ['LD', 'SQ ON'].includes(ev.v) ? null : `${ev.v} is not used on this sheet. The sheet uses LD (load) and SQ ON.`;
     case 'other': return `${keyName(ev.id)} is not used on this sheet.`;
   }
@@ -632,18 +634,28 @@ function react(ev, dev) {
 /* ---------- coach (Guided mode): the sheet's own words first, then how to do it on the ASIP ---------- */
 const inFreq = () => R.disp === 'freq' || R.disp === 'entry';
 const MENU_SET = { MODE: ['SC', 'Set mode to SC.'], PWR: ['HI', 'Set power to HI.'], CMSC: ['PT', 'Set COMSEC to PT.'] };
+const times = n => n === 1 ? 'once' : n === 2 ? 'twice' : `${n} times`;
+/* MENU presses from where the display is now to a menu item (past CMSC the menu closes, then starts at VOL) */
+function menuPath(item) {
+  const idx = MENU.indexOf(item);
+  if (R.disp !== 'menu') return `Press MENU ${times(idx + 1)} to reach ${item} (${MENU.slice(0, idx + 1).join(' → ')})`;
+  const n = idx > R.menu ? idx - R.menu : MENU.length - R.menu + idx + 1;
+  return `Press MENU ${times(n)} to reach ${item}`;
+}
 function menuGoal(item) {
-  const [val, text] = MENU_SET[item], n = MENU.indexOf(item) + 1;
-  if (R.disp === 'menu' && MENU[R.menu] === item) return { do: text, how: `Press CHG (the 7 key) until the display shows ${item} ${val}.`, target: 'k7' };
+  const [val, text] = MENU_SET[item];
+  if (R.disp === 'menu' && MENU[R.menu] === item) {
+    const list = CYCLE[item], path = [R[item.toLowerCase()]];
+    while (path[path.length - 1] !== val) path.push(list[(list.indexOf(path[path.length - 1]) + 1) % list.length]);
+    return { do: text, how: `Press CHG (the 7 key) ${times(path.length - 1)}: ${path.map(modeTxt).join(' → ')}.`, target: 'k7' };
+  }
   if (inFreq()) return { do: text, how: 'Press CLR to leave the frequency display, then MENU.', target: 'CLR' };
-  if (R.disp === 'menu') return { do: text, how: `Press MENU until ${item} shows.`, target: 'CLR' };
-  return { do: text, how: `Press MENU until ${item} shows (MENU ×${n}: ${MENU.slice(0, n).join(' → ')}).`, target: 'CLR' };
+  return { do: text, how: menuPath(item) + '.', target: 'CLR' };
 }
 function chanGoal(n, text) {
   if (R.disp === 'menu' && MENU[R.menu] === 'CHAN') return { do: text, how: `Press ${n}.`, target: 'k' + n };
   if (inFreq()) return { do: text, how: 'Press CLR to leave the frequency display, then MENU.', target: 'CLR' };
-  if (R.disp === 'menu') return { do: text, how: `CHAN ${n}: press MENU until CHAN shows, then press ${n}.`, target: 'CLR' };
-  return { do: text, how: `CHAN ${n}: press MENU until CHAN shows (MENU ×2: VOL → CHAN), then press ${n}.`, target: 'CLR' };
+  return { do: text, how: `${menuPath('CHAN')}, then press ${n}.`, target: 'CLR' };
 }
 const fctnGoal = (pos, text) => ({ do: text, how: `Turn the FCTN knob to ${pos}.`, target: 'pos:' + pos });
 function loadGoal() {
@@ -660,7 +672,7 @@ function loadGoal() {
     if (R.entry.length < 5) return { do: 'Enter 5 digits SC frequencies.', how: `Type ${f} for ${fmt(f)}.`, target: 'k' + f[R.entry.length] };
     return { do: 'Press STO within 7 seconds.', how: 'This stores the frequency in channel 1. The display blinks once.', target: 'STO' };
   }
-  return { do: 'Press FREQ.', how: 'The display shows what channel 1 holds now.', target: 'FREQ' };
+  return { do: 'Press FREQ.', how: R.disp === 'menu' ? 'No need to leave MENU first. The display shows what channel 1 holds now.' : 'The display shows what channel 1 holds now.', target: 'FREQ' };
 }
 /* Every step was done once, but something changed afterwards. */
 function fixGoal() {
@@ -679,15 +691,15 @@ function coachData() {
   const loading = P >= 1 && R.fctn === 'LD' && R.mode === 'SC' && R.chan === '1' && R.ch['1'] !== SC.freqs[0] && ['freq', 'entry', 'flash'].includes(R.disp);
   if (loading) g = loadGoal();
   else if (P < STEPS.length && !on()) {
-    g = P >= 1 && P < PREP ? { do: STEPS[P].label + '.', how: `FCTN is at ${R.fctn}. Turn the knob back to LD so MENU works.`, target: 'pos:LD' }
+    g = P >= 1 && P <= PREP ? { do: STEPS[P].label + '.', how: `FCTN is at ${R.fctn}. Turn the knob back to LD so MENU works.`, target: 'pos:LD' }
       : P < SQ ? fctnGoal('LD', 'Set FCTN to load.') : fctnGoal('SQ ON', 'Set FCTN to SQ. ON.');
   } else {
     switch (P) {
       case 0: g = fctnGoal('LD', 'Set FCTN to load.'); break;
-      case 1: g = menuGoal('MODE'); break;
+      case CHAN1: g = R.fctn === 'LD' ? chanGoal('1', 'Set CHAN 1.') : fctnGoal('LD', 'Set FCTN to load.'); break;
       case 2: g = menuGoal('PWR'); break;
-      case 3: g = menuGoal('CMSC'); break;
-      case PREP: g = R.fctn === 'LD' ? chanGoal('1', 'Set CHAN 1.') : fctnGoal('LD', 'Set FCTN to load.'); break;
+      case 3: g = menuGoal('MODE'); break;
+      case PREP: g = menuGoal('CMSC'); break;
       case LOAD: g = loadGoal(); break;
       case SQ: g = fctnGoal('SQ ON', 'Set FCTN to SQ. ON.'); break;
       case CALL: g = chanGoal('1', 'Set CHAN to CHAN 1.'); g.how = `The distant station is on ${f}, which is in channel 1. ${g.how}`; break;
@@ -747,7 +759,7 @@ function renderScore() {
   card.hidden = MODE === 'exam' && !ended;
   if (card.hidden) return;
   const loaded = R.ch['1'] === SC.freqs[0], ls = loadSub(), ok3 = isReady();
-  const set = [P > 0 || R.fctn === 'LD', R.mode === 'SC', R.pwr === 'HI', R.cmsc === 'PT', R.chan === '1' || loaded];
+  const set = [P > 0 || R.fctn === 'LD', R.chan === '1' || loaded, R.pwr === 'HI', R.mode === 'SC', R.cmsc === 'PT'];
   const m1 = set.every(Boolean), sq = loaded && R.fctn === 'SQ ON', cur = !m1 ? 1 : !loaded ? 2 : 3;
   const li = (t, done, now) => `<li class="${done ? 'ok' : now ? 'now' : ''}">${t}</li>`;
   const m = (n, title, done, subs) => `<li class="m${done ? ' done' : cur === n ? ' cur' : ''}"><span class="num">${n}</span><div><div class="mt">${title}</div><ul class="subs">${subs}</ul></div></li>`;
@@ -794,7 +806,7 @@ function results(why) {
   if (R.fctn !== 'SQ ON') prep.push(`FCTN is at ${R.fctn}, not SQ ON.`);
   if (R.chan !== '1') prep.push(`CHAN is ${R.chan}, not 1.`);
   const rows = [
-    [1, 'Obtained required SC frequencies.', 'Set FCTN to load first → mode SC, power HI, COMSEC PT, CHAN 1 (any order; final settings count)', !m1.length && !dev(1).length, [...m1, ...dev(1)]],
+    [1, 'Obtained required SC frequencies.', 'Set FCTN to load first → CHAN 1, power HI, mode SC, COMSEC PT (any order; final settings count)', !m1.length && !dev(1).length, [...m1, ...dev(1)]],
     [2, 'Load SC frequencies.', 'Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Stored Channel 1', !m2.length && !dev(2).length, [...m2, ...dev(2)]],
     [3, 'Prepare to Communicate.', 'Set FCTN to SQ. ON → Set CHAN to CHAN 1 → Communicate in SC Mode', !prep.length && !dev(3).length, [...prep, ...dev(3)]],
   ];
