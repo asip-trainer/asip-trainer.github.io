@@ -294,7 +294,7 @@ legend { padding: 0 4px; font-weight: 650; }
     <ul>
       <li>One clock for the whole drill: <b>1:30</b>. It starts when you press Start.</li>
       <li>No coach, no key highlights, no 7-second bar, no ✓ marks until the end.</li>
-      <li>Set FCTN to load first. Mode SC, power HI, COMSEC PT and CHAN 1 can be set in any order; only the settings have to be right (mode and channel must be set before you load). Fastest: one pass through MENU, CHAN 1 → PWR HI → MODE SC → CMSC PT. Then Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Set FCTN to SQ. ON. Using MENU before LD, or turning to SQ ON before loading, is an order error and a NO-GO for that measure.</li>
+      <li>Set FCTN to load first. Mode SC, power HI, COMSEC PT and CHAN 1 can be set in any order; only the settings have to be right (mode and channel must be set before you load). Fastest: one pass through MENU, CHAN 1 → PWR HI → MODE SC → CMSC PT. Then Press FREQ → Press CLR → Enter 5 digits → Press STO within 7 seconds → Set FCTN to SQ. ON. Using MENU before LD is an order error and a NO-GO. Any other slip can be fixed: go back (to LD if needed), correct it, and finish in SQ ON; only the final settings count.</li>
       <li>One channel (CH 1). The exam ends when the radio is set to communicate in SC mode, or at 1:30. A NO-GO sends you to Charlie Company.</li>
     </ul>
     <div class="txrow"><button class="btn" id="exBack">Back to Guided</button><button class="btn primary" id="exStart">Start exam</button></div>
@@ -362,7 +362,7 @@ legend { padding: 0 4px; font-weight: 650; }
           <li>Set mode to SC: <code>MENU</code> once, <code>CHG</code> twice (FH → FHM → SC).</li>
           <li>Set COMSEC to PT: <code>MENU</code> once, <code>CHG</code> 3 times (CT → TD → RV → PT).</li>
         </ul>
-        The radio starts at the TM defaults (CHAN not 1, PWR LO, MODE FH, COMSEC CT). After LD, these four can be set in any order and only the settings count; following the MENU order is simply the fastest (5 MENU presses). Mode must be SC and CHAN must be 1 before you load. Power and COMSEC don't affect loading. From the COMSEC screen you can press <code>FREQ</code> right away.</li>
+        The radio starts at the TM defaults (CHAN not 1, PWR LO, MODE FH, COMSEC CT). After LD, these four can be set in any order and only the settings count; following the MENU order is simply the fastest (5 MENU presses). Mode must be SC and CHAN must be 1 before you load. Power and COMSEC don't affect loading. From the COMSEC screen you can press <code>FREQ</code> right away. Missed something, like CHAN 1? Go back (to LD if needed), fix it and load again; only the final settings count.</li>
       <li><b>Load SC frequencies.</b>
         <ul>
           <li>Press FREQ: <code>FREQ</code> shows what channel 1 holds now.</li>
@@ -554,8 +554,8 @@ function lcdText() {
 
 /* ---------- score-sheet order: one step at a time, in the sheet's sequence ---------- */
 const MEASURE = { 1: '1 · Obtained required SC frequencies', 2: '2 · Load SC frequencies', 3: '3 · Prepare to Communicate' };
-/* One channel (CH 1). Order rules: FCTN to load first, and SQ ON only after loading. Mode, power, COMSEC and CHAN 1
-   may be set in any order; they are graded by the final settings. Power and COMSEC may even be set after loading. */
+/* One channel (CH 1). The only order rule: FCTN to load before any MENU setting. Everything else may be done in any
+   order and corrected later (go back to LD, fix, finish in SQ ON); the final settings are what count. */
 /* Steps 1-4 follow the MENU order (VOL → CHAN → PWR → MODE → CMSC), so the coach sets all four in one pass. */
 const CHAN1 = 1, PREP = 4, LOAD = 5, SQ = 6, CALL = 7;
 const STEPS = [
@@ -571,7 +571,7 @@ const STEPS = [
 /* Which step an action belongs to; an action whose step is later than the next open step is out of order. */
 function stepOf(ev, Q) {
   switch (ev.type) {
-    case 'fctn': return ev.v === 'LD' ? 0 : (ev.v === 'SQ ON' && Q >= 1) ? SQ : null;
+    case 'fctn': return ev.v === 'LD' ? 0 : null;
     case 'pwr': return ev.v === 'HI' ? 2 : null;
     case 'mode': return ev.v === 'SC' ? 3 : null;
     case 'cmsc': return ev.v === 'PT' ? 4 : null;
@@ -617,7 +617,10 @@ function react(ev, dev) {
     case 'freq': return R.mode === 'SC' ? null : 'F ### is the FH net ID, so MODE is not SC yet.';
     case 'sto': {
       if (!ev.sc) return 'MODE is not SC, so STO saved an FH net ID, not an SC frequency.';
-      if (ev.chan !== '1') return `That went into ${ev.chan}. The card uses channel 1.`;
+      if (ev.chan !== '1') {
+        NOTES.push(`Stored ${ev.v} into channel ${ev.chan} instead of channel 1.`);
+        return `That went into channel ${ev.chan}. The card uses channel 1: set CHAN 1 and load it again.`;
+      }
       if (ev.v === SC.freqs[0]) return null;
       NOTES.push(`Stored ${ev.v} in channel 1 (card: ${SC.freqs[0]}).`);
       return `Channel 1 now holds ${ev.v}, but the card says ${SC.freqs[0]}. Load it again.`;
@@ -625,7 +628,9 @@ function react(ev, dev) {
     case 'pwr': return ev.v === 'HI' || P <= 2 ? null : 'PWR must stay HI.';
     case 'mode': return ev.v === 'SC' || P <= 3 ? null : 'MODE must stay SC.';
     case 'cmsc': return ev.v === 'PT' || P <= 4 ? null : 'COMSEC must stay PT.';
-    case 'fctn': return ['LD', 'SQ ON'].includes(ev.v) ? null : `${ev.v} is not used on this sheet. The sheet uses LD (load) and SQ ON.`;
+    case 'fctn':
+      if (ev.v === 'SQ ON') return R.ch['1'] === SC.freqs[0] ? null : 'Channel 1 does not hold the card frequency yet. Turn back to LD and load it; fixing it is fine.';
+      return ev.v === 'LD' ? null : `${ev.v} is not used on this sheet. The sheet uses LD (load) and SQ ON.`;
     case 'other': return `${keyName(ev.id)} is not used on this sheet.`;
   }
   return null;
