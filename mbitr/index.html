@@ -340,8 +340,8 @@ legend { padding: 0 4px; font-weight: 650; }
       <li>One clock for the whole drill: <b>2:00</b>. It starts when you press Start.</li>
       <li>No coach, no key highlights, no ✓ marks until the end.</li>
       <li>Assemble the radio yourself: tap the battery, the antenna and the hand mic to put them on. No battery, no power. A part still missing at the end is a NO-GO.</li>
-      <li>The radio comes as in the test: off, with the battery, antenna and hand mic beside it, and every setting at the factory default (BASIC, PLAIN, 5 W, internal audio). The channel switch can be on any position: check it.</li>
-      <li>Volume knob clockwise → wait for the self-test → channel switch to 1 → ALT + MENU → PROGRAM → CHANNEL → PLAIN, PWR 5.0W, SINCGARS → FX (ENT, ▲/▼ per digit, ALT + ▲ next slot, ENT) → ESC 3 times → MENU → TOP AUDIO → ENT → ESC. Any order works and slips can be fixed; only the final settings count. ALT counts only while held, as on the radio.</li>
+      <li>The radio comes as in the test: off, with the battery, antenna and hand mic beside it, and the channel switch on 1, and every setting at the factory default (BASIC, PLAIN, 5 W, internal audio).</li>
+      <li>Volume knob clockwise → wait for the self-test → ALT + MENU → PROGRAM → CHANNEL → check PLAIN and PWR 5.0W → SINCGARS (ENT jumps to FX) → FX: ENT, ▲/▼ per digit, ALT + ▲ to the next slot on the right, ENT → ESC 3 times → MENU → TOP AUDIO → ENT → ESC. The antenna and hand mic can go on at any point. Any order works and slips can be fixed; only the final settings count. ALT counts only while held, as on the radio.</li>
       <li>The exam ends when channel 1 is set, the audio is TOP AUDIO and you are back at the main display, or at 2:00. A NO-GO sends you to Charlie Company.</li>
     </ul>
     <div class="txrow"><button class="btn" id="exBack">Back to Guided</button><button class="btn primary" id="exStart">Start exam</button></div>
@@ -406,15 +406,15 @@ legend { padding: 0 4px; font-weight: 650; }
           <li>Install battery: twist it onto the bottom until the latch locks.</li>
           <li>Turn the volume knob (top panel, left) clockwise out of OFF. The radio turns on.</li>
           <li>Wait for the self-test: <code>TESTING</code>, then the main screen (<code>G01</code> / <code>CHAN001</code> / <code>PT FM</code>). Keys do nothing until then.</li>
-          <li>Attach the antenna (thread it on, hand tight) and plug the hand mic into the audio connector on top.</li>
+          <li>Attach the antenna (thread it on, hand tight) and plug the hand mic into the audio connector on top. This can be done at any point, even at the end.</li>
         </ul></li>
       <li><b>Load a frequency and properly enter the net.</b>
         <ul>
-          <li><b>Start up:</b> channel switch (top panel, middle) to <code>1</code>. With group G01 that is CHAN001.</li>
+          <li><b>Start up:</b> the channel switch (top panel, middle) comes on <code>1</code>; with group G01 that is CHAN001. On the CHANNEL screen, turning it picks the channel being programmed, even while you are entering a frequency (a change not yet confirmed with ENT is dropped).</li>
           <li><b>Programming:</b> <code>ALT</code> + <code>MODE</code> (MENU) opens the main menu → <code>▼</code> twice to PROGRAM → <code>ENT</code> → <code>▼</code> once to CHANNEL → <code>ENT</code>. The screen opens on <code>CH = 001</code>.</li>
-          <li><b>Operating system:</b> <code>▼</code> to the bottom line (BASIC) → <code>ENT</code> → <code>▼</code> to <code>SINCGARS</code> → <code>ENT</code>.</li>
+          <li><b>Operating system:</b> <code>▼</code> to the bottom line (BASIC) → <code>ENT</code> → <code>▼</code> to <code>SINCGARS</code> → <code>ENT</code>. The radio jumps straight to FX on screen 2.</li>
           <li><b>Net information:</b> check <code>PLAIN</code> (line 1, right) and <code>PWR=5.0W</code> (line 3); both are the factory defaults, so they are usually right already. For any field: move the outline with ▲/▼, <code>ENT</code> to change it (it turns dark), ▲/▼ to pick, <code>ENT</code> to confirm.</li>
-          <li><b>Frequency:</b> <code>▼</code> past the bottom line to screen 2 (<code>SINCGAR = MAN</code>, <code>ECCM = SC</code>, <code>FX = ##.###</code>) → <code>▼</code> to FX → <code>ENT</code>: the last digit turns dark. <code>▲</code>/<code>▼</code> change that digit; <code>ALT</code> + <code>▲</code> moves to the next slot (left), <code>ALT</code> + <code>▼</code> back (right). <code>ENT</code> to confirm. 81.000 from 67.500: last two digits are already 0; third digit 5 → 0, second 7 → 1, first 6 → 8.</li>
+          <li><b>Frequency:</b> the outline is already on <code>FX = ##.###</code> (screen 2, under <code>SINCGAR = MAN</code> and <code>ECCM = SC</code>) → <code>ENT</code>: the first digit turns dark. <code>▲</code>/<code>▼</code> change that digit; <code>ALT</code> + <code>▲</code> moves to the next slot on the right, <code>ALT</code> + <code>▼</code> back to the left. <code>ENT</code> to confirm. 81.000 from 67.500: 6 → 8, ALT + ▲, 7 → 1, ALT + ▲, 5 → 0; the last two digits are already 0, so ENT.</li>
           <li><b>Return:</b> <code>ESC</code> 3 times: CHANNEL → PROGRAM → main menu → main display, which now shows <code>PT SG SC</code>.</li>
           <li><b>Audio for the hand mic:</b> <code>MODE</code> (MENU, no ALT) → <code>INTERNAL AUDIO</code> is outlined → <code>ENT</code> → <code>▼</code> → <code>TOP AUDIO</code> → <code>ENT</code> → <code>ESC</code>. A headset icon appears. With INTERNAL AUDIO the hand mic stays silent.</li>
         </ul></li>
@@ -429,7 +429,7 @@ legend { padding: 0 4px; font-weight: 650; }
       <li>On a computer: arrow keys = ▲/▼, Enter = ENT, Esc = ESC, <code>M</code> = MODE, <code>G</code> = GR. Hold <code>A</code> (or Alt/Option) for ALT, for example A + ↑ = ALT + ▲.</li>
     </ul>
     <h3>Sources and limits</h3>
-    <p class="muted">Steps and settings: the "Operate an MBITR Radio" score sheet (Ranger testing station "Communicate by MBITR": 4 minutes; this trainer's Exam clock is 2:00). Keys, menus and screens: AN/PRC-148 (JEM) Student Guide v10 and the Thales AN/PRC-148 Operation and Maintenance manual. Display text is simplified, the self-test is shortened, and menu items not used here show ACCESS DENIED.</p>
+    <p class="muted">Steps and settings: the "Operate an MBITR Radio" score sheet (Ranger testing station "Communicate by MBITR": 4 minutes; this trainer's Exam clock is 2:00). Keys, menus and screens: AN/PRC-148 (JEM) Student Guide v10 and the Thales AN/PRC-148 Operation and Maintenance manual, corrected by hands-on feedback from the class radio (FX is entered left to right; ENT on SINCGARS jumps to FX). Display text is simplified, the self-test is shortened, and menu items not used here show ACCESS DENIED.</p>
   </div>
 </div>
 
@@ -529,14 +529,14 @@ function ch(n) {
   }
   return R.ch[n];
 }
-/* Radio as handed over in the test: battery, antenna and hand mic off, volume at OFF, every setting at the
-   factory default (BASIC, PLAIN, 5 W, internal audio). The channel switch is a knob a reset does not move: it can be anywhere. */
+/* Radio as handed over in the test: battery, antenna and hand mic off, volume at OFF, channel switch on 1,
+   every setting at the factory default (BASIC, PLAIN, 5 W, internal audio). */
 function freshRadio() {
   R = {
-    hw: { bat: false, ant: false, mic: false }, vol: 0, sw: 1 + rnd(16), group: 1, st: 'off', disp: 'off',
+    hw: { bat: false, ant: false, mic: false }, vol: 0, sw: 1, group: 1, st: 'off', disp: 'off',
     menuI: 0, progI: 0, modeI: 0, fieldI: 0, grpSel: 1, deny: null, edit: null, progCh: 1, ch: {},
     audio: 'INTERNAL AUDIO', mv: { beacon: 'BEACON OFF', traffic: 'VOICE', clone: 'CLONING OFF', txsa: 'TX SA OFF', rxsa: 'RX SA OFF', swu: 'SW UPDTE OFF' },
-    lock: false, lamp: false, alt: false, flash: '', seen: false,
+    lock: false, lamp: false, alt: false, flash: '', seen: false, partsLater: false,
   };
   ch(1);
 }
@@ -570,8 +570,11 @@ const ctl = t => !t ? null : t.startsWith('hw:') ? $(`.hw[data-hw="${t.slice(3)}
 function guided(want, el) {
   if (MODE !== 'guided' || ended) return true;
   const c = coachData();
-  /* parts may go on at any time */
-  if (!c.target || c.target === want || want.startsWith('hw:')) {
+  /* parts may go on at any time, and the antenna and hand mic may also wait until the end */
+  const skip = (c.target === 'hw:ant' || c.target === 'hw:mic') && !R.partsLater ? coachData(true) : null;
+  const ahead = !!skip && skip.target === want;
+  if (ahead) R.partsLater = true;
+  if (!c.target || c.target === want || want.startsWith('hw:') || ahead) {
     clearTimeout(toastT); clearTimeout(nudgeT);
     $('#toast').hidden = true;
     $$('.want, .nope, .shake').forEach(e => e.classList.remove('want', 'nope', 'shake'));
@@ -614,8 +617,11 @@ function setSw(n) {
   if (n === R.sw || !guided('ch', $('#chKnob'))) return;
   const was = R.sw;
   R.sw = n;
-  /* on the CHANNEL screen the switch picks the channel being programmed */
-  if (isOn() && R.disp === 'chan' && !R.edit) { R.progCh = curCh(); if (R.progCh === 1) R.seen = true; }
+  /* on the CHANNEL screen the switch picks the channel being programmed, even mid-edit (the unsaved change is dropped) */
+  if (isOn() && R.disp === 'chan' && curCh() !== R.progCh) {
+    R.edit = null; R.flash = ''; R.progCh = curCh();
+    if (R.progCh === 1) R.seen = true;
+  }
   event({ type: 'sw', v: n, was });
 }
 function install(id) {
@@ -731,7 +737,7 @@ function onChan(id, alt) {
   if (id === 'DN' || id === 'UP') { R.fieldI = clamp(R.fieldI + (id === 'DN' ? 1 : -1), 0, F.length - 1); return event({ type: 'nav' }); }
   if (id === 'ENT') {
     if (LISTS[f]) R.edit = { f, v: c[f] };
-    else if (DIGITS[f]) { const s = f === 'ch' ? pad(R.progCh, 3) : c.fx; R.edit = { f, s, i: s.length - 1 }; }
+    else if (DIGITS[f]) R.edit = { f, s: f === 'ch' ? pad(R.progCh, 3) : c.fx, i: 0 };
     else { nextField(F); return event({ type: 'nav' }); }
     return event({ type: 'edit' });
   }
@@ -748,13 +754,15 @@ function editKey(id, alt, c) {
       if (e.f === 'op' && !LISTS.pwr(c).includes(c.pwr)) c.pwr = '1.0W';
       if (e.f === 'sg' && e.v === 'CUE') c.eccm = 'SC';
       R.edit = null;
-      nextField(fieldsOf(c));
+      /* confirming SINCGARS takes the outline straight to FX on screen 2 */
+      if (e.f === 'op' && e.v === 'SINCGARS') R.fieldI = fieldsOf(c).indexOf('fx');
+      else nextField(fieldsOf(c));
       return event({ type: 'set', f: e.f, v: c[e.f], ch: R.progCh });
     }
   } else {
     if (id === 'UP' || id === 'DN') {
-      /* ALT + ▲ moves to the next slot (left), ALT + ▼ back (right); ▲/▼ alone roll the dark digit */
-      if (alt) { e.i = clamp(e.i + (id === 'UP' ? -1 : 1), 0, e.s.length - 1); return event({ type: 'slot' }); }
+      /* editing runs left to right: ALT + ▲ moves to the next slot (right), ALT + ▼ back (left); ▲/▼ alone roll the dark digit */
+      if (alt) { e.i = clamp(e.i + (id === 'UP' ? 1 : -1), 0, e.s.length - 1); return event({ type: 'slot' }); }
       const s = e.s.split('');
       s[e.i] = String((+s[e.i] + (id === 'UP' ? 1 : 9)) % 10);
       e.s = s.join('');
@@ -911,8 +919,8 @@ function fxGoal() {
     for (let j = 0; j < n; j++) seq.push(String((+seq[j] + (k === 'UP' ? 1 : 9)) % 10));
     return keyG('Channel setup', `Edit the frequency: ${s[i]} → ${t[i]}.`, `Press ${KEYNAME[k]} ${times(n)}${n > 1 ? ` (${seq.join(' → ')})` : ''}. The dark digit is the slot you are editing.`, k);
   }
-  if ([...t].some((d, j) => j < i && s[j] !== d)) return keyG('Channel setup', 'Move to the next slot.', 'ALT + ▲ moves the dark digit one slot to the left.', 'UP', true);
-  return keyG('Channel setup', 'Move back one slot.', 'ALT + ▼ moves the dark digit one slot to the right.', 'DN', true);
+  if ([...t].some((d, j) => j > i && s[j] !== d)) return keyG('Channel setup', 'Move to the next slot.', 'ALT + ▲ moves the dark digit one slot to the right.', 'UP', true);
+  return keyG('Channel setup', 'Move back one slot.', 'ALT + ▼ moves the dark digit one slot to the left.', 'DN', true);
 }
 function chanGoal(c) {
   if (R.progCh !== 1) return keyG('Channel setup', 'Press ESC, then open CHANNEL again.', `This screen is programming CH ${pad(R.progCh, 3)}. With the switch on 1, CHANNEL opens on CH = 001.`, 'ESC');
@@ -933,7 +941,7 @@ function chanGoal(c) {
   }
   const idx = fieldsOf(c).indexOf(f), n = idx - R.fieldI;
   if (n) return keyG('Channel setup', d, `${why} Press ${arrowsTxt(n)} to move the outline there${screenOf(idx) !== screenOf(R.fieldI) ? ' (past the bottom line is the next screen)' : ''}.`, n > 0 ? 'DN' : 'UP');
-  return keyG('Channel setup', d, f === 'fx' ? 'Press ENT: the last digit turns dark. That is the slot you are editing.' : `${why} Press ENT to change it.`, 'ENT');
+  return keyG('Channel setup', d, f === 'fx' ? 'Press ENT: the first digit turns dark. That is the slot you are editing.' : `${why} Press ENT to change it.`, 'ENT');
 }
 function progGoal(c) {
   const PI = MAIN_MENU.indexOf('PROGRAM'), CI = PROG_MENU.indexOf('CHANNEL');
@@ -955,13 +963,15 @@ function audioGoal() {
   const dist = listDist(MODE_MENU[0][1], R.edit.v, 'TOP AUDIO');
   return keyG('Audio', 'Select TOP AUDIO.', `Press ${dist.txt}.`, dist.key);
 }
-function coachData() {
+function coachData(later) {
   if (ended) return G('Done', 'Radio set to enter the net.', `Done in ${mmss(endAt)}: assembled and on, channel 1 is SINCGARS SC on ${fmt(SC.freq)}, plain text, 5 W, audio to the hand mic. Try Exam mode next.`, null);
   if (!R.hw.bat) return G('Start up', 'Install battery.', HW[0].how, 'hw:bat');
   if (!R.vol) return G('Start up', 'Turn volume knob clockwise.', 'The volume knob is on the left of the top panel. Tap its right half (or drag it) to turn it out of OFF. The radio turns on.', 'vol');
   if (!isOn()) return G('Start up', 'Wait for self-test.', 'The display shows TESTING, then the main screen. Keys do nothing until then.', null);
-  if (!R.hw.ant) return G('Start up', 'Attach antenna.', HW[1].how, 'hw:ant');
-  if (!R.hw.mic) return G('Start up', 'Attach the hand mic.', HW[2].how, 'hw:mic');
+  /* the antenna and hand mic come here in the class order, but may also go on at the end */
+  const early = !later && !R.partsLater, any = ' Now or at the end: the order does not matter.';
+  if (early && !R.hw.ant) return G('Start up', 'Attach antenna.', HW[1].how + any, 'hw:ant');
+  if (early && !R.hw.mic) return G('Start up', 'Attach the hand mic.', HW[2].how + any, 'hw:mic');
   if (R.lock) return keyG('Start up', 'Unlock the keypad.', 'The box with an X means the keypad is locked. LOCK is printed above ESC.', 'ESC', true);
   if (R.sw !== 1) return G('Start up', 'Set the channel switch to 1.', `The card uses channel 1. The channel switch is in the middle of the top panel, now on ${R.sw}. Tap the 1, or tap the knob's left half to turn it counterclockwise.`, 'ch');
   if (R.group !== 1) {
@@ -980,6 +990,8 @@ function coachData() {
   }
   if (R.audio !== 'TOP AUDIO') return audioGoal();
   if (R.disp === 'mode') return keyG('Audio', 'Press ESC.', 'Back to the main display. The headset icon shows the audio goes to the top connector.', 'ESC');
+  if (!R.hw.ant) return G('Assemble', 'Attach antenna.', HW[1].how, 'hw:ant');
+  if (!R.hw.mic) return G('Assemble', 'Attach the hand mic.', HW[2].how, 'hw:mic');
   return backG('Audio', 'Back to the main display.');
 }
 
