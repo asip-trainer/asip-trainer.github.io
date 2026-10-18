@@ -142,10 +142,10 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .lcd.off { background: linear-gradient(180deg, #70766e, #5f655d); }
 .lcd.lamp { background: linear-gradient(180deg, #cbe9a8, #a8d084); box-shadow: inset 0 0.5cqw 1.2cqw rgba(0,0,0,.25), 0 0 0 0.6cqw #0e0f10, 0 0 3cqw rgba(160,230,110,.5); }
 .lcd.lamp .inv { color: #cbe9a8; }
-.kp { position: absolute; left: 4cqw; top: 36.4cqw; width: 58cqw; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 3.4cqw 12cqw 2.4cqw 12cqw 3.6cqw 12cqw; column-gap: 3.6cqw; }
+.kp { position: absolute; left: 4cqw; top: 36.4cqw; width: 58cqw; touch-action: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 3.4cqw 12cqw 2.4cqw 12cqw 3.6cqw 12cqw; column-gap: 3.6cqw; }
 .leg { display: grid; place-items: end center; padding-bottom: 0.5cqw; font: 700 max(7.5px, 2.3cqw)/1 var(--stencil); letter-spacing: .07em; color: #f0f1f2; }
 .leg.lo { place-items: start center; padding: 0.7cqw 0 0; }
-.key { display: grid; place-items: center; padding: 0; border: 0; border-radius: 2.4cqw; cursor: pointer; color: #f2f3f4; background: linear-gradient(180deg, #4a4e53, #2d3034); box-shadow: 0 0.6cqw 0 #0d0e0f, inset 0 0.3cqw 0 rgba(255,255,255,.14); font: 700 max(10px, 3.1cqw)/1 var(--stencil); letter-spacing: .05em; }
+.key { display: grid; place-items: center; padding: 0; border: 0; border-radius: 2.4cqw; cursor: pointer; touch-action: none; color: #f2f3f4; background: linear-gradient(180deg, #4a4e53, #2d3034); box-shadow: 0 0.6cqw 0 #0d0e0f, inset 0 0.3cqw 0 rgba(255,255,255,.14); font: 700 max(10px, 3.1cqw)/1 var(--stencil); letter-spacing: .05em; }
 .key.ar { font-size: max(12px, 4cqw); }
 .key:active, .key.down { transform: translateY(0.4cqw); box-shadow: 0 0.2cqw 0 #0d0e0f, inset 0 0.3cqw 0 rgba(255,255,255,.1); }
 .key.on { background: linear-gradient(180deg, #f3c65c, #d39a2a); color: #1b1d16; }
@@ -180,6 +180,7 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .cord .c2 { stroke: #3e4247; stroke-width: 1.3; stroke-dasharray: 0.5 0.75; }
 .stage:not(.micOn) .cord { display: none; }
 .hint { outline: 3px solid var(--hint) !important; outline-offset: 2px; animation: pulse 1.1s ease-in-out infinite; }
+.hint2 { outline: 2px dashed var(--hint); outline-offset: 2px; }
 @keyframes pulse { 50% { outline-color: transparent; } }
 .readybar { display: flex; margin-top: 12px; }
 .readybar .btn { flex: 1; margin: 0; padding: 14px; font-size: 16px; }
@@ -340,7 +341,7 @@ legend { padding: 0 4px; font-weight: 650; }
       <li>No coach, no key highlights, no ✓ marks until the end.</li>
       <li>Assemble the radio yourself: tap the battery, the antenna and the hand mic to put them on. No battery, no power. A part still missing at the end is a NO-GO.</li>
       <li>The radio is handed over the way a grader would: the channel switch is not on 1, and channel 1 may be set to SECURE or to less than 5 W. Check what the card asks for.</li>
-      <li>Volume knob clockwise → wait for the self-test → channel switch to 1 → ALT + MENU → PROGRAM → CHANNEL → PLAIN, PWR 5.0W, SINCGARS → FX (ENT, ▲/▼ per digit, ALT + ▲ next slot, ENT) → ESC 3 times → MENU → TOP AUDIO → ENT → ESC. Any order works and slips can be fixed; only the final settings count.</li>
+      <li>Volume knob clockwise → wait for the self-test → channel switch to 1 → ALT + MENU → PROGRAM → CHANNEL → PLAIN, PWR 5.0W, SINCGARS → FX (ENT, ▲/▼ per digit, ALT + ▲ next slot, ENT) → ESC 3 times → MENU → TOP AUDIO → ENT → ESC. Any order works and slips can be fixed; only the final settings count. ALT counts only while held, as on the radio.</li>
       <li>The exam ends when channel 1 is set, the audio is TOP AUDIO and you are back at the main display, or at 2:00. A NO-GO sends you to Charlie Company.</li>
     </ul>
     <div class="txrow"><button class="btn" id="exBack">Back to Guided</button><button class="btn primary" id="exStart">Start exam</button></div>
@@ -397,7 +398,7 @@ legend { padding: 0 4px; font-weight: 650; }
     <h2 id="refT">Cheat sheet · AN/PRC-148 MBITR (JEM)</h2>
     <button class="btn x" data-close="mRef" aria-label="Close">✕</button>
     <h3>The keypad</h3>
-    <p>Seven keys. Top row <code>MODE</code> <code>GR</code> <code>ESC</code>, with <code>MENU</code> <code>SCAN</code> <code>LOCK</code> printed above them: those are their ALT functions. Then <code>▼</code> <code>▲</code> <code>ENT</code> (<code>LAMP</code> printed below ENT), and <code>ALT</code>. On the radio you hold ALT and press the other key; here, tap ALT (it stays lit), then the key.</p>
+    <p>Seven keys. Top row <code>MODE</code> <code>GR</code> <code>ESC</code>, with <code>MENU</code> <code>SCAN</code> <code>LOCK</code> printed above them: those are their ALT functions. Then <code>▼</code> <code>▲</code> <code>ENT</code> (<code>LAMP</code> printed below ENT), and <code>ALT</code>. As on the radio, ALT works only while it is held: on a phone keep one finger on ALT and tap the other key with a second finger; on a computer hold the <code>A</code> key (or Alt/Option) and click or press the other key. ALT on its own does nothing.</p>
     <h3>Score-sheet steps and the keys for each (one channel)</h3>
     <ol>
       <li><b>Place MBITR Radio into operation.</b>
@@ -425,7 +426,7 @@ legend { padding: 0 4px; font-weight: 650; }
       <li><code>ALT</code> + <code>ESC</code> locks the keypad (box with an X); the same again unlocks it. <code>ALT</code> + <code>ENT</code> turns the backlight on and off.</li>
       <li><code>GR</code> picks the channel group. Stay on G01, or the switch selects a different channel.</li>
       <li>Knobs: drag them, tap their right half to turn clockwise and their left half counterclockwise, or tap a number. Z (panic zeroize) needs the side interlock and is never used here.</li>
-      <li>On a computer: arrow keys = ▲/▼, Enter = ENT, Esc = ESC, <code>A</code> = ALT, <code>M</code> = MODE, <code>G</code> = GR. Holding Alt/Option with a key = ALT + that key.</li>
+      <li>On a computer: arrow keys = ▲/▼, Enter = ENT, Esc = ESC, <code>M</code> = MODE, <code>G</code> = GR. Hold <code>A</code> (or Alt/Option) for ALT, for example A + ↑ = ALT + ▲.</li>
     </ul>
     <h3>Sources and limits</h3>
     <p class="muted">Steps and settings: the "Operate an MBITR Radio" score sheet (Ranger testing station "Communicate by MBITR": 4 minutes; this trainer's Exam clock is 2:00). Keys, menus and screens: AN/PRC-148 (JEM) Student Guide v10 and the Thales AN/PRC-148 Operation and Maintenance manual. Display text is simplified, the self-test is shortened, and menu items not used here show ACCESS DENIED.</p>
@@ -508,7 +509,7 @@ const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } cat
 
 /* ---------- run state ---------- */
 let MODE = 'guided', SC, R, W, NOTES, T0 = null, endAt = 0, ended = false;
-let postT = [], fHandle;
+let postT = [], fHandle, altHold = null;
 const rot = {};
 const LIMIT = 120; // Exam clock in seconds (the score sheet allows 4 minutes)
 const POST_TEST = 2600, POST_SPLASH = 1400;
@@ -558,7 +559,7 @@ function powerUp() {
 }
 function powerDown() {
   clearPost(); clearTimeout(fHandle);
-  Object.assign(R, { st: 'off', disp: 'off', edit: null, alt: false, flash: '' });
+  Object.assign(R, { st: 'off', disp: 'off', edit: null, flash: '' });
 }
 function flashLine(text) {
   clearTimeout(fHandle);
@@ -626,14 +627,25 @@ function install(id) {
   if (id === 'bat' && R.vol) powerUp();
   event({ type: 'hw', v: id });
 }
+/* ALT works like the radio's: it counts only while it is held (a finger on ALT, or the A / Alt key on a keyboard) */
+function altDown(src) {
+  touch();
+  if (altHold !== null || !guided('ALT', $('.key[data-k="ALT"]'))) return;
+  altHold = src; R.alt = true;
+  event({ type: 'alt' });
+}
+function altUp(src) {
+  if (altHold !== src) return;
+  altHold = null; R.alt = false;
+  event({ type: 'alt' });
+}
 function press(id) {
+  if (id === 'ALT') return;
   touch();
   if (!guided(id, $(`.key[data-k="${id}"]`))) return;
   if (!R.hw.bat || !R.vol) return event({ type: 'dead' });
   if (!isOn()) return event({ type: 'post' });
-  if (id === 'ALT') { R.alt = !R.alt; return event({ type: 'alt' }); }
   const alt = R.alt;
-  R.alt = false;
   if (R.flash) { clearTimeout(fHandle); R.flash = ''; }
   if (alt && id === 'ENT') { R.lamp = !R.lamp; return event({ type: 'lamp' }); }
   if (R.lock) {
@@ -877,16 +889,19 @@ function react(ev) {
 }
 
 /* ---------- coach (Guided mode): your class steps, one press at a time ---------- */
-const G = (step, d, how, target) => ({ step, do: d, how, target });
+const G = (step, d, how, target, next) => ({ step, do: d, how, target, next });
 const arrowsTxt = n => `${n > 0 ? '▼' : '▲'} ${times(Math.abs(n))}`;
 function listDist(list, from, to) {
   const n = list.length, i = list.indexOf(from), j = list.indexOf(to), dn = (j - i + n) % n, up = (i - j + n) % n;
   return dn <= up ? { key: 'DN', txt: '▼ ' + times(dn) } : { key: 'UP', txt: '▲ ' + times(up) };
 }
-/* ALT is latched on this screen (tap ALT, then the key); a stray latch is cleared first */
+/* ALT combinations: the coach points at ALT first, then (while it is held) at the other key */
+const holdHow = id => matchMedia('(pointer: fine)').matches
+  ? `Hold the A key (or Alt/Option) and press ${KEYNAME[id]}.`
+  : `Keep one finger on ALT and tap ${KEYNAME[id]} with another.`;
 function keyG(step, d, how, id, needAlt) {
-  if (needAlt) return G(step, d, how + (R.alt ? ` ALT is on: now press ${KEYNAME[id]}.` : ` Here: tap ALT, then ${KEYNAME[id]}.`), R.alt ? id : 'ALT');
-  if (R.alt) return G(step, d, 'ALT is on (it stays lit after a tap). Tap ALT again to turn it off.', 'ALT');
+  if (needAlt) return R.alt ? G(step, d, `${how} ALT is held: now press ${KEYNAME[id]}.`, id) : G(step, d, `${how} ${holdHow(id)}`, 'ALT', id);
+  if (R.alt) return G(step, d, 'Let go of ALT first.', 'ALT');
   return G(step, d, how, id);
 }
 const backG = (step, d) => keyG(step, d, 'Press ESC to go back to the main display.', 'ESC');
@@ -898,8 +913,8 @@ function fxGoal() {
     for (let j = 0; j < n; j++) seq.push(String((+seq[j] + (k === 'UP' ? 1 : 9)) % 10));
     return keyG('Channel setup', `Edit the frequency: ${s[i]} → ${t[i]}.`, `Press ${KEYNAME[k]} ${times(n)}${n > 1 ? ` (${seq.join(' → ')})` : ''}. The dark digit is the slot you are editing.`, k);
   }
-  if ([...t].some((d, j) => j < i && s[j] !== d)) return keyG('Channel setup', 'Move to the next slot.', 'Hold ALT and press ▲: the dark digit moves one slot to the left.', 'UP', true);
-  return keyG('Channel setup', 'Move back one slot.', 'Hold ALT and press ▼: the dark digit moves one slot to the right.', 'DN', true);
+  if ([...t].some((d, j) => j < i && s[j] !== d)) return keyG('Channel setup', 'Move to the next slot.', 'ALT + ▲ moves the dark digit one slot to the left.', 'UP', true);
+  return keyG('Channel setup', 'Move back one slot.', 'ALT + ▼ moves the dark digit one slot to the right.', 'DN', true);
 }
 function chanGoal(c) {
   if (R.progCh !== 1) return keyG('Channel setup', 'Press ESC, then open CHANNEL again.', `This screen is programming CH ${pad(R.progCh, 3)}. With the switch on 1, CHANNEL opens on CH = 001.`, 'ESC');
@@ -925,7 +940,7 @@ function chanGoal(c) {
 function progGoal(c) {
   const PI = MAIN_MENU.indexOf('PROGRAM'), CI = PROG_MENU.indexOf('CHANNEL');
   switch (R.disp) {
-    case 'main': case 'alt': return keyG('Programming', 'ALT + MENU → PROGRAM → ENT → CHANNEL.', 'Hold ALT and press MODE (MENU is printed above it).', 'MODE', true);
+    case 'main': case 'alt': return keyG('Programming', 'ALT + MENU → PROGRAM → ENT → CHANNEL.', 'MENU is printed above MODE.', 'MODE', true);
     case 'menu': return R.menuI !== PI ? keyG('Programming', 'Select PROGRAM.', `Press ${arrowsTxt(PI - R.menuI)}.`, PI > R.menuI ? 'DN' : 'UP') : keyG('Programming', 'Press ENT.', 'Opens PROGRAM.', 'ENT');
     case 'prog': return R.progI !== CI ? keyG('Programming', 'Select CHANNEL.', `Press ${arrowsTxt(CI - R.progI)}.`, CI > R.progI ? 'DN' : 'UP') : keyG('Programming', 'Press ENT.', 'Opens CHANNEL on the channel the switch selects: CH = 001.', 'ENT');
     case 'chan': return chanGoal(c);
@@ -949,7 +964,7 @@ function coachData() {
   if (!isOn()) return G('Start up', 'Wait for self-test.', 'The display shows TESTING, then the main screen. Keys do nothing until then.', null);
   if (!R.hw.ant) return G('Start up', 'Attach antenna.', HW[1].how, 'hw:ant');
   if (!R.hw.mic) return G('Start up', 'Attach the hand mic.', HW[2].how, 'hw:mic');
-  if (R.lock) return keyG('Start up', 'Unlock the keypad.', 'The box with an X means the keypad is locked. Hold ALT and press ESC (LOCK is printed above ESC).', 'ESC', true);
+  if (R.lock) return keyG('Start up', 'Unlock the keypad.', 'The box with an X means the keypad is locked. LOCK is printed above ESC.', 'ESC', true);
   if (R.sw !== 1) return G('Start up', 'Set the channel switch to 1.', `The card uses channel 1. The channel switch is in the middle of the top panel, now on ${R.sw}. Tap the 1, or tap the knob's left half to turn it counterclockwise.`, 'ch');
   if (R.group !== 1) {
     if (R.disp === 'group') {
@@ -1007,7 +1022,7 @@ function renderRadio() {
 function renderCoach() {
   const box = $('#coach');
   box.hidden = MODE !== 'guided';
-  $$('.hint').forEach(el => el.classList.remove('hint'));
+  $$('.hint, .hint2').forEach(el => el.classList.remove('hint', 'hint2'));
   if (box.hidden) return;
   const c = coachData();
   $('#cStep').textContent = c.step;
@@ -1016,8 +1031,10 @@ function renderCoach() {
   const w = $('#cWarn');
   w.hidden = !W || ended;
   w.textContent = W || '';
-  const el = ctl(c.target);
+  const el = ctl(c.target), el2 = ctl(c.next);
   if (el) el.classList.add('hint');
+  /* an ALT combination: the second key is marked too */
+  if (el2) el2.classList.add('hint2');
 }
 function renderTask() {
   const c = ch(1), ok = (MODE === 'guided' || ended) && c.fx === SC.freq && c.op === 'SINCGARS';
@@ -1124,7 +1141,7 @@ function closeModal(id) {
   if (!$$('.modal').some(m => !m.hidden)) document.body.classList.remove('locked');
 }
 function newRun(card) {
-  clearPost(); clearTimeout(fHandle);
+  clearPost(); clearTimeout(fHandle); altHold = null;
   SC = card || makeCard();
   freshRadio(); W = null; NOTES = []; T0 = null; endAt = 0; ended = false;
   $('#toast').hidden = true;
@@ -1202,7 +1219,31 @@ function buildRadio() {
   buildDial($('#chDial'), $('#chKnob'), CHS, () => R.sw, setSw, 'Channel');
   $('#kp').innerHTML = '<span class="leg" style="grid-area:1/1">MENU</span><span class="leg" style="grid-area:1/2">SCAN</span><span class="leg" style="grid-area:1/3">LOCK</span><span class="leg lo" style="grid-area:5/3">LAMP</span>' +
     KEYS.map(([id, t, area]) => `<button class="key${id === 'UP' || id === 'DN' ? ' ar' : ''}" data-k="${id}" style="grid-area:${area}" aria-label="${esc(KEYLABEL[id])}">${t}</button>`).join('');
-  $('#kp').addEventListener('click', e => { const b = e.target.closest('.key'); if (b) press(b.dataset.k); });
+  /* keys act when the finger lifts and ALT while it is held, so one finger can rest on ALT while another taps a key */
+  const kp = $('#kp'), downs = new Map();
+  kp.addEventListener('pointerdown', e => {
+    const b = e.target.closest('.key');
+    if (!b) return;
+    try { b.setPointerCapture(e.pointerId); } catch (err) { /* older browser */ }
+    b.classList.add('down');
+    downs.set(e.pointerId, b);
+    if (b.dataset.k === 'ALT') altDown(e.pointerId);
+  });
+  const lift = (e, ok) => {
+    const b = downs.get(e.pointerId);
+    if (!b) return;
+    downs.delete(e.pointerId);
+    b.classList.remove('down');
+    if (b.dataset.k === 'ALT') return altUp(e.pointerId);
+    const r = b.getBoundingClientRect();
+    if (!ok || e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+    /* Alt/Option held during a click works like holding ALT */
+    if (e.altKey && altHold === null) { altDown('opt'); press(b.dataset.k); altUp('opt'); } else press(b.dataset.k);
+  };
+  kp.addEventListener('pointerup', e => lift(e, true));
+  kp.addEventListener('pointercancel', e => lift(e, false));
+  kp.addEventListener('click', e => { const b = e.target.closest('.key'); if (b && e.detail === 0) press(b.dataset.k); });
+  kp.addEventListener('contextmenu', e => e.preventDefault());
   $$('.hw').forEach(b => b.addEventListener('click', () => install(b.dataset.hw)));
 }
 function pressKey(id) {
@@ -1217,12 +1258,18 @@ function onKey(e) {
   if (e.key === 'Escape' && open) { $$('.modal').forEach(m => { if (!m.hidden && !['mIntro', 'mCharlie'].includes(m.id)) closeModal(m.id); }); return; }
   if (open || e.target.closest('input')) return;
   if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('button')) return;
-  const id = { ArrowUp: 'UP', ArrowDown: 'DN', Enter: 'ENT', Escape: 'ESC' }[e.key] || { KeyA: 'ALT', KeyM: 'MODE', KeyG: 'GR', KeyE: 'ESC' }[e.code];
+  /* the A key is ALT: held down, it works like holding ALT on the radio */
+  if (e.code === 'KeyA') { e.preventDefault(); if (!e.repeat) { $('.key[data-k="ALT"]').classList.add('down'); altDown('kbd'); } return; }
+  const id = { ArrowUp: 'UP', ArrowDown: 'DN', Enter: 'ENT', Escape: 'ESC' }[e.key] || { KeyM: 'MODE', KeyG: 'GR', KeyE: 'ESC' }[e.code];
   if (!id) return;
   e.preventDefault();
-  /* Alt/Option held with a key works like holding ALT on the radio */
-  if (e.altKey && id !== 'ALT' && !R.alt) pressKey('ALT');
-  pressKey(id);
+  /* so does Alt/Option held with a key */
+  if (e.altKey && altHold === null) { altDown('opt'); pressKey(id); altUp('opt'); } else pressKey(id);
+}
+function onKeyUp(e) {
+  if (e.code !== 'KeyA') return;
+  $('.key[data-k="ALT"]').classList.remove('down');
+  altUp('kbd');
 }
 function bind() {
   $('#mGuided').addEventListener('click', () => { if (MODE !== 'guided') setMode('guided'); });
@@ -1243,6 +1290,9 @@ function bind() {
   $('#chWhy').addEventListener('click', () => { closeModal('mCharlie'); openModal('mRes'); });
   $('#chRetry').addEventListener('click', () => { closeModal('mCharlie'); startExam(SC); });
   document.addEventListener('keydown', onKey);
+  document.addEventListener('keyup', onKeyUp);
+  /* a key still held when the window loses focus never sends keyup */
+  addEventListener('blur', () => { $$('.key.down').forEach(b => b.classList.remove('down')); if (altHold !== null) altUp(altHold); });
   document.addEventListener('touchstart', () => {}, { passive: true });
 }
 
