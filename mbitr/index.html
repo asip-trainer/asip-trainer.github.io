@@ -340,7 +340,7 @@ legend { padding: 0 4px; font-weight: 650; }
       <li>One clock for the whole drill: <b>2:00</b>. It starts when you press Start.</li>
       <li>No coach, no key highlights, no ✓ marks until the end.</li>
       <li>Assemble the radio yourself: tap the battery, the antenna and the hand mic to put them on. No battery, no power. A part still missing at the end is a NO-GO.</li>
-      <li>The radio is handed over the way a grader would: the channel switch is not on 1, and channel 1 may be set to SECURE or to less than 5 W. Check what the card asks for.</li>
+      <li>The radio comes as in the test: off, with the battery, antenna and hand mic beside it, and every setting at the factory default (BASIC, PLAIN, 5 W, internal audio). The channel switch can be on any position: check it.</li>
       <li>Volume knob clockwise → wait for the self-test → channel switch to 1 → ALT + MENU → PROGRAM → CHANNEL → PLAIN, PWR 5.0W, SINCGARS → FX (ENT, ▲/▼ per digit, ALT + ▲ next slot, ENT) → ESC 3 times → MENU → TOP AUDIO → ENT → ESC. Any order works and slips can be fixed; only the final settings count. ALT counts only while held, as on the radio.</li>
       <li>The exam ends when channel 1 is set, the audio is TOP AUDIO and you are back at the main display, or at 2:00. A NO-GO sends you to Charlie Company.</li>
     </ul>
@@ -413,7 +413,7 @@ legend { padding: 0 4px; font-weight: 650; }
           <li><b>Start up:</b> channel switch (top panel, middle) to <code>1</code>. With group G01 that is CHAN001.</li>
           <li><b>Programming:</b> <code>ALT</code> + <code>MODE</code> (MENU) opens the main menu → <code>▼</code> twice to PROGRAM → <code>ENT</code> → <code>▼</code> once to CHANNEL → <code>ENT</code>. The screen opens on <code>CH = 001</code>.</li>
           <li><b>Operating system:</b> <code>▼</code> to the bottom line (BASIC) → <code>ENT</code> → <code>▼</code> to <code>SINCGARS</code> → <code>ENT</code>.</li>
-          <li><b>Net information:</b> check <code>PLAIN</code> (line 1, right) and <code>PWR=5.0W</code> (line 3); the radio may come to you SECURE or at 1 W. For any field: move the outline with ▲/▼, <code>ENT</code> to change it (it turns dark), ▲/▼ to pick, <code>ENT</code> to confirm.</li>
+          <li><b>Net information:</b> check <code>PLAIN</code> (line 1, right) and <code>PWR=5.0W</code> (line 3); both are the factory defaults, so they are usually right already. For any field: move the outline with ▲/▼, <code>ENT</code> to change it (it turns dark), ▲/▼ to pick, <code>ENT</code> to confirm.</li>
           <li><b>Frequency:</b> <code>▼</code> past the bottom line to screen 2 (<code>SINCGAR = MAN</code>, <code>ECCM = SC</code>, <code>FX = ##.###</code>) → <code>▼</code> to FX → <code>ENT</code>: the last digit turns dark. <code>▲</code>/<code>▼</code> change that digit; <code>ALT</code> + <code>▲</code> moves to the next slot (left), <code>ALT</code> + <code>▼</code> back (right). <code>ENT</code> to confirm. 81.000 from 67.500: last two digits are already 0; third digit 5 → 0, second 7 → 1, first 6 → 8.</li>
           <li><b>Return:</b> <code>ESC</code> 3 times: CHANNEL → PROGRAM → main menu → main display, which now shows <code>PT SG SC</code>.</li>
           <li><b>Audio for the hand mic:</b> <code>MODE</code> (MENU, no ALT) → <code>INTERNAL AUDIO</code> is outlined → <code>ENT</code> → <code>▼</code> → <code>TOP AUDIO</code> → <code>ENT</code> → <code>ESC</code>. A headset icon appears. With INTERNAL AUDIO the hand mic stays silent.</li>
@@ -529,18 +529,16 @@ function ch(n) {
   }
   return R.ch[n];
 }
-/* Radio as handed over: battery, antenna and hand mic off, volume at OFF, channel switch not on 1;
-   channel 1 may be SECURE or below 5 W (the operator checks the card). */
+/* Radio as handed over in the test: battery, antenna and hand mic off, volume at OFF, every setting at the
+   factory default (BASIC, PLAIN, 5 W, internal audio). The channel switch is a knob a reset does not move: it can be anywhere. */
 function freshRadio() {
   R = {
-    hw: { bat: false, ant: false, mic: false }, vol: 0, sw: 2 + rnd(15), group: 1, st: 'off', disp: 'off',
+    hw: { bat: false, ant: false, mic: false }, vol: 0, sw: 1 + rnd(16), group: 1, st: 'off', disp: 'off',
     menuI: 0, progI: 0, modeI: 0, fieldI: 0, grpSel: 1, deny: null, edit: null, progCh: 1, ch: {},
     audio: 'INTERNAL AUDIO', mv: { beacon: 'BEACON OFF', traffic: 'VOICE', clone: 'CLONING OFF', txsa: 'TX SA OFF', rxsa: 'RX SA OFF', swu: 'SW UPDTE OFF' },
     lock: false, lamp: false, alt: false, flash: '', seen: false,
   };
-  const c = ch(1);
-  if (Math.random() < .5) c.enc = 'SECURE';
-  if (Math.random() < .5) c.pwr = pick(['1.0W', '3.0W']);
+  ch(1);
 }
 
 /* ---------- radio behaviour ---------- */
@@ -1046,7 +1044,7 @@ function renderScore() {
   if (card.hidden) return;
   const c = ch(1), on = R.hw.bat && R.vol > 0, posted = isOn(), parts = R.hw.ant && R.hw.mic, m1 = hwOK() && posted;
   const sw1 = R.sw === 1 && R.group === 1, opened = R.seen || chOK(), inChan = R.disp === 'chan' && R.progCh === 1;
-  /* channel 1 settings get a ✓ only once CH 001 has been opened: the radio may come SECURE or below 5 W */
+  /* channel 1 settings get a ✓ only once CH 001 has been opened and checked */
   const ptp = opened && c.enc === 'PLAIN' && c.pwr === '5.0W', sys = opened && c.op === 'SINCGARS' && c.eccm === 'SC', fx = opened && c.fx === SC.freq && c.offset === '0';
   const editFx = inChan && R.edit && R.edit.f === 'fx', prog = chOK(), back = prog && isOn() && !inMenus(), audio = R.audio === 'TOP AUDIO' && atMain();
   const li = (t, done, now, cls = '') => `<li class="${done ? 'ok' : now ? 'now' : cls}">${t}</li>`;
