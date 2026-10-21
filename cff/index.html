@@ -45,7 +45,9 @@ html { -webkit-text-size-adjust: 100%; }
 body { background: var(--bg); color: var(--ink); font: 15px/1.45 var(--ui); }
 body.locked { overflow: hidden; }
 button, input, select { font: inherit; color: inherit; }
-button { touch-action: manipulation; }
+input, select { font-size: 16px; }
+button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#view, #map { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .muted { color: var(--muted); }
@@ -63,14 +65,15 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .ibtn { display: inline-grid; place-items: center; height: 34px; min-width: 34px; padding: 0 9px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 13px; font-weight: 650; cursor: pointer; }
 .ibtn svg { width: 18px; height: 18px; }
 .ibtn:disabled { opacity: .4; cursor: default; }
-@media (max-width: 440px) { .brand .bt, .brand small { display: none; } .seg button { padding: 6px 9px; } }
-@media (max-width: 350px) { .brand { display: none; } .seg { margin-right: auto; } }
+@media (max-width: 440px) { .brand .bt, .brand small { display: none; } .seg button { padding: 6px 9px; } .top-bar { gap: 6px; } }
+@media (max-width: 400px) { .brand { display: none; } .seg { margin-right: auto; } }
+@media (max-width: 330px) { .seg button { padding: 6px 7px; font-size: 12px; } .ibtn { min-width: 30px; padding: 0 7px; } }
 
 /* page layout: phones = view on top (sticky), coach, one tool card with tabs; desktop = view left (sticky), coach + tools right */
 .wrap { display: flex; flex-direction: column; gap: 10px; max-width: 1280px; margin: 0 auto; padding-block: 10px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .colL, .colR { display: contents; }
 #viewCard { order: 1; } #coach { order: 2; } #tools { order: 3; }
-@media (max-width: 1099px) and (min-height: 640px) { #viewCard { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 51px); z-index: 10; box-shadow: 0 8px 18px -12px rgba(0,0,0,.45); } }
+@media (max-width: 1099px) and (min-height: 640px) { #viewCard { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 51px); z-index: 10; box-shadow: 0 8px 18px -12px rgba(0,0,0,.45); } body.kbd #viewCard { position: static; box-shadow: none; } }
 @media (min-width: 1100px) {
   .wrap { flex-direction: row; align-items: flex-start; gap: 18px; }
   .colL, .colR { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
@@ -85,10 +88,10 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .vwrap { position: relative; overflow: hidden; border-radius: 10px; background: #0b0d09; }
 #view { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
 .busy { position: absolute; inset: 0; display: grid; place-items: center; color: #e9ebdf; font: 650 14px var(--ui); background: rgba(10,12,8,.7); }
-.vctl { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.vctl { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
 .vctl .btn { padding: 7px 12px; }
 .bino[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
-.azr { margin-left: auto; font: 700 13px/1.2 var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.azr { min-width: 0; margin-left: auto; font: 700 13px/1.2 var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
 @media (max-width: 400px) { .vctl .ibtn { min-width: 30px; padding: 0 6px; } .azr { font-size: 12px; } }
 
 /* coach: phase strip, one step, mission line */
@@ -117,7 +120,7 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .gtip .tk.nx { border-color: #a87800; background: var(--hint); }
 .gtip .tx { display: inline-block; padding: 3px 9px; line-height: 1.3; border-radius: 8px; background: #2a2208; color: #fff; font: 700 12px var(--ui); opacity: .35; }
 .gtip .tx.nx { opacity: 1; box-shadow: 0 0 0 3px var(--hint); }
-@media (max-width: 1099px) and (min-height: 640px) { .gtip { scroll-margin-top: calc(110px + 54vw); } }
+@media (max-width: 1099px) and (min-height: 640px) { .gtip { scroll-margin-top: calc(var(--stick, 300px) + 10px); } body.kbd .gtip { scroll-margin-top: 70px; } }
 .coach .mission { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,.08); font: 650 12px/1.4 var(--mono); color: var(--muted); }
 .coach .mission b { color: var(--ink); }
 .coach .mission .linkbtn { margin-left: auto; font-family: var(--ui); }
@@ -133,9 +136,13 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 /* map */
 .mapbox { position: relative; }
 #map { display: block; width: 100%; aspect-ratio: 1 / 1; touch-action: none; border: 1px solid var(--line); border-radius: 10px; background: #fbfaf5; cursor: grab; }
-.mz { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
-.mz .ibtn { background: rgba(255,255,255,.92); color: #1b2016; border-color: rgba(0,0,0,.2); }
+.mz { display: flex; gap: 6px; }
 .mnote { margin: 6px 0 0; font-size: 12px; }
+.prow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.prow .pro { display: flex; align-items: center; gap: 6px; }
+.prow .lbl { margin-right: 2px; }
+.prow .btn { padding: 7px 11px; font-size: 13.5px; }
+.prow .btn[aria-pressed="true"] { border-color: #1e3c6e; background: #1e3c6e; color: #fff; }
 
 /* worksheet: two columns of small fields */
 .ws { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-auto-flow: row dense; gap: 10px 12px; margin-top: 12px; }
@@ -147,8 +154,8 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .wc.ok label b { border-color: var(--go); background: var(--go); color: var(--surface); }
 .fld { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
 .fld > span { font: 700 12px var(--mono); color: var(--muted); }
-.fld input, .fld select, .ed input, .ed select, .fq input { min-width: 0; width: 100%; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: 700 15px var(--mono); }
-.fld select { font-size: 13.5px; padding-inline: 4px; }
+.fld input, .fld select, .ed input, .ed select, .fq input { min-width: 0; width: 100%; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: 700 16px var(--mono); }
+.fld select { padding-inline: 4px; }
 .fld .btn { flex: none; padding: 7px 14px; }
 .wsnote { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
 
@@ -173,13 +180,15 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .ed { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; padding: 10px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent-soft); }
 .ed .et { width: 100%; font: 700 11.5px var(--ui); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
 .ed input { width: 140px; }
-.ed select { width: auto; font-size: 14px; }
+.ed select { width: auto; }
 .pal { display: grid; gap: 8px; margin-top: 10px; }
 .pg { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .pg .gl { width: 100%; font: 600 10.5px/1.2 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .tk { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); font: 700 12.5px/1.2 var(--mono); cursor: pointer; }
 .tk:active { transform: translateY(1px); }
 .txb { margin-top: 10px; }
+
+@media (pointer: coarse) { .tk { padding: 11px 12px; } .ibtn { height: 40px; min-width: 40px; } .seg button { padding-block: 10px; } }
 
 /* score sheet */
 .score { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
@@ -306,7 +315,10 @@ legend { padding: 0 4px; font-weight: 650; }
       <div class="panel" data-panel="locate">
         <div class="mapbox">
           <canvas id="map" aria-label="Map sheet. Drag to move, pinch or use + and − to zoom."></canvas>
-          <div class="mz"><button class="ibtn" id="zIn" aria-label="Zoom in">+</button><button class="ibtn" id="zOut" aria-label="Zoom out">−</button><button class="ibtn" id="zFit">Fit</button></div>
+        </div>
+        <div class="prow">
+          <div class="mz"><button class="ibtn" id="zOut" aria-label="Zoom out">−</button><button class="ibtn" id="zIn" aria-label="Zoom in">+</button><button class="ibtn" id="zFit">Fit</button></div>
+          <div class="pro"><span class="lbl">Protractor</span><button class="btn" id="proOp" aria-pressed="false">◎ OP</button><button class="btn" id="proX" aria-pressed="false">✕ Plot</button></div>
         </div>
         <p class="mnote muted" id="mapNote"></p>
         <div class="ws" id="sheet" aria-label="Worksheet">
@@ -421,7 +433,7 @@ legend { padding: 0 4px; font-weight: 650; }
     <button class="btn x" data-close="mRef" aria-label="Close">✕</button>
     <h3>Phase 1 · Locate the target (worksheet)</h3>
     <ol>
-      <li><b>Observer location:</b> read the OP's grid from the map (read right, then up). 8 digits = 10 m.</li>
+      <li><b>Observer location:</b> put the protractor on the OP (button under the map) and read right, then up: where the square's left grid line crosses the bottom scale, then where the point sits on the side scale. 8 digits = 10 m.</li>
       <li><b>Target:</b> through the binoculars, count the vehicles and name them (BMP, T-72, truck).</li>
       <li><b>Apparent size M:</b> the width of one vehicle, end to end, on the reticle's horizontal scale (ticks every 5 mils, numbers every 10). Read to half a mil.</li>
       <li><b>Range (WORM):</b> W = R × M, so R = W ÷ M × 1000. Example: BMP 6.7 m, M = 4.5 mils → 6.7 ÷ 4.5 × 1000 ≈ 1,490 m.</li>
@@ -773,12 +785,18 @@ legend { padding: 0 4px; font-weight: 650; }
   function sizeView() {
     const css = $('vwrap').clientWidth; if (!css) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    const w = clamp(Math.round(css * dpr), 300, 980), h = Math.round(w * (css < 600 ? 0.54 : 0.6));
+    // phones: ~26% of the long screen side in portrait, ~62% of the short side in landscape; tablets ≤ 40%
+    const sw = (window.screen && screen.width) || 800, sh = (window.screen && screen.height) || 800, longS = Math.max(sw, sh), shortS = Math.min(sw, sh);
+    const hCss = innerWidth > innerHeight && innerHeight < 520 ? Math.min(css * 0.5, shortS * 0.62)
+      : css < 600 ? Math.min(css * 0.54, Math.max(150, longS * 0.26))
+      : innerWidth < 1100 ? Math.min(css * 0.6, longS * 0.36) : css * 0.6;
+    const w = clamp(Math.round(css * dpr), 300, 980), h = Math.round(w * hCss / css);
     if (w === V.W && h === V.H) return;
     V.W = w; V.H = h; V.cv.width = w; V.cv.height = h;
     V.img = V.ctx.createImageData(w, h); V.d32 = new Uint32Array(V.img.data.buffer);
     V.zb = new Float32Array(w * h); V.b32 = new Uint32Array(w * h); V.bz = new Float32Array(w * h);
     V.dirty = true; kick();
+    requestAnimationFrame(() => document.documentElement.style.setProperty('--stick', ($('viewCard').offsetHeight + 51) + 'px'));
   }
   function renderTerrain() {
     const w = st.w, Wd = V.W, Hd = V.H, f = camF(), hy = horizonY(), d = V.b32, zb = V.bz, SF = w.SF, col = w.col, tmax = w.tmax;
@@ -901,11 +919,11 @@ legend { padding: 0 4px; font-weight: 650; }
       disc(v.x, v.y, v.z + 2.2, 1.3 + 0.4 * Math.sin(t * 11), [255, 140, 40], 0.9);
       for (let q = 0; q < 5; q++) { const ph = ((t + q * 0.8) % 4) / 4; disc(v.x + ph * 6, v.y, v.z + 3 + ph * 26, 2 + ph * 7, [34, 33, 31], 0.75 * (1 - ph)); }
     }
-    return alive;
+    return alive ? (st.bursts.some(b => now - b.t0 < 70000) ? 2 : 1) : 0;
   }
   function kick() { if (!V.raf) V.raf = requestAnimationFrame(frame); }
   function frame(now) {
-    V.raf = 0;
+    V.raf = 0; V.n = (V.n || 0) + 1;
     if (!st.w || !V.W) return;
     if (V.dirty) { renderTerrain(); V.dirty = false; }
     V.d32.set(V.b32); V.zb.set(V.bz);
@@ -913,10 +931,12 @@ legend { padding: 0 4px; font-weight: 650; }
     const alive = drawBursts(now);
     V.ctx.putImageData(V.img, 0, 0);
     drawHud();
-    if (alive) V.raf = requestAnimationFrame(t => { V.raf = 0; if (t - V.last < 33) { kick(); return; } V.last = t; frame(t); });
+    // bursts animate at ~30 fps, burning vehicles alone at ~10 fps
+    const next = () => { V.raf = requestAnimationFrame(t => { V.raf = 0; if (t - V.last < (alive === 2 ? 33 : 100)) { next(); return; } V.last = t; frame(t); }); };
+    if (alive) next();
   }
   function drawHud() {
-    const g = V.ctx, Wd = V.W, Hd = V.H, f = camF(), sc = Wd / 820, pm = f * MIL, mag = w64(st.az - gm());
+    const g = V.ctx, Wd = V.W, Hd = V.H, f = camF(), sc = Wd / (V.cv.clientWidth || Wd), pm = f * MIL, mag = w64(st.az - gm());
     g.save();
     g.textAlign = 'center'; g.textBaseline = 'middle';
     if (!st.bino) {
@@ -940,7 +960,7 @@ legend { padding: 0 4px; font-weight: 650; }
       }
       g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(0, Hd - 20 * sc, Wd, 20 * sc);
       g.fillStyle = '#e8eadf'; g.textAlign = 'left'; g.font = `500 ${Math.round(11 * sc)}px system-ui, sans-serif`;
-      g.fillText('Tap a spot to look at it through the binoculars · drag to look around', 8 * sc, Hd - 10 * sc);
+      g.fillText('Tap to look through the binoculars · drag to look around', 8 * sc, Hd - 10 * sc);
     } else {
       const cx = Wd / 2, cy = Hd / 2;
       if (!V.mask || V.mask.width !== Wd || V.mask.height !== Hd) {
@@ -972,7 +992,7 @@ legend { padding: 0 4px; font-weight: 650; }
       g.fillText(`${cfg.compass === 'grid' ? 'GRID' : 'MAG'} AZ ${fmt4(mag)}`, cx, 6 * sc + bh / 2);
       if (guidedOn()) guideMarks(g, sc, pm, cx - bw / 2, 6 * sc, bw, bh);
       g.fillStyle = 'rgba(232,234,223,.85)'; g.font = `500 ${Math.round(11 * sc)}px system-ui, sans-serif`; g.textAlign = 'center';
-      g.fillText('Tap the vehicles to center on them · Binoculars button = back to the open view', cx, Hd - 9 * sc);
+      g.fillText('Tap the vehicles to center on them', cx, Hd - 9 * sc);
     }
     g.restore();
   }
@@ -1024,7 +1044,7 @@ legend { padding: 0 4px; font-weight: 650; }
     cv.addEventListener('pointermove', e => {
       if (!drag) return;
       const k = V.W / cv.getBoundingClientRect().width, dx = (e.clientX - drag.x) * k, dy = (e.clientY - drag.y) * k;
-      if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 5) return;
+      if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 10 * k) return;
       drag.moved = true; const f = camF();
       setView(drag.az - dx / (f * MIL), drag.p + dy / f, true);
     });
@@ -1069,9 +1089,9 @@ legend { padding: 0 4px; font-weight: 650; }
   const MAPR = 2400, MK = MAPR / S;
   const MS = { 1: [[3, 0]], 2: [[0, 1]], 3: [[3, 1]], 4: [[1, 2]], 5: [[0, 1], [2, 3]], 6: [[0, 2]], 7: [[3, 2]], 8: [[2, 3]], 9: [[0, 2]], 10: [[3, 0], [1, 2]], 11: [[1, 2]], 12: [[1, 3]], 13: [[0, 1]], 14: [[0, 3]] };
   function buildMapImage(w) {
-    const c = document.createElement('canvas'); c.width = c.height = MAPR;
+    const c = MV.off || (MV.off = document.createElement('canvas')); c.width = c.height = MAPR;
     const g = c.getContext('2d');
-    const lc = document.createElement('canvas'); lc.width = lc.height = NN;
+    const lc = MV.lc || (MV.lc = document.createElement('canvas')); lc.width = lc.height = NN;
     const lg = lc.getContext('2d'), im = lg.createImageData(NN, NN), d = im.data;
     for (let j = 0; j < NN; j++) for (let i = 0; i < NN; i++) {
       const t = w.LC[j * NN + i], o = ((NN - 1 - j) * NN + i) * 4;
@@ -1131,7 +1151,7 @@ legend { padding: 0 4px; font-weight: 650; }
     MV.scale = fit ? fit * w / S : w / S;
     drawMap();
   }
-  const minScale = () => MV.W / S * 0.9, maxScale = () => MV.W / S * 12;
+  const minScale = () => MV.W / S * 0.9, maxScale = () => MV.W / S * 12, zoomed = () => MV.scale > Math.min(MV.W, MV.H) / S * 1.05;
   function fitMap() { MV.scale = Math.min(MV.W, MV.H) / S; MV.cx = S / 2; MV.cy = S / 2; drawMap(); }
   function drawMap() {
     const g = MV.ctx, w = st.w; if (!w || !MV.W) return;
@@ -1145,17 +1165,12 @@ legend { padding: 0 4px; font-weight: 650; }
       g.imageSmoothingEnabled = true;
       g.drawImage(MV.img, wx0 * MK, (S - wy1) * MK, (wx1 - wx0) * MK, (wy1 - wy0) * MK, X(wx0), Y(wy1), (wx1 - wx0) * sc, (wy1 - wy0) * sc);
     }
-    const u = Wd / 600;
+    const u = Wd / (MV.cv.clientWidth || Wd); // canvas px per CSS px
     g.strokeStyle = 'rgba(20,20,20,.75)'; g.lineWidth = Math.max(1, u * 0.9);
     g.beginPath();
     for (let x = 0; x <= S; x += 1000) { g.moveTo(X(x), Y(0)); g.lineTo(X(x), Y(S)); }
     for (let y = 0; y <= S; y += 1000) { g.moveTo(X(0), Y(y)); g.lineTo(X(S), Y(y)); }
     g.stroke();
-    // grid numbers along the top and left edges
-    g.font = `700 ${Math.round(13 * u)}px ui-monospace, Menlo, monospace`; g.textBaseline = 'middle'; g.textAlign = 'center';
-    const lab = (t, x, y) => { const m = g.measureText(t).width + 6 * u; g.fillStyle = 'rgba(255,255,255,.88)'; g.fillRect(x - m / 2, y - 9 * u, m, 18 * u); g.fillStyle = '#111'; g.fillText(t, x, y); };
-    for (let x = 0; x <= S; x += 1000) { const sx = X(x); if (sx > 14 * u && sx < Wd - 14 * u) lab(String(((w.E0 + x) / 1000) % 100).padStart(2, '0'), sx, 11 * u); }
-    for (let y = 0; y <= S; y += 1000) { const sy = Y(y); if (sy > 28 * u && sy < Hd - 10 * u) lab(String(((w.N0 + y) / 1000) % 100).padStart(2, '0'), 15 * u, sy); }
     // the OP point the instructor gives you
     const ox = X(w.op.x), oy = Y(w.op.y);
     g.strokeStyle = '#c0157a'; g.fillStyle = '#c0157a'; g.lineWidth = 2.4 * u;
@@ -1171,17 +1186,110 @@ legend { padding: 0 4px; font-weight: 650; }
       for (let m = 100; m <= len; m += 100) {
         const px = X(w.op.x + sx * m), py = Y(w.op.y + sy * m), tl = (m % 500 ? 4 : 8) * u;
         g.beginPath(); g.moveTo(px - sy * tl, py - sx * tl); g.lineTo(px + sy * tl, py + sx * tl); g.stroke();
-        if (!(m % 500) && sc > minScale() * 1.4) g.fillText(String(m), px + sy * 18 * u, py + sx * 18 * u);
+        if (!(m % 500) && sc > minScale() * 1.4 && st.pro !== 'x') g.fillText(String(m), px + sy * 18 * u, py + sx * 18 * u);
       }
       if (st.plot.r) {
         const px = X(w.op.x + sx * st.plot.r), py = Y(w.op.y + sy * st.plot.r), k = 7 * u;
         g.strokeStyle = '#111'; g.lineWidth = 2.2 * u; g.beginPath(); g.moveTo(px - k, py - k); g.lineTo(px + k, py + k); g.moveTo(px + k, py - k); g.lineTo(px - k, py + k); g.stroke();
       }
     }
+    const pp = proPoint();
+    if (pp) {
+      drawProtractor(g, X, Y, u, sc, pp);
+      const px = X(pp.x), py = Y(pp.y), k = 6 * u;
+      g.save(); g.lineWidth = 2.2 * u;
+      if (st.pro === 'op') { g.strokeStyle = '#c0157a'; g.fillStyle = '#c0157a'; g.beginPath(); g.arc(px, py, 9 * u, 0, 7); g.stroke(); g.beginPath(); g.arc(px, py, 2.2 * u, 0, 7); g.fill(); }
+      else { g.strokeStyle = '#111'; g.beginPath(); g.moveTo(px - k, py - k); g.lineTo(px + k, py + k); g.moveTo(px + k, py - k); g.lineTo(px - k, py + k); g.stroke(); }
+      g.restore();
+    }
     if (guidedOn() && gStep() === 'tloc') {
       const T = w.tgt; g.strokeStyle = '#e09a00'; g.lineWidth = 2.5 * u; g.setLineDash([7 * u, 5 * u]);
       g.beginPath(); g.arc(X(T.x), Y(T.y), Math.max(10 * u, 110 * sc), 0, 7); g.stroke(); g.setLineDash([]);
     }
+    mapRulers(g, X, Y, u, Wd, Hd);
+    const ta = zoomed() ? 'none' : 'pan-y';
+    if (MV.cv.style.touchAction !== ta) MV.cv.style.touchAction = ta;
+  }
+  // the protractor's coordinate scale, already slid into place: the bottom scale lies on the square's bottom grid line
+  // with its 0 at the corner under the point, the side scale runs up through the point (read right, then up)
+  function plotPoint() { if (!st.plot || !st.plot.r) return null; const t = st.plot.az * MIL; return { x: st.w.op.x + Math.sin(t) * st.plot.r, y: st.w.op.y + Math.cos(t) * st.plot.r }; }
+  function proPoint() { return st.pro === 'op' ? st.w.op : st.pro === 'x' ? plotPoint() : null; }
+  function proRead(P) {
+    const x0 = Math.floor(P.x / 1000) * 1000, y0 = Math.floor(P.y / 1000) * 1000, w = st.w;
+    return { sqE: String(((w.E0 + x0) / 1000) % 100).padStart(2, '0'), sqN: String(((w.N0 + y0) / 1000) % 100).padStart(2, '0'), e: String(Math.floor((P.x - x0) / 10)).padStart(2, '0'), n: String(Math.floor((P.y - y0) / 10)).padStart(2, '0'), x0, y0 };
+  }
+  function drawProtractor(g, X, Y, u, m, P) {
+    const rd = proRead(P), cx = X(P.x), cy = Y(rd.y0), L = 1000 * m, bw = Math.max(30 * u, 80 * m), ink = '#14243f';
+    MV.pro = rd; MV.proBox = { l: cx - L, r: cx + bw, t: cy - L, b: cy + bw, cx, cy, bw, x0px: X(rd.x0) };
+    g.save();
+    g.fillStyle = 'rgba(244,248,255,.62)'; g.strokeStyle = 'rgba(30,60,110,.75)'; g.lineWidth = 1.2 * u;
+    g.beginPath(); g.moveTo(cx - L, cy); g.lineTo(cx + bw, cy); g.lineTo(cx + bw, cy - L); g.lineTo(cx, cy - L); g.lineTo(cx, cy); g.closePath(); g.fill();
+    g.fillRect(cx - L, cy, L + bw, bw); g.strokeRect(cx - L, cy, L + bw, bw); g.strokeRect(cx, cy - L, bw, L);
+    // the square's grid lines show through the clear plastic
+    g.strokeStyle = 'rgba(20,20,20,.9)'; g.lineWidth = 1.4 * u; g.beginPath();
+    for (let x = rd.x0; x >= P.x - 1000; x -= 1000) { g.moveTo(X(x), cy); g.lineTo(X(x), cy + bw); }
+    g.stroke();
+    g.strokeStyle = ink; g.fillStyle = ink; g.lineWidth = Math.max(1, 0.9 * u);
+    g.font = `700 ${Math.round(11 * u)}px ui-monospace, Menlo, monospace`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const fine = 10 * m >= 2.2 * u;
+    g.beginPath();
+    for (let d = 0; d <= 1000; d += 10) {
+      const big = d % 100 === 0, mid = d % 50 === 0;
+      if (!big && !mid && !fine) continue;
+      const l = (big ? 12 : mid ? 8 : 5) * u;
+      g.moveTo(cx - d * m, cy); g.lineTo(cx - d * m, cy + l);
+      g.moveTo(cx, cy - d * m); g.lineTo(cx + l, cy - d * m);
+    }
+    g.stroke();
+    for (let d = 0; d <= 1000; d += 100) { g.fillText(String(d / 100), cx - d * m, cy + 21 * u); g.fillText(String(d / 100), cx + 21 * u, cy - d * m); }
+    g.restore();
+  }
+  function proOn(which, zoom) {
+    st.pro = which; $('proOp').setAttribute('aria-pressed', String(which === 'op')); $('proX').setAttribute('aria-pressed', String(which === 'x'));
+    const P = proPoint();
+    if (P && zoom) {
+      // fit the whole scale (1 km plus its body) inside the map, clear of the margin bands
+      const u = MV.W / (MV.cv.clientWidth || MV.W), side = 26 * u, band = 20 * u, pad = 10 * u;
+      MV.scale = clamp(Math.min(MV.W - side - 2 * pad, MV.H - 2 * band - 2 * pad) / 1110, minScale(), maxScale());
+      const bwM = Math.max(30 * u / MV.scale, 80);
+      MV.cx = P.x - 500 + bwM / 2 - side / 2 / MV.scale; MV.cy = Math.floor(P.y / 1000) * 1000 + 500 - bwM / 2;
+    }
+    drawMap();
+  }
+  // map margins: easting numbers on the top and bottom, northing on the left, 100 m ticks when zoomed in
+  function mapRulers(g, X, Y, u, Wd, Hd) {
+    const w = st.w, sc = MV.scale, band = 20 * u, side = 26 * u;
+    const en = x => String(((w.E0 + x) / 1000) % 100).padStart(2, '0'), nn = y => String(((w.N0 + y) / 1000) % 100).padStart(2, '0');
+    const lab = MV.lab = { e: [], n: [], pe: '', pn: '' };
+    g.save();
+    g.fillStyle = 'rgba(255,255,255,.93)'; g.fillRect(0, 0, Wd, band); g.fillRect(0, Hd - band, Wd, band); g.fillRect(0, 0, side, Hd);
+    g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = u;
+    g.beginPath(); g.moveTo(side, band); g.lineTo(Wd, band); g.moveTo(side, Hd - band); g.lineTo(Wd, Hd - band); g.moveTo(side, band); g.lineTo(side, Hd - band); g.stroke();
+    if (1000 * sc >= 150 * u) {
+      g.strokeStyle = '#333'; g.beginPath();
+      for (let x = Math.max(0, Math.floor((MV.cx - Wd / 2 / sc) / 100) * 100); x <= Math.min(S, MV.cx + Wd / 2 / sc); x += 100) {
+        const sx = X(x); if (sx <= side) continue; const l = (x % 1000 ? x % 500 ? 4 : 7 : 10) * u;
+        g.moveTo(sx, band); g.lineTo(sx, band - l); g.moveTo(sx, Hd - band); g.lineTo(sx, Hd - band + l);
+      }
+      for (let y = Math.max(0, Math.floor((MV.cy - Hd / 2 / sc) / 100) * 100); y <= Math.min(S, MV.cy + Hd / 2 / sc); y += 100) {
+        const sy = Y(y); if (sy <= band || sy >= Hd - band) continue; const l = (y % 1000 ? y % 500 ? 4 : 7 : 10) * u;
+        g.moveTo(side, sy); g.lineTo(side - l, sy);
+      }
+      g.stroke();
+    }
+    g.font = `700 ${Math.round(13 * u)}px ui-monospace, Menlo, monospace`; g.textBaseline = 'middle'; g.textAlign = 'center'; g.fillStyle = '#111';
+    for (let x = 0; x <= S; x += 1000) { const sx = X(x); if (sx > side + 10 * u && sx < Wd - 10 * u) { g.fillText(en(x), sx, band / 2 + u); g.fillText(en(x), sx, Hd - band / 2 + u); lab.e.push(en(x)); } }
+    for (let y = 0; y <= S; y += 1000) { const sy = Y(y); if (sy > band + 9 * u && sy < Hd - band - 9 * u) { g.fillText(nn(y), side / 2, sy); lab.n.push(nn(y)); } }
+    // inside a square with no grid line on screen: grey numbers say which square you are in
+    g.fillStyle = '#8b8b80';
+    const e0 = Math.floor((MV.cx + (side - Wd / 2) / sc) / 1000) * 1000;
+    if (e0 >= 0 && X(e0) <= side + 10 * u && X(e0 + 1000) - side > 40 * u) { g.textAlign = 'left'; g.fillText(en(e0), side + 4 * u, band / 2 + u); g.fillText(en(e0), side + 4 * u, Hd - band / 2 + u); lab.pe = en(e0); }
+    const n0 = Math.floor((MV.cy - (Hd / 2 - band) / sc) / 1000) * 1000;
+    if (n0 >= 0 && Y(n0) >= Hd - band - 9 * u && Hd - band - Y(n0 + 1000) > 30 * u) { g.textAlign = 'center'; g.fillText(nn(n0), side / 2, Hd - band - 10 * u); lab.pn = nn(n0); }
+    g.fillStyle = '#fff'; g.fillRect(0, 0, side, band); g.fillRect(0, Hd - band, side, band);
+    g.fillStyle = '#111'; g.font = `800 ${Math.round(10.5 * u)}px system-ui, sans-serif`; g.textAlign = 'center';
+    g.fillText('GA', side / 2, band / 2 + u); g.fillText('GA', side / 2, Hd - band / 2 + u);
+    g.restore();
   }
   (function mapInput() {
     const cv = MV.cv;
@@ -1197,7 +1305,7 @@ legend { padding: 0 4px; font-weight: 650; }
       if (MV.ptr.size === 2 && MV.pinch) {
         const [a, b] = [...MV.ptr.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
         zoomAt(MV.pinch.s * d / MV.pinch.d / MV.scale, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2);
-      } else if (MV.ptr.size === 1) { MV.cx -= (p[0] - q[0]) / MV.scale; MV.cy += (p[1] - q[1]) / MV.scale; drawMap(); }
+      } else if (MV.ptr.size === 1 && zoomed()) { MV.cx -= (p[0] - q[0]) / MV.scale; MV.cy += (p[1] - q[1]) / MV.scale; drawMap(); }
     });
     const end = e => { MV.ptr.delete(e.pointerId); if (MV.ptr.size < 2) MV.pinch = null; };
     cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
@@ -1211,8 +1319,11 @@ legend { padding: 0 4px; font-weight: 650; }
       if (a == null || a > 6400) { note('Plot uses line 6 (grid direction) and line 4 (range): fill them first.'); return; }
       st.plot = { az: a, r: r && r < 6000 ? r : 0 };
       if (st.plot.r) { const t = st.plot.az * MIL; MV.cx = st.w.op.x + Math.sin(t) * st.plot.r * 0.5; MV.cy = st.w.op.y + Math.cos(t) * st.plot.r * 0.5; MV.scale = Math.max(MV.scale, Math.min(MV.W, MV.H) / (st.plot.r * 1.5)); MV.scale = clamp(MV.scale, minScale(), maxScale()); }
+      if (st.plot.r) proOn('x', true);
       drawMap(); refresh();
     });
+    $('proOp').addEventListener('click', () => proOn(st.pro === 'op' ? null : 'op', true));
+    $('proX').addEventListener('click', () => { if (!plotPoint()) { note('Plot first: the ✕ comes from lines 6 and 4.'); return; } proOn(st.pro === 'x' ? null : 'x', true); });
   })();
 
   // ---------- worksheet
@@ -1291,9 +1402,10 @@ legend { padding: 0 4px; font-weight: 650; }
     const w = st.w, s = st.sheet; st.ed = k;
     const sel = (id, opts, v) => `<select id="${id}">${opts.map(o => `<option value="${esc(o[0])}"${String(o[0]) === String(v) ? ' selected' : ''}>${esc(o[1])}</option>`).join('')}</select>`;
     let h = `<span class="et">${esc(chipLabel(k).replace(' …', ''))}</span>`;
-    if (k === 'grid') h += `<input id="edv" inputmode="numeric" maxlength="11" placeholder="6 or 8 digits" value="${esc(digits(s.s7))}">`;
-    else if (k === 'dir') h += `<input id="edv" inputmode="numeric" maxlength="4" placeholder="grid mils" value="${esc(digits(s.s6))}">`;
-    else if (k === 'L' || k === 'R' || k === 'A' || k === 'D') h += `<input id="edv" inputmode="numeric" maxlength="4" placeholder="meters">`;
+    const na = 'autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"';
+    if (k === 'grid') h += `<input id="edv" inputmode="numeric" maxlength="11" placeholder="6 or 8 digits" ${na} value="${esc(digits(s.s7))}">`;
+    else if (k === 'dir') h += `<input id="edv" inputmode="numeric" maxlength="4" placeholder="grid mils" ${na} value="${esc(digits(s.s6))}">`;
+    else if (k === 'L' || k === 'R' || k === 'A' || k === 'D') h += `<input id="edv" inputmode="numeric" maxlength="4" placeholder="meters" ${na}>`;
     else if (k === 'tgt') h += sel('edn', [1, 2, 3, 4, 5].map(n => [n, n]), s.s2n || 1) + sel('edt', [['BMP', 'BMPs'], ['T72', 'T-72 TANKS'], ['TRK', 'TRUCKS']], s.s2t || 'BMP') + sel('eda', [['IN THE OPEN', 'IN THE OPEN'], ['DUG IN', 'DUG IN'], ['MOVING', 'MOVING']], 'IN THE OPEN');
     else if (k === 'surv') h += sel('edr', RESULTS.map(r => [r, r]), RESULTS[0]) + sel('edc', [[0, 'no casualty estimate'], ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => [n, `${n} CASUALT${n === 1 ? 'Y' : 'IES'}`])], 0);
     h += `<button class="btn primary" id="edOk">Add</button><button class="btn" id="edNo">Cancel</button>`;
@@ -1567,14 +1679,14 @@ legend { padding: 0 4px; font-weight: 650; }
     const step = gStep(), reply = st.ack ? `Tap the orange <strong>Reply</strong> button (${esc(st.ack.text)})` : '';
     const nl = nearestLm(w, T.x, T.y), typeName = T.ty === 'T72' ? 'T-72' : T.ty === 'BMP' ? 'BMP' : 'Truck';
     switch (step) {
-      case 'op': return { title: 'Read your OP grid', tip: `Line 1 → <b>${worldToGrid(w.op.x, w.op.y, 8)}</b>`, bullets: ['Your OP is the magenta ◎ on the map (zoom in with +).', 'Read right (4 digits), then up (4 digits).'], why: 'Everything you send is measured from where you stand.' };
+      case 'op': { const r = proRead(w.op); return { title: 'Read your OP grid', tip: `Line 1 → <b>${r.sqE}${r.e} ${r.sqN}${r.n}</b>`, bullets: [`The protractor sits on your OP ◎ (button under the map).`, `Right: the ${r.sqE} line crosses the bottom scale at ${r.e[0]}.${r.e[1]} → ${r.sqE}${r.e}.`, `Up: the ◎ sits at ${r.n[0]}.${r.n[1]} on the side scale → ${r.sqN}${r.n}.`], why: 'Everything you send is measured from where you stand. Read right, then up.' }; }
       case 'find': return { title: 'Find the enemy', tip: st.bino ? 'Tap the dark vehicles, or press <strong>◀ ▶</strong> until they are in the glass' : 'Tap the <strong>yellow ring</strong>: the binoculars open on it', bullets: ['The yellow ring marks the target area.'] };
       case 'size': return { title: 'Count them', tip: `Line 2 → <b>${T.n}</b> · <b>${typeName}</b>`, bullets: ['The yellow numbers in the binoculars count them for you.', 'Truck: tall box and cab. BMP: low hull, small turret. T-72: wide turret, long gun.'] };
       case 'appsize': return { title: 'Measure one vehicle', tip: `Line 3 → <b>${tr.M.toFixed(1)}</b> mils`, bullets: ['The yellow marks in the binoculars are the two ends of vehicle 1.', 'Count the mils between them on the scale: a tick every 5, a number every 10.'], why: 'Apparent size M and real length W give the range on the next line.' };
       case 'range': { const M = chk.M || tr.M, Rr = r10(unit.L / M * 1000); return { title: 'Work out the range', tip: `Line 4 → <b>${Rr}</b> m`, bullets: ['R = W ÷ M × 1000', `${unit.L} ÷ ${(+M).toFixed(1)} × 1000 = ${Rr} m`], why: `W is the real length of one ${unit.one.toLowerCase()}: ${unit.L} m (card under the worksheet).` }; }
       case 'mag': { const off = dm(tr.az, st.az); return { title: 'Read the compass', tip: `Line 5 → <b>${fmt4(tr.mag)}</b>`, bullets: [st.bino ? (Math.abs(off) > 2 ? 'Tap the middle of the group: the reticle jumps onto it.' : 'The reticle is on the group: read the green MAG AZ box.') : 'Tap the vehicles to open the binoculars on them.', 'Direction always goes to the middle of the group.'] }; }
       case 'gm': { const m = chk.mag != null ? chk.mag : tr.mag, ga = w64(m + g); return { title: 'Convert to grid direction', tip: `Line 6 → <b>${fmt4(r10(ga))}</b>`, bullets: g === 0 ? ['Your compass reads grid: copy line 5 to the nearest 10.'] : [`G-M ${w.gmAbs} mils ${w.gmEast ? 'EAST: add' : 'WEST: subtract'}.`, `${fmt4(m)} ${g > 0 ? '+' : '−'} ${w.gmAbs} = ${fmt4(ga)} → nearest 10: ${fmt4(r10(ga))}`], why: 'The FDC works in grid directions; your compass reads magnetic.' }; }
-      case 'tloc': return { title: 'Plot the target', tip: st.plot && st.plot.r ? `Line 7 → <b>${worldToGrid(T.x, T.y, 8)}</b>` : 'Press <strong>Plot</strong> beside line 7', bullets: ['Plot lays line 6 and line 4 from your OP and marks ✕ on the map.', `Read the grid at the ✕. The vehicles are ${Math.round(nl.d / 10) * 10} m ${nl.dir} of ${nl.lm.name} (orange circle).`] };
+      case 'tloc': { const pp = plotPoint(), r = pp && proRead(pp); return { title: 'Plot the target', tip: r ? `Line 7 → <b>${r.sqE}${r.e} ${r.sqN}${r.n}</b>` : 'Press <strong>Plot</strong> beside line 7', bullets: r ? [`The protractor sits on the ✕.`, `Right: the ${r.sqE} line crosses the bottom scale at ${r.e[0]}.${r.e[1]} → ${r.sqE}${r.e}.`, `Up: the ✕ sits at ${r.n[0]}.${r.n[1]} on the side scale → ${r.sqN}${r.n}.`] : ['Plot lays line 6 and line 4 from your OP, marks ✕ and puts the protractor on it.', `The vehicles are ${Math.round(nl.d / 10) * 10} m ${nl.dir} of ${nl.lm.name}.`] }; }
       case 'freq': return { title: 'Set the radio', tip: `FREQ → <b>${w.freq}</b>`, bullets: [`Fire net ${freqTxt(w.freq)} · you ${w.fo} · FDC ${w.fdcCs}.`] };
       case 'rx': return { title: 'Wait for the read-back', tip: 'The FDC is repeating your transmission', bullets: [] };
       case 'shot': return { title: 'Answer the FDC', tip: reply || 'Wait for the FDC', bullets: ['Read back the MTO, then SHOT, OUT and SPLASH, OUT.', 'At SPLASH keep the binoculars on the target.'] };
@@ -1617,7 +1729,6 @@ legend { padding: 0 4px; font-weight: 650; }
     if (s === 'size') add($('s2t'));
     if ((s === 'appsize' || s === 'mag' || s === 'size') && !st.bino) add($('binoBtn'));
     if (s === 'tloc') add($(st.plot && st.plot.r ? 's7' : 'plotBtn'));
-    if (s === 'op') add($('zIn'));
     if (['shot', 'wait', 'ffe'].includes(s) && st.ack) add($('ack'));
     if (st.ack && s === 'eom') add($('ack'));
     const ex = gExpect();
@@ -1642,7 +1753,7 @@ legend { padding: 0 4px; font-weight: 650; }
     s4: () => { const M = num(st.sheet.s3) || truth().M, L = VEH[st.w.tgt.ty].L; return `R = W ÷ M × 1000 = ${L} ÷ ${(+M).toFixed(1)} × 1000 ≈ <b>${Math.round(L / M * 1000)}</b> m.`; },
     s5: () => `Tap the middle of the group in the binoculars, then read the MAG AZ box: about <b>${fmt4(truth().mag)}</b>.`,
     s6: () => { const g = gm(), m = num(st.sheet.s5); return g === 0 ? `No G-M step: copy line 5 (about <b>${fmt4(r10(truth().az))}</b>).` : `${m != null ? fmt4(m) : 'Line 5'} ${g > 0 ? '+' : '−'} ${st.w.gmAbs} (G-M ${st.w.gmEast ? 'EAST: add' : 'WEST: subtract'}) ≈ <b>${fmt4(r10(truth().az))}</b>.`; },
-    s7: () => `The target sits at about <b>${worldToGrid(st.w.tgt.x, st.w.tgt.y, 8)}</b>. Plot direction and range from the OP, then read the grid at the ✕.`
+    s7: () => { const pp = plotPoint(), r = pp && proRead(pp); return r ? `Read the ✕ with the protractor: right ${r.e[0]}.${r.e[1]}, up ${r.n[0]}.${r.n[1]} → <b>${r.sqE}${r.e} ${r.sqN}${r.n}</b>.` : `Press Plot first: it marks ✕ from lines 6 and 4 and puts the protractor on it.`; }
   };
   ['s1', 's2n', 's2t', 's3', 's4', 's5', 's6', 's7'].forEach(id => {
     const el = $(id);
@@ -1799,6 +1910,7 @@ legend { padding: 0 4px; font-weight: 650; }
       setView(tr.az + off, (groundAt(w, w.tgt.x, w.tgt.y) - w.eyeZ) / tr.d + 0.04);
       renderPal(); renderMission();
       sizeMap(); fitMap();
+      st.pro = null; proOn(guidedOn() ? 'op' : null, guidedOn());
       st.t0 = performance.now(); st.running = true;
       $('busy').hidden = true;
       refresh();
@@ -1862,8 +1974,12 @@ legend { padding: 0 4px; font-weight: 650; }
   }, 250);
 
   new ResizeObserver(() => { sizeView(); sizeMap(); }).observe(document.body);
+  document.querySelectorAll('input').forEach(i => { i.setAttribute('autocorrect', 'off'); i.setAttribute('autocapitalize', 'off'); i.spellcheck = false; });
+  // phones: while a field in the tool card has focus, let the view scroll away so the keyboard and the field both fit
+  document.addEventListener('focusin', e => { if (e.target.matches('#tools input, #tools select')) document.body.classList.add('kbd'); });
+  document.addEventListener('focusout', () => setTimeout(() => { if (!document.activeElement || !document.activeElement.matches('#tools input, #tools select')) document.body.classList.remove('kbd'); }, 50));
   renderIntro();
-  window.__cff = { st, cfg, get F() { return F; }, get R() { return R; }, truth, expCorr, spotOf, worldToGrid, gStep, gExpect, newCard, setMode, evalAll, finish, timing: () => { const t = performance.now(); renderTerrain(); return performance.now() - t; }, mapScale: () => ({ ratio: MV.scale / (MV.W / S), cx: MV.cx, cy: MV.cy }), dbg: { buildTerrain, placeTarget, genWorld, visibleSet, openAround, nearestLm, los, groundAt, addBurst, setView, proj, camF, gridToWorld, sheetCheck } };
+  window.__cff = { st, cfg, get F() { return F; }, get R() { return R; }, truth, expCorr, spotOf, worldToGrid, gStep, gExpect, newCard, setMode, evalAll, finish, timing: () => { const t = performance.now(); renderTerrain(); return performance.now() - t; }, mapScale: () => ({ ratio: MV.scale / (MV.W / S), cx: MV.cx, cy: MV.cy, lab: MV.lab, u: MV.W / MV.cv.clientWidth, pro: st.pro && MV.pro, box: st.pro && MV.proBox, W: MV.W, H: MV.H, plot: plotPoint() }), frames: () => V.n, mapOff: () => MV.off, dbg: { buildTerrain, placeTarget, genWorld, visibleSet, openAround, nearestLm, los, groundAt, addBurst, setView, proj, camF, gridToWorld, sheetCheck } };
   newCard(QS.get('seed') ? +QS.get('seed') : undefined);
 })();
 </script>
