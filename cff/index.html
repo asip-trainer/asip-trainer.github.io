@@ -1,0 +1,1786 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>CFF Trainer</title>
+<style>
+/* Layout: the observer view (CFFT screen + M22 binoculars) and the radio sit on the left on desktop;
+   the coach, worksheet, map, mission card and score sheet on the right. On phones the view stays on top. */
+:root {
+  --bg: #e2e4d9;
+  --surface: #f2f3ec;
+  --ink: #1b2016;
+  --muted: #586050;
+  --line: #c4c8b6;
+  --accent: #9a5a0c;
+  --accent-soft: #f1e2c4;
+  --go: #2b6a2e;
+  --go-soft: #d6e8d0;
+  --nogo: #a8291d;
+  --nogo-soft: #f3d7d1;
+  --scrim: rgba(16, 20, 12, .5);
+  --hint: #ffc53d;
+  --ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --stencil: "DIN Condensed", "DIN Alternate", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11140d; --surface: #1a1e15; --ink: #e2e6d6; --muted: #98a08b; --line: #2f3528;
+    --accent: #e6a640; --accent-soft: #33280f; --go: #82c784; --go-soft: #1c2c1b;
+    --nogo: #f08b7d; --nogo-soft: #3b1d18; --scrim: rgba(0, 0, 0, .6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11140d; --surface: #1a1e15; --ink: #e2e6d6; --muted: #98a08b; --line: #2f3528;
+  --accent: #e6a640; --accent-soft: #33280f; --go: #82c784; --go-soft: #1c2c1b;
+  --nogo: #f08b7d; --nogo-soft: #3b1d18; --scrim: rgba(0, 0, 0, .6);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.45 var(--ui); }
+body.locked { overflow: hidden; }
+button, input, select { font: inherit; color: inherit; }
+button { touch-action: manipulation; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.lbl { display: block; font: 600 10.5px/1.2 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* header */
+.top-bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; gap: 8px; padding-block: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: var(--bg); border-bottom: 1px solid var(--line); }
+.brand { margin-right: auto; font: 700 19px/1 var(--stencil); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
+.brand small { display: block; margin-top: 3px; font: 500 11px/1.1 var(--ui); letter-spacing: 0; text-transform: none; color: var(--muted); }
+.seg { display: inline-flex; padding: 2px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.seg button { padding: 6px 11px; border: 0; border-radius: 999px; background: none; font-size: 13px; font-weight: 650; color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.clock { min-width: 2.9em; text-align: right; font: 700 15px/1 var(--mono); font-variant-numeric: tabular-nums; }
+.clock.warn { color: var(--nogo); }
+.ibtn { display: inline-grid; place-items: center; height: 34px; min-width: 34px; padding: 0 9px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 13px; font-weight: 650; cursor: pointer; }
+.ibtn svg { width: 18px; height: 18px; }
+.ibtn:disabled { opacity: .4; cursor: default; }
+@media (max-width: 440px) { .brand .bt, .brand small { display: none; } .seg button { padding: 6px 9px; } }
+@media (max-width: 350px) { .brand { display: none; } .seg { margin-right: auto; } }
+
+/* page layout: phones = view on top (sticky), coach, one tool card with tabs; desktop = view left (sticky), coach + tools right */
+.wrap { display: flex; flex-direction: column; gap: 10px; max-width: 1280px; margin: 0 auto; padding-block: 10px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.colL, .colR { display: contents; }
+#viewCard { order: 1; } #coach { order: 2; } #tools { order: 3; }
+@media (max-width: 1099px) and (min-height: 640px) { #viewCard { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 51px); z-index: 10; box-shadow: 0 8px 18px -12px rgba(0,0,0,.45); } }
+@media (min-width: 1100px) {
+  .wrap { flex-direction: row; align-items: flex-start; gap: 18px; }
+  .colL, .colR { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .colL { flex: 1.45 1 0; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 62px); }
+  .colR { flex: 1 1 0; max-width: 500px; }
+}
+.card { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.linkbtn { padding: 0; border: 0; background: none; color: var(--accent); font-size: 12.5px; font-weight: 650; cursor: pointer; }
+
+/* observer view */
+.vcard { padding: 8px; }
+.vwrap { position: relative; overflow: hidden; border-radius: 10px; background: #0b0d09; }
+#view { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+.busy { position: absolute; inset: 0; display: grid; place-items: center; color: #e9ebdf; font: 650 14px var(--ui); background: rgba(10,12,8,.7); }
+.vctl { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.vctl .btn { padding: 7px 12px; }
+.bino[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.azr { margin-left: auto; font: 700 13px/1.2 var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+@media (max-width: 400px) { .vctl .ibtn { min-width: 30px; padding: 0 6px; } .azr { font-size: 12px; } }
+
+/* coach: phase strip, one step, mission line */
+.coach { min-width: 0; padding: 10px 14px 12px; border-radius: 14px; background: var(--accent-soft); }
+.phases { display: flex; gap: 4px; margin: 0 0 8px; padding: 0; list-style: none; counter-reset: ph; }
+.phases li { flex: 1; padding-top: 5px; border-top: 3px solid var(--line); font: 650 10.5px/1.2 var(--ui); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); counter-increment: ph; }
+.phases li::before { content: counter(ph) " "; }
+.phases li.done { border-top-color: var(--go); color: var(--go); }
+.phases li.now { border-top-color: var(--accent); color: var(--accent); }
+.coach .lbl { color: var(--accent); }
+.coach .do { margin-top: 2px; font-size: 16px; font-weight: 700; line-height: 1.3; }
+.coach .how { margin-top: 3px; font-size: 13.5px; color: var(--muted); }
+.coach .how b { color: var(--ink); }
+.coach .how .calc { display: block; margin-top: 4px; font: 650 12.5px/1.5 var(--mono); color: var(--ink); }
+.coach .mission { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,.08); font: 650 12px/1.4 var(--mono); color: var(--muted); }
+.coach .mission b { color: var(--ink); }
+.coach .mission .linkbtn { margin-left: auto; font-family: var(--ui); }
+
+/* tool card with tabs */
+.tools { padding: 0; overflow: hidden; }
+.tabs { display: flex; border-bottom: 1px solid var(--line); background: var(--bg); }
+.tabs button { position: relative; flex: 1; padding: 11px 6px; border: 0; border-bottom: 2.5px solid transparent; background: none; font-size: 13.5px; font-weight: 650; color: var(--muted); cursor: pointer; }
+.tabs button[aria-selected="true"] { border-bottom-color: var(--accent); background: var(--surface); color: var(--ink); }
+.tabs .dot { position: absolute; top: 9px; margin-left: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--nogo); }
+.panel { padding: 12px 14px 14px; }
+
+/* map */
+.mapbox { position: relative; }
+#map { display: block; width: 100%; aspect-ratio: 1 / 1; touch-action: none; border: 1px solid var(--line); border-radius: 10px; background: #fbfaf5; cursor: grab; }
+.mz { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
+.mz .ibtn { background: rgba(255,255,255,.92); color: #1b2016; border-color: rgba(0,0,0,.2); }
+.mnote { margin: 6px 0 0; font-size: 12px; }
+
+/* worksheet: two columns of small fields */
+.ws { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 12px; margin-top: 12px; }
+.wc.wide { grid-column: 1 / -1; }
+.wc label { display: flex; align-items: baseline; gap: 6px; font-size: 12.5px; font-weight: 650; }
+.wc label small { font-weight: 500; color: var(--muted); }
+.wc label b { display: inline-grid; place-items: center; flex: none; width: 18px; height: 18px; border: 1.5px solid var(--line); border-radius: 50%; font: 700 10px/1 var(--mono); }
+.wc.ok label b { border-color: var(--go); background: var(--go); color: var(--surface); }
+.fld { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.fld > span { font: 700 12px var(--mono); color: var(--muted); }
+.fld input, .fld select, .ed input, .ed select, .fq input { min-width: 0; width: 100%; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: 700 15px var(--mono); }
+.fld select { font-size: 13.5px; padding-inline: 4px; }
+.fld .btn { flex: none; padding: 7px 14px; }
+.wsnote { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+
+/* radio */
+.rh { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.cs { margin-right: auto; font: 650 12.5px var(--mono); color: var(--muted); }
+.fq { display: inline-flex; align-items: center; gap: 6px; font: 700 11px var(--ui); letter-spacing: .06em; color: var(--muted); }
+.fq input { width: 92px; text-align: center; }
+.log { display: flex; flex-direction: column; gap: 4px; height: 128px; overflow-y: auto; padding: 8px; border-radius: 10px; background: var(--bg); font: 600 12px/1.35 var(--mono); }
+.log:empty::before { content: "Radio log: the FDC's answers show here."; margin: auto; color: var(--muted); font: 500 12.5px var(--ui); }
+.log .ln { max-width: 92%; padding: 4px 8px; border-radius: 8px; }
+.log .fo { align-self: flex-end; background: var(--surface); border: 1px solid var(--line); text-align: right; }
+.log .fdc { align-self: flex-start; background: var(--accent-soft); }
+.log .sys { align-self: center; color: var(--muted); font: italic 500 12px var(--ui); }
+.log .who { display: block; font: 700 9.5px/1.2 var(--ui); letter-spacing: .08em; color: var(--muted); }
+.ack { width: 100%; margin-top: 8px; border-color: var(--accent) !important; background: var(--accent-soft) !important; font-family: var(--mono) !important; font-size: 13px !important; }
+.drow { display: flex; align-items: stretch; gap: 6px; margin-top: 8px; }
+.draft { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; min-height: 42px; padding: 6px; border: 1.5px dashed var(--line); border-radius: 10px; }
+.draft:empty::before { content: "Tap words to build a transmission"; padding-left: 4px; color: var(--muted); font-size: 13px; }
+.draft .tk { cursor: default; background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.drow .ibtn { height: auto; }
+.ed { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; padding: 10px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent-soft); }
+.ed .et { width: 100%; font: 700 11.5px var(--ui); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.ed input { width: 140px; }
+.ed select { width: auto; font-size: 14px; }
+.pal { display: grid; gap: 8px; margin-top: 10px; }
+.pg { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pg .gl { width: 100%; font: 600 10.5px/1.2 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.tk { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); font: 700 12.5px/1.2 var(--mono); cursor: pointer; }
+.tk:active { transform: translateY(1px); }
+.txb { margin-top: 10px; }
+
+/* score sheet */
+.score { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.m { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; }
+.num { display: grid; place-items: center; width: 26px; height: 26px; border: 1.5px solid var(--line); border-radius: 50%; font: 700 12px/1 var(--mono); }
+.m.done .num { border-color: var(--go); background: var(--go); color: var(--surface); }
+.mt { padding-top: 3px; font-weight: 650; }
+.subs { display: grid; gap: 3px; margin: 4px 0 0; padding: 0; list-style: none; font-size: 13.5px; color: var(--muted); }
+.subs li { position: relative; padding-left: 18px; }
+.subs li::before { content: "○"; position: absolute; left: 0; top: 0; font-size: 11px; line-height: 1.75; }
+.subs li.ok { color: var(--ink); }
+.subs li.ok::before { content: "✓"; color: var(--go); font-size: 13px; font-weight: 700; line-height: 1.45; }
+.scnote { margin: 12px 0 0; font-size: 13px; }
+
+/* buttons and modals */
+.txrow { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn { padding: 10px 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--bg); font-weight: 650; cursor: pointer; }
+.btn.primary { margin-left: auto; border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.readybar { display: flex; margin-top: 12px; }
+.readybar .btn { flex: 1; margin: 0; padding: 12px; }
+.modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: calc(env(safe-area-inset-top, 0px) + 16px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 16px) max(16px, env(safe-area-inset-left, 0px)); background: var(--scrim); }
+.mcard { position: relative; width: 100%; max-width: 760px; margin: auto 0; padding: 18px; border-radius: 16px; background: var(--surface); }
+.mcard h2 { padding-right: 48px; }
+.mcard h3 { margin: 18px 0 6px; font-size: 15px; }
+.mcard .x { position: absolute; right: 12px; top: 12px; }
+.mcard p, .mcard li { font-size: 14px; }
+.mcard ol, .mcard ul { margin: 6px 0; padding-left: 20px; }
+code { padding: 1px 5px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); font: 600 12.5px var(--mono); }
+.tbl { overflow-x: auto; }
+.tbl table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.tbl th, .tbl td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.tbl th { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+td.go { color: var(--go); font-weight: 700; }
+td.nogo { color: var(--nogo); font-weight: 700; }
+.fb { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; }
+.fb li { margin: 3px 0; }
+.fb li.bad { color: var(--nogo); }
+.verdict { display: inline-block; padding: 4px 12px; border-radius: 999px; font: 700 15px var(--mono); }
+.verdict.go { background: var(--go-soft); color: var(--go); }
+.verdict.nogo { background: var(--nogo-soft); color: var(--nogo); }
+fieldset { margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+legend { padding: 0 4px; font-weight: 650; }
+.opt { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; }
+
+/* Guided: next control pulses; a wrong one shakes red and the right one bounces */
+.hint { outline: 3px solid var(--hint) !important; outline-offset: 2px; animation: pulse 1.1s ease-in-out infinite; }
+@keyframes pulse { 50% { outline-color: transparent; } }
+.want { outline: 4px solid var(--hint) !important; outline-offset: 3px; animation: want .8s ease-in-out 2; }
+@keyframes want { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,197,61,.8); } 40% { transform: scale(1.1); box-shadow: 0 0 0 12px rgba(255,197,61,0); } }
+.nope { outline: 3px solid #e2432f !important; outline-offset: 2px; animation: nope .4s ease-in-out; }
+.coach.shake { animation: nope .4s ease-in-out; }
+@keyframes nope { 20%, 60% { translate: -4px 0; } 40%, 80% { translate: 4px 0; } }
+.toast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 60px); z-index: 45; width: max-content; max-width: min(92vw, 540px); padding: 12px 16px; border-radius: 14px; background: var(--ink); color: var(--bg); font-size: 14.5px; line-height: 1.4; box-shadow: 0 10px 30px rgba(0,0,0,.35); transform: translateX(-50%); cursor: pointer; }
+.toast b { color: var(--hint); }
+.toast small { display: block; margin-top: 4px; opacity: .65; font-size: 12px; }
+.toast.pop { animation: pop .25s ease-out; }
+@keyframes pop { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* NO-GO: recycled to Charlie Company */
+.modal.charlie { align-items: center; background: rgba(12, 14, 8, .82); }
+.ccard { position: relative; width: 100%; max-width: 460px; margin: auto 0; padding: 20px 18px 18px; overflow: hidden; border-radius: 18px; text-align: center; color: #f1efe0; background: radial-gradient(120% 90% at 50% 0%, #3d4628, #1c2112 70%); box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.ccard .eyebrow { font: 700 11px/1 var(--ui); letter-spacing: .16em; text-transform: uppercase; color: #c9c7a4; }
+.guidon { display: block; width: 180px; max-width: 60%; height: auto; margin: 10px auto 0; overflow: visible; }
+.guidon .flag { transform-origin: 14px 56px; animation: wave 2.4s ease-in-out infinite; }
+@keyframes wave { 0%, 100% { transform: skewY(0deg) scaleX(1); } 50% { transform: skewY(-4deg) scaleX(.96); } }
+.ccard h2.ct { margin: 6px 0 2px; font: 800 30px/1.05 var(--stencil); letter-spacing: .04em; text-transform: uppercase; color: #fff; text-wrap: balance; }
+.ccard p { margin: 6px 0 0; font-size: 14.5px; color: #dcdac6; }
+.ccard .orders { margin: 12px auto 0; max-width: 34ch; padding: 10px 12px; border: 1px dashed rgba(241,239,224,.35); border-radius: 10px; font: 600 12.5px/1.5 var(--mono); color: #e9e7d4; text-align: left; }
+.stamp { position: absolute; right: 12px; top: 52px; padding: 4px 10px; border: 4px solid #e2432f; border-radius: 8px; color: #e2432f; font: 900 28px/1 var(--stencil); letter-spacing: .08em; transform: rotate(-14deg); opacity: .92; animation: slam .5s cubic-bezier(.2, 1.6, .4, 1) .25s both; }
+@keyframes slam { from { transform: rotate(-14deg) scale(2.6); opacity: 0; } to { transform: rotate(-14deg) scale(1); opacity: .92; } }
+.ccard .txrow { justify-content: center; margin-top: 16px; }
+.ccard .btn { border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #f1efe0; }
+.ccard .btn.primary { margin-left: 0; border-color: #e2432f; background: #e2432f; color: #fff; }
+@media (prefers-reduced-motion: reduce) { .hint, .want, .nope, .coach.shake, .toast.pop, .guidon .flag, .stamp { animation: none; } }
+</style>
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="brand">CFF<span class="bt"> Trainer</span><small>Call for Fire · CFFT grid mission</small></div>
+  <div class="seg" role="group" aria-label="Practice mode">
+    <button id="mGuided" aria-pressed="true">Guided</button>
+    <button id="mExam" aria-pressed="false">Exam</button>
+  </div>
+  <div class="clock" id="clock">0:00</div>
+  <button class="ibtn" id="btnRef" aria-label="Cheat sheet">Ref</button>
+  <button class="ibtn" id="btnSet" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+</header>
+
+<main class="wrap">
+  <div class="colL">
+    <section class="card vcard" id="viewCard" aria-label="Observer view">
+      <div class="vwrap" id="vwrap">
+        <canvas id="view" aria-label="View from the observation post. Drag to look around, tap to aim."></canvas>
+        <div class="busy" id="busy">Building terrain…</div>
+      </div>
+      <div class="vctl">
+        <button class="ibtn" id="panL" aria-label="Turn left">◀</button>
+        <button class="ibtn" id="tiltU" aria-label="Look up">▲</button>
+        <button class="ibtn" id="tiltD" aria-label="Look down">▼</button>
+        <button class="ibtn" id="panR" aria-label="Turn right">▶</button>
+        <button class="btn bino" id="binoBtn" aria-pressed="false">Binoculars</button>
+        <span class="azr" id="azRead"></span>
+      </div>
+    </section>
+  </div>
+
+  <div class="colR">
+    <section class="coach" id="coach" aria-live="polite">
+      <ol class="phases" id="phases"><li>Locate</li><li>Radio</li><li>Call</li><li>Adjust</li><li>End</li></ol>
+      <span class="lbl" id="cStep"></span>
+      <div class="do" id="cDo"></div>
+      <div class="how" id="cHow"></div>
+      <div class="mission" id="mission"></div>
+    </section>
+
+    <section class="card tools" id="tools">
+      <div class="tabs" role="tablist" aria-label="Tools">
+        <button role="tab" data-tab="locate" aria-selected="true">Map &amp; sheet</button>
+        <button role="tab" data-tab="radio" id="tabRadio" aria-selected="false">Radio<i class="dot" id="radioDot" hidden></i></button>
+        <button role="tab" data-tab="score" aria-selected="false">Score</button>
+      </div>
+
+      <div class="panel" data-panel="locate">
+        <div class="mapbox">
+          <canvas id="map" aria-label="Map sheet. Drag to move, pinch or use + and − to zoom."></canvas>
+          <div class="mz"><button class="ibtn" id="zIn" aria-label="Zoom in">+</button><button class="ibtn" id="zOut" aria-label="Zoom out">−</button><button class="ibtn" id="zFit">Fit</button></div>
+        </div>
+        <p class="mnote muted" id="mapNote"></p>
+        <div class="ws" id="sheet" aria-label="Worksheet">
+          <div class="wc" id="r1"><label for="s1"><b>1</b>OP grid</label><div class="fld"><span>GA</span><input id="s1" inputmode="numeric" maxlength="11" placeholder="8 digits" autocomplete="off"></div></div>
+          <div class="wc" id="r2"><label for="s2n"><b>2</b>Target</label><div class="fld"><select id="s2n" aria-label="How many"><option value="">#</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><select id="s2t" aria-label="Vehicle type"><option value="">type</option><option value="BMP">BMP</option><option value="T72">T-72</option><option value="TRK">Truck</option></select></div></div>
+          <div class="wc" id="r3"><label for="s3"><b>3</b>Size M (mils)</label><div class="fld"><input id="s3" inputmode="decimal" maxlength="5" placeholder="one vehicle" autocomplete="off"></div></div>
+          <div class="wc" id="r4"><label for="s4"><b>4</b>Range (m)</label><div class="fld"><input id="s4" inputmode="numeric" maxlength="5" placeholder="W ÷ M × 1000" autocomplete="off"></div></div>
+          <div class="wc" id="r5"><label for="s5"><b>5</b>Direction, <span id="magTxt">compass</span></label><div class="fld"><input id="s5" inputmode="numeric" maxlength="4" placeholder="mils" autocomplete="off"></div></div>
+          <div class="wc" id="r6"><label for="s6"><b>6</b>Direction, grid</label><div class="fld"><input id="s6" inputmode="numeric" maxlength="4" placeholder="mils" autocomplete="off"></div></div>
+          <div class="wc wide" id="r7"><label for="s7"><b>7</b>Target grid</label><div class="fld"><span>GA</span><input id="s7" inputmode="numeric" maxlength="11" placeholder="6 or 8 digits" autocomplete="off"><button class="btn" id="plotBtn">Plot</button></div></div>
+        </div>
+        <p class="wsnote">W (vehicle length): BMP 6.7 m · T-72 6.9 m hull · truck 7.4 m. Plot lays line 6 and line 4 from the OP.</p>
+      </div>
+
+      <div class="panel rp" data-panel="radio" id="radioPanel" hidden>
+        <div class="rh">
+          <span class="cs" id="csLine"></span>
+          <label class="fq">FREQ <input id="freq" inputmode="numeric" maxlength="6" placeholder="00000" autocomplete="off" aria-label="Radio frequency, 5 digits"></label>
+        </div>
+        <div class="log" id="log" aria-live="polite"></div>
+        <button class="btn ack" id="ack" hidden></button>
+        <div class="drow">
+          <div class="draft" id="draft"></div>
+          <button class="ibtn" id="bsp" aria-label="Remove the last word">⌫</button>
+        </div>
+        <div class="ed" id="ed" hidden></div>
+        <div class="pal" id="pal"></div>
+        <div class="txrow txb"><button class="btn" id="clr">Clear</button><button class="btn primary" id="txBtn">Transmit</button></div>
+        <div class="readybar" id="endBar" hidden><button class="btn" id="endExam">End exam and grade now</button></div>
+      </div>
+
+      <div class="panel" data-panel="score" hidden>
+        <ol class="score" id="score"></ol>
+        <p class="scnote muted">Built from the Adjust Indirect Fire task standards and the class steps. Your voice is replaced by word chips; the FDC answers in the radio log.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="assertive" hidden></div>
+
+<div class="modal" id="mIntro" hidden>
+  <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="exT">
+    <h2 id="exT">Exam mode</h2>
+    <ul id="exList"></ul>
+    <div class="txrow"><button class="btn" id="exBack">Back to Guided</button><button class="btn primary" id="exStart">Start exam</button></div>
+  </div>
+</div>
+
+<div class="modal" id="mRes" hidden>
+  <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="resT">
+    <h2 id="resT">Exam result</h2>
+    <div id="resBody"></div>
+    <div class="txrow" style="margin-top:14px"><button class="btn" data-close="mRes">Review</button><button class="btn" id="resGuided">Guided mode</button><button class="btn" id="resSame">Retry same card</button><button class="btn primary" id="resNew">New card</button></div>
+  </div>
+</div>
+
+<div class="modal charlie" id="mCharlie" hidden>
+  <div class="ccard" role="dialog" aria-modal="true" aria-labelledby="chT">
+    <div class="eyebrow">NO-GO · Recycle orders</div>
+    <svg class="guidon" viewBox="0 0 200 112" aria-hidden="true">
+      <rect x="8" y="4" width="6" height="106" rx="3" fill="#8a6a3c"/>
+      <circle cx="11" cy="6" r="6" fill="#d4b13c"/>
+      <g class="flag">
+        <path d="M14 12 H192 L158 54 L192 96 H14 Z" fill="#b3261e"/>
+        <path d="M14 12 H192 L158 54 L192 96 H14 Z" fill="none" stroke="#ffffff" stroke-opacity=".2" stroke-width="2"/>
+        <text x="84" y="74" text-anchor="middle" font-family="DIN Condensed, Arial Narrow, Arial, sans-serif" font-weight="800" font-size="56" fill="#ffffff">C</text>
+      </g>
+    </svg>
+    <div class="stamp" aria-hidden="true">NO-GO</div>
+    <h2 class="ct" id="chT">Welcome to Charlie Company!</h2>
+    <p id="chStats"></p>
+    <div class="orders">REPORT TO: C Co, 3rd Platoon<br>TIME: 0430 tomorrow<br>BRING: map, protractor, WORM formula</div>
+    <div class="txrow"><button class="btn" id="chWhy">See what went wrong</button><button class="btn primary" id="chRetry">Recycle: try again</button></div>
+  </div>
+</div>
+
+<div class="modal" id="mSet" hidden>
+  <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="setT">
+    <h2 id="setT">Settings</h2>
+    <button class="btn x" data-close="mSet" aria-label="Close">✕</button>
+    <fieldset>
+      <legend>Compass</legend>
+      <label class="opt"><input type="radio" name="cmp" value="mag"> Magnetic: convert with the G-M angle (as in class)</label>
+      <label class="opt"><input type="radio" name="cmp" value="grid"> Grid: skip the G-M step</label>
+    </fieldset>
+    <fieldset>
+      <legend>Exam time limits</legend>
+      <label class="opt">Call for fire (all three transmissions) within
+        <select id="setCff"><option value="3">3:00</option><option value="4">4:00</option><option value="5">5:00</option><option value="6">6:00</option></select></label>
+      <label class="opt">Each correction within
+        <select id="setCorr"><option value="30">30 s</option><option value="45">45 s</option><option value="60">60 s</option></select> of the impact</label>
+    </fieldset>
+    <fieldset>
+      <legend>First round</legend>
+      <label class="opt"><input type="radio" name="fro" value="1"> Lands off target, as in class (you bracket it in)</label>
+      <label class="opt"><input type="radio" name="fro" value="0"> Lands exactly on the grid you sent</label>
+    </fieldset>
+    <fieldset>
+      <legend>FDC speed</legend>
+      <label class="opt"><input type="radio" name="spd" value="real"> Real: 11 s time of flight, SPLASH 5 s before impact</label>
+      <label class="opt"><input type="radio" name="spd" value="fast"> Fast: 5 s time of flight</label>
+    </fieldset>
+    <p class="muted" id="bestTxt"></p>
+    <div class="txrow"><button class="btn primary" id="setSave">Save · new card</button></div>
+  </div>
+</div>
+
+<div class="modal" id="mRef" hidden>
+  <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="refT">
+    <h2 id="refT">Cheat sheet · Call for fire (CFFT)</h2>
+    <button class="btn x" data-close="mRef" aria-label="Close">✕</button>
+    <h3>Phase 1 · Locate the target (worksheet)</h3>
+    <ol>
+      <li><b>Observer location:</b> read the OP's grid from the map (read right, then up). 8 digits = 10 m.</li>
+      <li><b>Target:</b> through the binoculars, count the vehicles and name them (BMP, T-72, truck).</li>
+      <li><b>Apparent size M:</b> the width of one vehicle, end to end, on the reticle's horizontal scale (ticks every 5 mils, numbers every 10). Read to half a mil.</li>
+      <li><b>Range (WORM):</b> W = R × M, so R = W ÷ M × 1000. Example: BMP 6.7 m, M = 4.5 mils → 6.7 ÷ 4.5 × 1000 ≈ 1,490 m.</li>
+      <li><b>Magnetic direction:</b> put the reticle center on the middle of the group and read the compass (MAG box), in mils.</li>
+      <li><b>Grid direction:</b> magnetic → grid: G-M angle <b>EAST: add</b>, <b>WEST: subtract</b>. Send direction to the nearest 10 mils.</li>
+      <li><b>Target location:</b> polar plot. From the OP, lay the grid direction and measure the range (the map's Plot tool does the protractor and ruler for you); read the grid at the mark. It must be within 250 m.</li>
+    </ol>
+    <h3>Phase 2 · Radio</h3>
+    <p>Set the fire-net frequency (5 digits, e.g. <code>36550</code> = 36.550). Check call signs: the FDC's first, then yours. The six elements: observer identification, warning order, target location, target description, method of engagement, method of fire and control.</p>
+    <h3>Phase 3 · Call for fire: three transmissions</h3>
+    <ol>
+      <li><code>Z57, THIS IS H44, ADJUST FIRE, OVER</code> (observer ID + warning order)</li>
+      <li><code>GRID 4523 9671, OVER</code> (target location)</li>
+      <li><code>3 BMPs IN THE OPEN, ICM, WHEN READY, OVER</code> (description, method of engagement, method of fire and control)</li>
+    </ol>
+    <p>The FDC reads each one back. Then the message to observer (MTO): unit to fire, rounds, target number. Read it back. <code>SHOT, OVER</code> → <code>SHOT, OUT</code>. <code>SPLASH, OVER</code> (5 s before impact) → <code>SPLASH, OUT</code> and watch the target.</p>
+    <div class="tbl"><table>
+      <tr><th>Target</th><th>Ammunition (method of engagement)</th></tr>
+      <tr><td>BMPs, T-72 tanks (armor)</td><td><code>ICM</code></td></tr>
+      <tr><td>Trucks (soft-skinned)</td><td><code>HE QUICK</code> (HE VT also works)</td></tr>
+    </table></div>
+    <h3>Phase 4 · Adjust (successive bracketing)</h3>
+    <ul>
+      <li><b>Spot</b> each burst: left or right of the target in mils (reticle), and SHORT (in front, lower) or OVER (behind, higher).</li>
+      <li><b>Deviation:</b> mils × OT factor (range in km, rounded: 1,490 m → 1). Round to 10 m. Under 30 m: leave it out. Burst right → LEFT.</li>
+      <li><b>Range:</b> short → ADD, over → DROP. First 400, then halve each round once you have a bracket: 200, 100, then 50 + <code>FIRE FOR EFFECT</code>. Not bracketed yet? Repeat (or double) until the round crosses the target.</li>
+      <li>Grid mission: send <code>DIRECTION ####</code> once, with the first correction. Order: direction, deviation, range, FIRE FOR EFFECT. Example: <code>DIRECTION 0860, LEFT 40, ADD 400, OVER</code>.</li>
+    </ul>
+    <h3>Phase 5 · End of mission</h3>
+    <p>After <code>ROUNDS COMPLETE, OVER</code>: <code>END OF MISSION, TARGET DESTROYED, 2 CASUALTIES, OVER</code>. Report what you actually see: destroyed (every vehicle burning), damaged (some), or no effect.</p>
+    <h3>Standards used in Exam</h3>
+    <ul id="refStd"></ul>
+    <p class="muted">Sources: Adjust Indirect Fire task standards (EIB / STP), FM 6-30 and ATP 3-09.30 call-for-fire format, the CFFT's published capabilities (no dispersion, fixed time of flight), and your class steps. Where a source and the class differ, the class wins.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const MIL = Math.PI * 2 / 6400, S = 6000, CELL = 10, NN = 601, TM = 30;
+  const QS = new URLSearchParams(location.search);
+  const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+  const w64 = m => ((m % 6400) + 6400) % 6400;
+  const dm = (a, b) => { const d = w64(a - b); return d > 3200 ? d - 6400 : d; };
+  const azOf = (dx, dy) => w64(Math.atan2(dx, dy) / MIL);
+  const fmt4 = m => String(Math.round(w64(m)) % 6400).padStart(4, '0');
+  const r10 = v => Math.round(v / 10) * 10;
+  const smooth = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
+  const mmss = s => { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+  const digits = s => String(s == null ? '' : s).replace(/\D/g, '');
+  const num = s => { const t = String(s == null ? '' : s).trim(); return /^\d+(\.\d+)?$/.test(t) ? +t : null; };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const DIR8 = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
+
+  // ---------- settings
+  const cfg = { compass: 'mag', cffMin: 3, corrSec: 45, speed: 'real', firstOff: true };
+  try { Object.assign(cfg, JSON.parse(localStorage.getItem('cffT.cfg') || '{}')); } catch (e) { /* storage blocked */ }
+  if (QS.get('fast') === '1') cfg.speed = 'fast';
+  const saveCfg = () => { try { localStorage.setItem('cffT.cfg', JSON.stringify(cfg)); } catch (e) { /* storage blocked */ } };
+  const K = () => cfg.speed === 'fast' ? 0.4 : 1;
+  const TOF = () => cfg.speed === 'fast' ? 5000 : 11000;
+  const SPL = () => cfg.speed === 'fast' ? 3000 : 6000;
+
+  // ---------- seeded noise
+  function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function noise2(r) {
+    const p = new Float32Array(65536);
+    for (let i = 0; i < 65536; i++) p[i] = r();
+    return (x, y) => {
+      const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+      const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+      const x0 = xi & 255, x1 = (xi + 1) & 255, y0 = (yi & 255) << 8, y1 = ((yi + 1) & 255) << 8;
+      const a = p[y0 | x0], b = p[y0 | x1], c = p[y1 | x0], d = p[y1 | x1];
+      return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+    };
+  }
+  function fbm(nf, x, y, o) { let s = 0, a = 1, t = 0, f = 1; for (let k = 0; k < o; k++) { s += a * nf(x * f + k * 31.7, y * f - k * 17.3); t += a; a *= 0.5; f *= 2.07; } return s / t; }
+
+  // ---------- vehicles and ammunition
+  const VEH = {
+    BMP: { one: 'BMP', many: 'BMPs', L: 6.7, Wd: 3.1, hull: 1.35, tur: 0.6, turW: 2.1, gun: 1.7, armor: true },
+    T72: { one: 'T-72 TANK', many: 'T-72 TANKS', L: 6.9, Wd: 3.6, hull: 1.3, tur: 0.85, turW: 2.7, gun: 4.2, armor: true },
+    TRK: { one: 'TRUCK', many: 'TRUCKS', L: 7.4, Wd: 2.5, hull: 2.6, tur: 0, turW: 0, gun: 0, armor: false }
+  };
+  const AMMO = { am_heq: 'HE QUICK', am_vt: 'HE VT', am_icm: 'ICM', am_smk: 'SMOKE' };
+  const ammoFits = (ty, a) => VEH[ty].armor ? a === 'ICM' : (a === 'HE QUICK' || a === 'HE VT' || a === 'ICM');
+  const ammoBest = ty => VEH[ty].armor ? 'am_icm' : 'am_heq';
+  const descTxt = (n, ty, act) => `${n} ${n === 1 ? VEH[ty].one : VEH[ty].many} ${act}`;
+  const RESULTS = ['TARGET DESTROYED', 'TARGET DAMAGED', 'NO EFFECT'];
+
+  // ---------- terrain
+  function bil(A, x, y) {
+    x = clamp(x, 0, S - 0.01); y = clamp(y, 0, S - 0.01);
+    const gx = x / CELL, gy = y / CELL, i = gx | 0, j = gy | 0, fx = gx - i, fy = gy - j, k = j * NN + i;
+    const a = A[k], b = A[k + 1], c = A[k + NN], d = A[k + NN + 1];
+    return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+  }
+  const groundAt = (w, x, y) => bil(w.H, x, y);
+  const surfAt = (w, x, y) => bil(w.SF, x, y);
+  const cellOf = (x, y) => Math.round(clamp(y, 0, S) / CELL) * NN + Math.round(clamp(x, 0, S) / CELL);
+
+  function buildTerrain(seed) {
+    const r = mulberry32(seed);
+    const nA = noise2(r), nB = noise2(r), nC = noise2(r), nD = noise2(r);
+    const w = { r, seed, E0: 1000 * (20 + Math.floor(r() * 60)), N0: 1000 * (10 + Math.floor(r() * 70)) };
+    const op = { x: 2400 + r() * 1200, y: 480 + r() * 220 };
+    w.op = op;
+    const ph1 = r() * 6.283, ph2 = r() * 6.283, ph3 = r() * 6.283;
+    const yv = x => 1850 + 170 * Math.sin(x * 6.283 / 5200 + ph1);
+    const H = new Float32Array(NN * NN);
+    for (let j = 0; j < NN; j++) {
+      const y = j * CELL;
+      for (let i = 0; i < NN; i++) {
+        const x = i * CELL, dx = x - op.x, dy = y - op.y;
+        // the OP sits on high ground; the slope in front of it falls to the valley, then the far side climbs
+        let h = 180;
+        h += 70 * Math.exp(-Math.pow((y - op.y + 150) / 700, 2));
+        h -= 30 * Math.exp(-Math.pow((y - yv(x)) / 420, 2));
+        h += 95 * smooth((y - 1950) / 3200);
+        h += (0.35 + 0.65 * smooth((y - op.y - 500) / 800)) * 60 * (fbm(nA, x / 1700, y / 1700, 4) - 0.5);
+        h += 12 * (fbm(nB, x / 420, y / 420, 3) - 0.5);
+        h += 30 * Math.exp(-(dx * dx + dy * dy) / (320 * 320));
+        H[j * NN + i] = h;
+      }
+    }
+    const LC = new Uint8Array(NN * NN), BH = new Float32Array(NN * NN);
+    const inMap = (x, y) => x >= 0 && y >= 0 && x <= S && y <= S;
+    // stream along the valley floor
+    const stream = [];
+    for (let x = 0; x <= S; x += 5) stream.push([x, yv(x) + 70 * (nC(x / 380, 3.3) - 0.5)]);
+    for (const [x, y] of stream) if (inMap(x, y)) { const k = cellOf(x, y); LC[k] = 3; H[k] -= 2; }
+    // roads: main road along the valley, a cross road, a dirt road up the far slope
+    const yMR = x => yv(x) + 210 + 60 * Math.sin(x / 900 + ph2);
+    const MR = []; for (let x = 0; x <= S; x += 5) MR.push([x, yMR(x)]);
+    const side = r() < 0.5 ? -1 : 1;
+    const xc = clamp(op.x + side * (800 + r() * 600), 500, 5500);
+    const xCR = y => xc + 130 * Math.sin(y / 650 + ph3);
+    const CR = []; for (let y = 0; y <= S; y += 5) CR.push([xCR(y), y]);
+    let J = null, best = 1e9;
+    for (let y = 1000; y < 3200; y += 2) { const x = xCR(y), d = Math.abs(yMR(x) - y); if (d < best) { best = d; J = { x, y }; } }
+    let B = null; best = 1e9;
+    for (let y = 1000; y < 3000; y += 2) { const x = xCR(y), d = Math.abs(yv(x) - y); if (d < best) { best = d; B = { x, y }; } }
+    const xd = clamp(xc - side * (900 + r() * 600), 400, 5600);
+    const p0 = [xd, yMR(xd)];
+    const p2 = [clamp(xd + (r() < 0.5 ? -1 : 1) * (300 + r() * 500), 300, 5700), p0[1] + 900 + r() * 500];
+    const p1 = [(p0[0] + p2[0]) / 2 + (r() - 0.5) * 500, (p0[1] + p2[1]) / 2];
+    const DR = [];
+    for (let t = 0; t <= 1.0001; t += 0.004) { const a = (1 - t) * (1 - t), b = 2 * t * (1 - t), c = t * t; DR.push([a * p0[0] + b * p1[0] + c * p2[0], a * p0[1] + b * p1[1] + c * p2[1]]); }
+    for (const [x, y] of MR) if (inMap(x, y)) LC[cellOf(x, y)] = 2;
+    for (const [x, y] of CR) if (inMap(x, y)) LC[cellOf(x, y)] = 2;
+    for (const [x, y] of DR) if (inMap(x, y)) { const k = cellOf(x, y); if (LC[k] !== 2) LC[k] = 5; }
+    // buildings: a village at the crossroads, a church, two farms
+    const bl = [];
+    const addB = (x, y, wc, dc, h) => {
+      if (!inMap(x, y) || !inMap(x + wc * CELL, y + dc * CELL)) return;
+      for (let a = 0; a < wc; a++) for (let b = 0; b < dc; b++) { const k = cellOf(x + a * CELL, y + b * CELL); if (LC[k] === 2 || LC[k] === 3 || LC[k] === 5) return; }
+      for (let a = 0; a < wc; a++) for (let b = 0; b < dc; b++) { const k = cellOf(x + a * CELL, y + b * CELL); LC[k] = 4; BH[k] = h; }
+      bl.push({ x: Math.round(x / CELL) * CELL, y: Math.round(y / CELL) * CELL, wc, dc, h });
+    };
+    const nV = 9 + Math.floor(r() * 5);
+    for (let n = 0; n < nV; n++) {
+      const t = (r() - 0.5) * 420, off = (r() < 0.5 ? -1 : 1) * (22 + r() * 14);
+      if (r() < 0.6) { const x = J.x + t; addB(x, yMR(x) + off, 1 + (r() < 0.4 ? 1 : 0), 1 + (r() < 0.3 ? 1 : 0), 6 + r() * 2); }
+      else { const y = J.y + t; addB(xCR(y) + off, y, 1 + (r() < 0.4 ? 1 : 0), 1 + (r() < 0.3 ? 1 : 0), 6 + r() * 2); }
+    }
+    const church = { x: J.x + 50 * side, y: J.y + 45 };
+    addB(church.x, church.y, 2, 2, 13);
+    const F1 = { x: p2[0], y: p2[1] };
+    for (let n = 0; n < 3; n++) addB(F1.x + (r() - 0.5) * 70, F1.y + (r() - 0.5) * 70, n ? 1 : 2, 1, 6 + r() * 2);
+    let x2 = J.x + (r() < 0.5 ? -1 : 1) * (1400 + r() * 800);
+    if (x2 < 300 || x2 > 5700) x2 = 2 * J.x - x2;
+    x2 = clamp(x2, 300, 5700);
+    const F2 = { x: x2, y: yMR(x2) + 45 };
+    for (let n = 0; n < 3; n++) addB(F2.x + (r() - 0.5) * 70, F2.y + r() * 50, n ? 1 : 2, 1, 6 + r() * 2);
+    // woods, kept off roads, buildings, water and the OP's own slope
+    const keep = new Uint8Array(NN * NN);
+    for (let j = 0; j < NN; j++) for (let i = 0; i < NN; i++) {
+      const t = LC[j * NN + i];
+      if (t >= 2) for (let b = -3; b <= 3; b++) for (let a = -3; a <= 3; a++) { const jj = j + b, ii = i + a; if (jj >= 0 && ii >= 0 && jj < NN && ii < NN) keep[jj * NN + ii] = 1; }
+    }
+    for (let j = 0; j < NN; j++) for (let i = 0; i < NN; i++) {
+      const k = j * NN + i; if (LC[k] || keep[k]) continue;
+      const x = i * CELL, y = j * CELL, dx = x - op.x, dy = y - op.y;
+      if (dx * dx + dy * dy < 950 * 950) continue;
+      if (fbm(nD, x / 900, y / 900, 3) + 0.08 * (fbm(nB, x / 150 + 9, y / 150, 2) - 0.5) > 0.59) LC[k] = 1;
+    }
+    const SF = new Float32Array(NN * NN);
+    for (let k = 0; k < NN * NN; k++) SF[k] = H[k] + (LC[k] === 1 ? 14 : LC[k] === 4 ? BH[k] : 0);
+    // tile maxima for the renderer's skip test
+    const tmax = new Float32Array(TM * TM);
+    for (let tj = 0; tj < TM; tj++) for (let ti = 0; ti < TM; ti++) {
+      let m = -1e9;
+      for (let j = Math.max(0, tj * 20 - 20); j <= Math.min(NN - 1, tj * 20 + 40); j++) for (let i = Math.max(0, ti * 20 - 20); i <= Math.min(NN - 1, ti * 20 + 40); i++) { const v = SF[j * NN + i]; if (v > m) m = v; }
+      tmax[tj * TM + ti] = m;
+    }
+    // view colors, shaded by slope
+    const col = new Uint32Array(NN * NN);
+    const Lx = 0.3, Ly = -0.55, Lz = 0.78, Ln = Math.hypot(Lx, Ly, Lz);
+    for (let j = 0; j < NN; j++) for (let i = 0; i < NN; i++) {
+      const k = j * NN + i, x = i * CELL, y = j * CELL;
+      const hx = (H[j * NN + Math.min(NN - 1, i + 1)] - H[j * NN + Math.max(0, i - 1)]) / (2 * CELL);
+      const hy = (H[Math.min(NN - 1, j + 1) * NN + i] - H[Math.max(0, j - 1) * NN + i]) / (2 * CELL);
+      const dot = (-hx * Lx - hy * Ly + Lz) / (Math.hypot(hx, hy, 1) * Ln);
+      const sh = 0.58 + 0.55 * Math.max(0, dot);
+      const t = LC[k];
+      let c;
+      if (t === 1) { const v = (nB(x / 23, y / 23) - 0.5) * 22; c = [46 + v, 68 + v, 36 + v * 0.6]; }
+      else if (t === 2) c = [160, 150, 126];
+      else if (t === 5) c = [152, 132, 100];
+      else if (t === 3) c = [74, 100, 114];
+      else if (t === 4) c = (i * 7 + j * 13) % 3 ? [130, 64, 52] : [108, 106, 100];
+      else { const v = fbm(nC, x / 260, y / 260, 2), q = (nB(x / 37, y / 37) - 0.5) * 22 + (r() - 0.5) * 14; c = v > 0.5 ? [140 + q, 141 + q, 86 + q] : [112 + q, 128 + q, 70 + q]; }
+      const R = clamp(c[0] * sh, 0, 255) | 0, G = clamp(c[1] * sh, 0, 255) | 0, Bc = clamp(c[2] * sh, 0, 255) | 0;
+      col[k] = R | (G << 8) | (Bc << 16);
+    }
+    const names = ['HOLT', 'MILLER', 'CARVER', 'DALTON', 'PRESTON', 'REDDING', 'ASHBY', 'GARNER'];
+    Object.assign(w, { H, SF, LC, col, tmax, stream, MR, CR, DR, bl, J, B, church, F1, F2, yv, village: names[Math.floor(r() * names.length)] });
+    w.eyeZ = groundAt(w, op.x, op.y) + 3;
+    w.lms = [
+      { x: J.x, y: J.y, name: `the crossroads in ${w.village}` },
+      { x: church.x + 10, y: church.y + 10, name: 'the church' },
+      { x: F1.x, y: F1.y, name: 'the farm at the end of the dirt road' },
+      { x: F2.x, y: F2.y + 20, name: 'the farm on the main road' },
+      { x: B.x, y: B.y, name: 'the bridge' },
+      { x: p0[0], y: p0[1], name: 'where the dirt road leaves the main road' }
+    ];
+    let hmin = 1e9, hmax = -1e9;
+    for (let k = 0; k < NN * NN; k++) { if (H[k] < hmin) hmin = H[k]; if (H[k] > hmax) hmax = H[k]; }
+    w.hmin = hmin; w.hmax = hmax;
+    return w;
+  }
+
+  function los(w, ax, ay, az, bx, by, bz) {
+    const dx = bx - ax, dy = by - ay, d = Math.hypot(dx, dy), n = Math.ceil(d / 10);
+    for (let s = 1; s < n - 2; s++) { const t = s / n; if (surfAt(w, ax + dx * t, ay + dy * t) > az + (bz - az) * t + 0.3) return false; }
+    return true;
+  }
+  function openAround(w, x, y, rad) {
+    for (let dy = -rad; dy <= rad; dy += 10) for (let dx = -rad; dx <= rad; dx += 10) {
+      if (dx * dx + dy * dy > rad * rad) continue;
+      const xx = x + dx, yy = y + dy;
+      if (xx < 0 || yy < 0 || xx > S || yy > S || w.LC[cellOf(xx, yy)] !== 0) return false;
+    }
+    return true;
+  }
+  function nearestLm(w, x, y) {
+    let b = null, bd = 1e9;
+    for (const l of w.lms) { const d = Math.hypot(x - l.x, y - l.y); if (d < bd) { bd = d; b = l; } }
+    return { lm: b, d: bd, dir: DIR8[Math.round(azOf(x - b.x, y - b.y) / 800) % 8] };
+  }
+  function visibleSet(w, c) {
+    const op = w.op, eye = w.eyeZ, a = c.az * MIL, u = [Math.sin(a), Math.cos(a)], rt = [Math.cos(a), -Math.sin(a)];
+    const chk = (rng, lat, hh) => {
+      const x = c.x + u[0] * rng + rt[0] * lat, y = c.y + u[1] * rng + rt[1] * lat;
+      if (x < 60 || y < 60 || x > S - 60 || y > S - 60) return false;
+      return los(w, op.x, op.y, eye, x, y, groundAt(w, x, y) + hh);
+    };
+    if (!chk(0, 0, 1.4) || !chk(0, -45, 1.4) || !chk(0, 45, 1.4)) return false;
+    for (const rng of [-450, -250, -120, 120, 250, 450]) if (!chk(rng, 0, 5)) return false;
+    for (const lat of [-170, 170]) if (!chk(0, lat, 5)) return false;
+    for (const p of [[-250, -120], [250, 120], [-120, 100], [120, -100]]) if (!chk(p[0], p[1], 5)) return false;
+    return true;
+  }
+  function placeTarget(w) {
+    const r = w.r, op = w.op, cand = [];
+    for (let y = 1300; y <= 3000; y += 40) for (let x = 200; x <= 5800; x += 40) {
+      const dx = x - op.x, dy = y - op.y, d = Math.hypot(dx, dy);
+      if (d < 950 || d > 1800) continue;
+      const az = azOf(dx, dy);
+      if (Math.abs(dm(az, 0)) > 700) continue;
+      if (!openAround(w, x, y, 70)) continue;
+      const gx = (groundAt(w, x + 15, y) - groundAt(w, x - 15, y)) / 30, gy = (groundAt(w, x, y + 15) - groundAt(w, x, y - 15)) / 30;
+      if (Math.hypot(gx, gy) > 0.13) continue;
+      const nl = nearestLm(w, x, y);
+      if (nl.d > 600 || nl.d < 90) continue;
+      cand.push({ x, y, d, az, s: r() });
+    }
+    cand.sort((a, b) => a.s - b.s);
+    for (const c of cand.slice(0, 500)) {
+      if (!visibleSet(w, c)) continue;
+      const tys = ['BMP', 'T72', 'TRK'], ty = tys[Math.floor(r() * 3)], n = 2 + Math.floor(r() * 3);
+      const a = c.az * MIL, u = [Math.sin(a), Math.cos(a)], rt = [Math.cos(a), -Math.sin(a)];
+      const veh = [], sp = 32 + r() * 8;
+      for (let q = 0; q < n; q++) {
+        const lat = (q - (n - 1) / 2) * sp + (r() - 0.5) * 6, rng = (q % 2 ? 9 : -9) + (r() - 0.5) * 10;
+        const x = c.x + rt[0] * lat + u[0] * rng, y = c.y + rt[1] * lat + u[1] * rng;
+        const head = a + (r() < 0.5 ? 1 : -1) * Math.PI / 2 + (r() - 0.5) * 0.2;
+        veh.push({ x, y, z: groundAt(w, x, y), head, dead: false });
+      }
+      const cx = veh.reduce((s, v) => s + v.x, 0) / n, cy = veh.reduce((s, v) => s + v.y, 0) / n;
+      w.tgt = { x: cx, y: cy, ty, n, veh };
+      w.fo = ['H44', 'D21', 'K36', 'R17', 'T52'][Math.floor(r() * 5)];
+      w.fdcCs = ['Z57', 'F24', 'B65', 'M83', 'X19'][Math.floor(r() * 5)];
+      w.freq = String(30000 + 25 * Math.floor(r() * 2300));
+      w.gmAbs = 40 + 10 * Math.floor(r() * 18);
+      w.gmEast = r() < 0.5;
+      w.tn = 'A' + 'BCDEFGH'[Math.floor(r() * 7)] + (1000 + Math.floor(r() * 9000));
+      w.bty = r() < 0.5 ? 'ALPHA' : 'BRAVO';
+      w.cas = 2 + Math.floor(r() * 4);
+      return true;
+    }
+    return false;
+  }
+  function genWorld(seed) {
+    for (let t = 0; t < 14; t++) { const w = buildTerrain(seed + t * 7919); if (placeTarget(w)) { w.seed = seed; return w; } }
+    return null;
+  }
+
+  // ---------- state
+  const st = { mode: 'guided', w: null, seed: 0, az: 0, pitch: 0, bino: false, seen: false, sheet: {}, gOk: {}, freq: '', draft: [], ed: null, ack: null, bursts: [], plot: null, t0: 0, running: false, examOn: false, ended: false };
+  let F = {}, R = {};
+  const timers = new Set();
+  const later = (ms, fn) => { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); };
+  const clearTimers = () => { for (const id of timers) clearTimeout(id); timers.clear(); };
+  const W = () => st.w;
+  const gm = () => cfg.compass === 'grid' ? 0 : (st.w.gmEast ? st.w.gmAbs : -st.w.gmAbs); // grid = magnetic + gm
+  const truth = () => {
+    const w = st.w, T = w.tgt, op = w.op, az = azOf(T.x - op.x, T.y - op.y), d = Math.hypot(T.x - op.x, T.y - op.y);
+    const sp = VEH[T.ty];
+    return { az, mag: w64(az - gm()), d, M: sp.L / d * 1000, otf: d >= 1000 ? Math.round(d / 1000) : Math.round(d / 100) / 10 };
+  };
+  function gridToWorld(s) {
+    const d = digits(s); if (![6, 8, 10].includes(d.length)) return null;
+    const h = d.length / 2, mul = Math.pow(10, 5 - h);
+    return { x: +d.slice(0, h) * mul - st.w.E0, y: +d.slice(h) * mul - st.w.N0 };
+  }
+  function worldToGrid(x, y, nd) {
+    const h = nd / 2, div = Math.pow(10, 5 - h);
+    const e = Math.floor((st.w.E0 + x) / div), n = Math.floor((st.w.N0 + y) / div);
+    return String(e).padStart(h, '0') + ' ' + String(n).padStart(h, '0');
+  }
+  const gridTxt = v => { const d = digits(v), h = d.length / 2; return d.slice(0, h) + ' ' + d.slice(h); };
+  const freqTxt = f => f.slice(0, 2) + '.' + f.slice(2);
+  function axisErr(p) {
+    const T = st.w.tgt, th = truth().az * MIL, dx = p.x - T.x, dy = p.y - T.y;
+    const rng = dx * Math.sin(th) + dy * Math.cos(th), dev = dx * Math.cos(th) - dy * Math.sin(th);
+    return { rng, dev, max: Math.max(Math.abs(rng), Math.abs(dev)), d: Math.hypot(dx, dy) };
+  }
+
+  // ---------- observer view (voxel ray caster)
+  const V = { cv: $('view'), ctx: $('view').getContext('2d'), W: 0, H: 0, img: null, d32: null, zb: null, b32: null, bz: null, dirty: true, fast: false, raf: 0, last: 0 };
+  const HZN = 450, HZ = new Float32Array(HZN);
+  for (let i = 0; i < HZN; i++) HZ[i] = 0.7 * (1 - Math.exp(-(i * 20) / 6000));
+  const fov = () => st.bino ? 130 : 800;
+  const camF = () => V.W / (fov() * MIL);
+  const horizonY = () => V.H / 2 + st.pitch * camF();
+  function sizeView() {
+    const css = $('vwrap').clientWidth; if (!css) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const w = clamp(Math.round(css * dpr), 300, 980), h = Math.round(w * (css < 600 ? 0.54 : 0.6));
+    if (w === V.W && h === V.H) return;
+    V.W = w; V.H = h; V.cv.width = w; V.cv.height = h;
+    V.img = V.ctx.createImageData(w, h); V.d32 = new Uint32Array(V.img.data.buffer);
+    V.zb = new Float32Array(w * h); V.b32 = new Uint32Array(w * h); V.bz = new Float32Array(w * h);
+    V.dirty = true; kick();
+  }
+  function renderTerrain() {
+    const w = st.w, Wd = V.W, Hd = V.H, f = camF(), hy = horizonY(), d = V.b32, zb = V.bz, SF = w.SF, col = w.col, tmax = w.tmax;
+    const eye = w.eyeZ, ox = w.op.x, oy = w.op.y, az0 = st.az * MIL;
+    const stepK = (V.fast ? 2.4 : 0.85) / f, minStep = V.fast ? 3 : 1;
+    const sky = new Uint32Array(Hd);
+    for (let y = 0; y < Hd; y++) {
+      const t = clamp((hy - y) / f / 0.35, 0, 1);
+      sky[y] = (0xff000000 | (((222 - 22 * t) | 0) << 16) | (((214 - 58 * t) | 0) << 8) | ((205 - 90 * t) | 0)) >>> 0;
+    }
+    for (let i = 0; i < Wd; i++) {
+      const a = az0 + (i + 0.5 - Wd / 2) / f, sx = Math.sin(a), sy = Math.cos(a);
+      let ybuf = Hd, z = 8;
+      while (z < 8500) {
+        const px = ox + sx * z, py = oy + sy * z;
+        if (px < 0 || py < 0 || px >= S - 1 || py >= S - 1) break;
+        if (hy + (eye - tmax[((py / 200) | 0) * TM + ((px / 200) | 0)]) / z * f >= ybuf) { z += Math.max(6, z * stepK * 4); continue; }
+        const gx = px / CELL, gy = py / CELL, ix = gx | 0, iy = gy | 0, fx = gx - ix, fy = gy - iy, k = iy * NN + ix;
+        const a0 = SF[k], a1 = SF[k + 1], a2 = SF[k + NN], a3 = SF[k + NN + 1];
+        const hs = a0 + (a1 - a0) * fx + (a2 - a0) * fy + (a0 - a1 - a2 + a3) * fx * fy;
+        const yy = hy + (eye - hs) / z * f;
+        if (yy < ybuf) {
+          const yi = yy < 0 ? 0 : Math.ceil(yy);
+          if (yi < ybuf) {
+            const c = col[(fy < 0.5 ? k : k + NN) + (fx < 0.5 ? 0 : 1)], hz = HZ[Math.min(HZN - 1, (z / 20) | 0)], ih = 1 - hz;
+            const pc = (0xff000000 | ((((c >> 16) & 255) * ih + 214 * hz) << 16) | ((((c >> 8) & 255) * ih + 206 * hz) << 8) | (((c & 255) * ih + 196 * hz) | 0)) >>> 0;
+            for (let y = yi; y < ybuf; y++) { const o = y * Wd + i; d[o] = pc; zb[o] = z; }
+            ybuf = yi;
+            if (ybuf <= 0) break;
+          }
+        }
+        z += Math.max(minStep, z * stepK);
+      }
+      for (let y = 0; y < ybuf; y++) { const o = y * Wd + i; d[o] = sky[y]; zb[o] = 1e9; }
+    }
+  }
+  function proj(x, y, z) {
+    const w = st.w, dx = x - w.op.x, dy = y - w.op.y, dist = Math.hypot(dx, dy), f = camF();
+    let da = Math.atan2(dx, dy) - st.az * MIL; da = Math.atan2(Math.sin(da), Math.cos(da));
+    return { sx: V.W / 2 + da * f, sy: horizonY() + (w.eyeZ - z) / dist * f, dist, s: f / dist, a: Math.atan2(dx, dy) };
+  }
+  const pack = (r, g, b) => (0xff000000 | (b << 16) | (g << 8) | r) >>> 0;
+  function blend(o, c, a) {
+    const p = V.d32[o], ia = 1 - a;
+    V.d32[o] = pack(((p & 255) * ia + c[0] * a) | 0, (((p >> 8) & 255) * ia + c[1] * a) | 0, (((p >> 16) & 255) * ia + c[2] * a) | 0);
+  }
+  function disc(x, y, z, rad, c, a) {
+    const p = proj(x, y, z); if (p.dist < 20) return;
+    const rp = Math.max(0.7, rad * p.s), Wd = V.W, Hd = V.H;
+    if (p.sx + rp < 0 || p.sx - rp > Wd || p.sy + rp < 0 || p.sy - rp > Hd) return;
+    const x0 = Math.max(0, Math.floor(p.sx - rp)), x1 = Math.min(Wd - 1, Math.ceil(p.sx + rp)), y0 = Math.max(0, Math.floor(p.sy - rp)), y1 = Math.min(Hd - 1, Math.ceil(p.sy + rp));
+    const lim = p.dist - rad - 2;
+    for (let yy = y0; yy <= y1; yy++) for (let xx = x0; xx <= x1; xx++) {
+      const ddx = (xx + 0.5 - p.sx) / rp, ddy = (yy + 0.5 - p.sy) / rp, q = ddx * ddx + ddy * ddy;
+      if (q >= 1) continue;
+      const o = yy * Wd + xx; if (V.zb[o] < lim) continue;
+      blend(o, c, a * (1 - q * q));
+    }
+  }
+  function drawVehicles() {
+    const T = st.w.tgt, sp = VEH[T.ty], Wd = V.W, Hd = V.H;
+    for (const v of T.veh) {
+      const p = proj(v.x, v.y, v.z); if (p.sx < -60 || p.sx > Wd + 60) continue;
+      const rel = v.head - p.a, sr = Math.sin(rel), cr = Math.cos(rel), front = sr >= 0 ? 1 : -1;
+      const Lx = Math.abs(sp.L * sr) + Math.abs(sp.Wd * cr), s = p.s;
+      const hullC = v.dead ? [38, 35, 31] : [54, 58, 38], topC = v.dead ? [52, 46, 40] : [92, 98, 66], darkC = [24, 24, 20];
+      if (Lx * s < 3) {
+        const x = Math.round(p.sx), y = Math.round(p.sy) - 1;
+        for (let k = -1; k <= 0; k++) { const xx = x + k; if (xx < 0 || xx >= Wd || y < 0 || y >= Hd) continue; const o = y * Wd + xx; if (V.zb[o] > p.dist - 10) { V.d32[o] = pack(hullC[0], hullC[1], hullC[2]); V.zb[o] = p.dist - 1; } }
+        continue;
+      }
+      const tL = Math.abs(sp.turW * sr) * 0.75 + Math.abs(sp.turW * cr) * 0.75, gunL = sp.gun * Math.abs(sr);
+      const half = (Lx / 2 + gunL) * s + 2, top = (sp.hull + sp.tur + 0.4) * s + 2;
+      const x0 = Math.max(0, Math.floor(p.sx - half)), x1 = Math.min(Wd - 1, Math.ceil(p.sx + half)), y0 = Math.max(0, Math.floor(p.sy - top)), y1 = Math.min(Hd - 1, Math.ceil(p.sy));
+      for (let yy = y0; yy <= y1; yy++) for (let xx = x0; xx <= x1; xx++) {
+        const u = (xx + 0.5 - p.sx) / s, h = (p.sy - (yy + 0.5)) / s;
+        let c = null;
+        if (sp.armor) {
+          if (h >= 0 && h <= sp.hull && Math.abs(u) <= Lx / 2 - (h / sp.hull) * 0.35) c = h < 0.45 ? darkC : hullC;
+          else if (h > sp.hull && h <= sp.hull + sp.tur && Math.abs(u + front * 0.4) <= tL / 2) c = topC;
+          else if (Math.abs(h - (sp.hull + sp.tur * 0.5)) <= 0.13 && u * front > 0 && u * front <= tL / 2 + gunL) c = topC;
+        } else {
+          const cab = Lx * 0.28, fx = u * front;
+          if (h >= 0 && h <= 0.6 && Math.abs(u) <= Lx / 2 - 0.3) c = darkC;
+          else if (h > 0.6 && h <= 2.9 && fx <= Lx / 2 - cab - 0.2 && fx >= -Lx / 2) c = v.dead ? hullC : [92, 94, 70];
+          else if (h > 0.6 && h <= 2.5 && fx > Lx / 2 - cab && fx <= Lx / 2) c = hullC;
+        }
+        if (!c) continue;
+        const o = yy * Wd + xx;
+        if (V.zb[o] > p.dist - 10) { V.d32[o] = pack(c[0], c[1], c[2]); V.zb[o] = p.dist - 1; }
+      }
+    }
+  }
+  function addBurst(x, y, kind) {
+    const b = { x, y, z: groundAt(st.w, x, y), t0: performance.now(), kind, puffs: [] }, r = Math.random;
+    if (kind === 'icm') for (let n = 0; n < 16; n++) b.puffs.push({ ox: (r() - 0.5) * 70, oy: (r() - 0.5) * 50, h0: 1, rise: 3 + r() * 3, r0: 1.5, r1: 4 + r() * 2.5, a: 0.85, dl: r() * 0.7 });
+    else if (kind === 'vt') for (let n = 0; n < 6; n++) b.puffs.push({ ox: (r() - 0.5) * 8, oy: (r() - 0.5) * 8, h0: 9 + r() * 3, rise: 3 + r() * 3, r0: 2, r1: 8 + r() * 4, a: 0.85, dl: 0, dark: 1 });
+    else {
+      // HE: a dark column standing on the impact point plus a low dust skirt, so its base shows over/short
+      for (let n = 0; n < 6; n++) b.puffs.push({ ox: (r() - 0.5) * 4, oy: (r() - 0.5) * 4, h0: 1.5, rise: 2 + n * 3.4, r0: 2, r1: 4 + n * 0.7 + r() * 1.5, a: 0.95, dl: n * 0.05, dark: n < 3 ? 2 : 0 });
+      for (let n = 0; n < 5; n++) b.puffs.push({ ox: (n - 2) * 4 + (r() - 0.5) * 2, oy: (r() - 0.5) * 6, h0: 1, rise: 1 + r(), r0: 1.5, r1: 4 + r() * 2, a: 0.85, dl: 0.1, dark: 2 });
+    }
+    st.bursts.push(b); kick(); return b;
+  }
+  function drawBursts(now) {
+    let alive = false;
+    for (const b of st.bursts) {
+      const age = (now - b.t0) / 1000; if (age > 70) continue; alive = true; if (age < 0) continue;
+      if (age < 0.22) disc(b.x, b.y, b.z + (b.kind === 'vt' ? 10 : 2), b.kind === 'icm' ? 9 : 5, [255, 236, 170], 1);
+      for (const p of b.puffs) {
+        const t = age - p.dl; if (t < 0) continue;
+        const g = 1 - Math.exp(-t / 0.55), a = p.a * (t < 1.5 ? 1 : Math.exp(-(t - 1.5) / 14));
+        if (a < 0.03) continue;
+        disc(b.x + p.ox + 1.2 * t, b.y + p.oy, b.z + p.h0 + p.rise * g + 0.3 * t, p.r0 + (p.r1 - p.r0) * g + 0.2 * t, p.dark === 2 ? [88, 78, 64] : p.dark ? [72, 70, 66] : [132, 120, 100], a);
+      }
+    }
+    for (const v of st.w.tgt.veh) {
+      if (!v.dead) continue; alive = true;
+      const t = now / 1000 + v.x;
+      disc(v.x, v.y, v.z + 2.2, 1.3 + 0.4 * Math.sin(t * 11), [255, 140, 40], 0.9);
+      for (let q = 0; q < 5; q++) { const ph = ((t + q * 0.8) % 4) / 4; disc(v.x + ph * 6, v.y, v.z + 3 + ph * 26, 2 + ph * 7, [34, 33, 31], 0.75 * (1 - ph)); }
+    }
+    return alive;
+  }
+  function kick() { if (!V.raf) V.raf = requestAnimationFrame(frame); }
+  function frame(now) {
+    V.raf = 0;
+    if (!st.w || !V.W) return;
+    if (V.dirty) { renderTerrain(); V.dirty = false; }
+    V.d32.set(V.b32); V.zb.set(V.bz);
+    drawVehicles();
+    const alive = drawBursts(now);
+    V.ctx.putImageData(V.img, 0, 0);
+    drawHud();
+    if (alive) V.raf = requestAnimationFrame(t => { V.raf = 0; if (t - V.last < 33) { kick(); return; } V.last = t; frame(t); });
+  }
+  function drawHud() {
+    const g = V.ctx, Wd = V.W, Hd = V.H, f = camF(), sc = Wd / 820, pm = f * MIL, mag = w64(st.az - gm());
+    g.save();
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    if (!st.bino) {
+      const th = Math.round(26 * sc);
+      g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(0, 0, Wd, th);
+      g.strokeStyle = '#e8eadf'; g.fillStyle = '#e8eadf'; g.lineWidth = Math.max(1, sc);
+      g.font = `600 ${Math.round(10.5 * sc)}px ui-monospace, Menlo, monospace`;
+      const span = fov() / 2 + 60;
+      for (let m = Math.ceil((mag - span) / 50) * 50; m <= mag + span; m += 50) {
+        const x = Wd / 2 + (m - mag) * pm, big = w64(m) % 200 === 0;
+        g.beginPath(); g.moveTo(x, th); g.lineTo(x, th - (big ? 7 : 4) * sc); g.stroke();
+        if (big) g.fillText(fmt4(m), x, th * 0.38);
+      }
+      g.fillStyle = '#ffc53d'; g.beginPath(); g.moveTo(Wd / 2, th + 1); g.lineTo(Wd / 2 - 6 * sc, th + 9 * sc); g.lineTo(Wd / 2 + 6 * sc, th + 9 * sc); g.closePath(); g.fill();
+      if (st.mode === 'guided' && !st.examOn && gStep() === 'find') {
+        const T = st.w.tgt, p = proj(T.x, T.y, groundAt(st.w, T.x, T.y) + 2);
+        if (p.sx > -20 && p.sx < Wd + 20) { g.strokeStyle = '#ffc53d'; g.lineWidth = 2 * sc; g.setLineDash([6 * sc, 5 * sc]); g.beginPath(); g.arc(p.sx, p.sy, Math.max(16 * sc, 90 * p.s), 0, Math.PI * 2); g.stroke(); g.setLineDash([]); }
+      }
+      g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(0, Hd - 20 * sc, Wd, 20 * sc);
+      g.fillStyle = '#e8eadf'; g.textAlign = 'left'; g.font = `500 ${Math.round(11 * sc)}px system-ui, sans-serif`;
+      g.fillText('Drag to look · tap to aim · B = binoculars', 8 * sc, Hd - 10 * sc);
+    } else {
+      const cx = Wd / 2, cy = Hd / 2;
+      if (!V.mask || V.mask.width !== Wd || V.mask.height !== Hd) {
+        // the binocular field: black everywhere except two overlapping circles
+        const m = document.createElement('canvas'); m.width = Wd; m.height = Hd;
+        const mg = m.getContext('2d'), rr = Hd * 0.48, dx = Math.min(Wd * 0.475 - rr, rr * 0.75);
+        mg.fillStyle = '#050605'; mg.fillRect(0, 0, Wd, Hd);
+        mg.globalCompositeOperation = 'destination-out';
+        mg.beginPath(); mg.arc(cx - dx, cy, rr, 0, Math.PI * 2); mg.fill();
+        mg.beginPath(); mg.arc(cx + dx, cy, rr, 0, Math.PI * 2); mg.fill();
+        V.mask = m;
+      }
+      g.drawImage(V.mask, 0, 0);
+      // M22-style reticle: horizontal mil scale +-50 (5-mil ticks, numbers every 10), vertical scale +-20
+      g.strokeStyle = 'rgba(8,10,8,.92)'; g.fillStyle = 'rgba(8,10,8,.92)'; g.lineWidth = Math.max(1, 1.1 * sc);
+      g.font = `700 ${Math.round(11 * sc)}px ui-monospace, Menlo, monospace`;
+      g.beginPath(); g.moveTo(cx - 50 * pm, cy); g.lineTo(cx - 1.2 * pm, cy); g.moveTo(cx + 1.2 * pm, cy); g.lineTo(cx + 50 * pm, cy); g.stroke();
+      for (let m = -50; m <= 50; m += 5) {
+        if (!m) continue;
+        const x = cx + m * pm, big = m % 10 === 0;
+        g.beginPath(); g.moveTo(x, cy - (big ? 7 : 4) * sc); g.lineTo(x, cy + (big ? 7 : 4) * sc); g.stroke();
+        if (big) g.fillText(String(Math.abs(m)), x, cy - 15 * sc);
+      }
+      g.beginPath(); g.moveTo(cx, cy - 20 * pm); g.lineTo(cx, cy - 1.2 * pm); g.moveTo(cx, cy + 1.2 * pm); g.lineTo(cx, cy + 20 * pm); g.stroke();
+      for (let m = -20; m <= 20; m += 5) { if (!m) continue; const y = cy - m * pm, big = m % 10 === 0; g.beginPath(); g.moveTo(cx - (big ? 6 : 3.5) * sc, y); g.lineTo(cx + (big ? 6 : 3.5) * sc, y); g.stroke(); if (big) { g.textAlign = 'left'; g.fillText(String(Math.abs(m)), cx + 9 * sc, y); g.textAlign = 'center'; } }
+      const bw = 128 * sc, bh = 24 * sc;
+      g.fillStyle = 'rgba(0,0,0,.72)'; g.fillRect(cx - bw / 2, 6 * sc, bw, bh);
+      g.fillStyle = '#9ef08a'; g.font = `700 ${Math.round(13 * sc)}px ui-monospace, Menlo, monospace`;
+      g.fillText(`${cfg.compass === 'grid' ? 'GRID' : 'MAG'} AZ ${fmt4(mag)}`, cx, 6 * sc + bh / 2);
+    }
+    g.restore();
+  }
+  function setView(az, pitch, fast) {
+    st.az = w64(az); st.pitch = clamp(pitch, -0.3, 0.15);
+    V.dirty = true; V.fast = !!fast; kick();
+    if (fast) { clearTimeout(V.fT); V.fT = setTimeout(() => { V.fast = false; V.dirty = true; kick(); }, 150); }
+    checkSeen(); azRead();
+  }
+  function azRead() { if (st.w) $('azRead').textContent = `${cfg.compass === 'grid' ? 'GRID' : 'MAG'} ${fmt4(w64(st.az - gm()))}${st.bino ? ' · 7×' : ''}`; }
+  function checkSeen() {
+    if (!st.w || !st.bino || st.seen) return;
+    const T = st.w.tgt, op = st.w.op, t = truth();
+    if (Math.abs(dm(t.az, st.az)) > 55) return;
+    const el = (groundAt(st.w, T.x, T.y) + 1 - st.w.eyeZ) / t.d;
+    if (Math.abs(el - st.pitch) * camF() > V.H * 0.42) return;
+    st.seen = true; refresh();
+  }
+  function setBino(on) { st.bino = on; $('binoBtn').setAttribute('aria-pressed', String(on)); V.dirty = true; kick(); checkSeen(); azRead(); refresh(); }
+  (function viewInput() {
+    const cv = V.cv; let drag = null;
+    cv.addEventListener('pointerdown', e => { if (!st.w) return; cv.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, az: st.az, p: st.pitch, moved: false }; });
+    cv.addEventListener('pointermove', e => {
+      if (!drag) return;
+      const k = V.W / cv.getBoundingClientRect().width, dx = (e.clientX - drag.x) * k, dy = (e.clientY - drag.y) * k;
+      if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 5) return;
+      drag.moved = true; const f = camF();
+      setView(drag.az - dx / (f * MIL), drag.p + dy / f, true);
+    });
+    const up = e => {
+      if (!drag) return;
+      if (!drag.moved) {
+        const rc = cv.getBoundingClientRect(), k = V.W / rc.width, x = (e.clientX - rc.left) * k, y = (e.clientY - rc.top) * k, f = camF();
+        setView(st.az + (x - V.W / 2) / (f * MIL), st.pitch + (V.H / 2 - y) / f, false);
+      }
+      drag = null;
+    };
+    cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', () => { drag = null; });
+    const rep = (id, fn) => {
+      const b = $(id); let t1 = 0, t2 = 0;
+      const stop = () => { clearTimeout(t1); clearInterval(t2); };
+      b.addEventListener('pointerdown', e => { e.preventDefault(); fn(); t1 = setTimeout(() => { t2 = setInterval(fn, 60); }, 350); });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, stop));
+      b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
+    };
+    rep('panL', () => setView(st.az - (st.bino ? 1 : 25), st.pitch, !st.bino));
+    rep('panR', () => setView(st.az + (st.bino ? 1 : 25), st.pitch, !st.bino));
+    rep('tiltU', () => setView(st.az, st.pitch + (st.bino ? 1 : 10) * MIL, !st.bino));
+    rep('tiltD', () => setView(st.az, st.pitch - (st.bino ? 1 : 10) * MIL, !st.bino));
+    $('binoBtn').addEventListener('click', () => setBino(!st.bino));
+    document.addEventListener('keydown', e => {
+      if (!st.w || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || document.querySelector('.modal:not([hidden])')) return;
+      const big = e.shiftKey ? 5 : 1;
+      if (e.key === 'ArrowLeft') setView(st.az - (st.bino ? 1 : 20) * big, st.pitch);
+      else if (e.key === 'ArrowRight') setView(st.az + (st.bino ? 1 : 20) * big, st.pitch);
+      else if (e.key === 'ArrowUp') setView(st.az, st.pitch + (st.bino ? 1 : 8) * big * MIL);
+      else if (e.key === 'ArrowDown') setView(st.az, st.pitch - (st.bino ? 1 : 8) * big * MIL);
+      else if (e.key === 'b' || e.key === 'B') setBino(!st.bino);
+      else return;
+      e.preventDefault();
+    });
+  })();
+
+  // ---------- map
+  const MV = { cv: $('map'), ctx: $('map').getContext('2d'), W: 0, H: 0, scale: 1, cx: S / 2, cy: S / 2, img: null, ptr: new Map(), pinch: null };
+  const MAPR = 2400, MK = MAPR / S;
+  const MS = { 1: [[3, 0]], 2: [[0, 1]], 3: [[3, 1]], 4: [[1, 2]], 5: [[0, 1], [2, 3]], 6: [[0, 2]], 7: [[3, 2]], 8: [[2, 3]], 9: [[0, 2]], 10: [[3, 0], [1, 2]], 11: [[1, 2]], 12: [[1, 3]], 13: [[0, 1]], 14: [[0, 3]] };
+  function buildMapImage(w) {
+    const c = document.createElement('canvas'); c.width = c.height = MAPR;
+    const g = c.getContext('2d');
+    const lc = document.createElement('canvas'); lc.width = lc.height = NN;
+    const lg = lc.getContext('2d'), im = lg.createImageData(NN, NN), d = im.data;
+    for (let j = 0; j < NN; j++) for (let i = 0; i < NN; i++) {
+      const t = w.LC[j * NN + i], o = ((NN - 1 - j) * NN + i) * 4;
+      const cc = t === 1 ? [196, 226, 168] : t === 3 ? [150, 200, 235] : [251, 250, 244];
+      d[o] = cc[0]; d[o + 1] = cc[1]; d[o + 2] = cc[2]; d[o + 3] = 255;
+    }
+    lg.putImageData(im, 0, 0);
+    g.imageSmoothingEnabled = true;
+    g.drawImage(lc, 0, 0, NN, NN, -MK * CELL / 2, -MK * CELL / 2, MAPR + MK * CELL, MAPR + MK * CELL);
+    // contours every 10 m, index every 50 m (marching squares on a 20 m lattice)
+    const st2 = 2, M = (NN - 1) / st2, hAt = (a, b) => w.H[(b * st2) * NN + a * st2], Dd = st2 * CELL;
+    for (let lev = Math.ceil(w.hmin / 10) * 10; lev <= w.hmax; lev += 10) {
+      g.beginPath();
+      for (let b = 0; b < M; b++) for (let a = 0; a < M; a++) {
+        const v0 = hAt(a, b), v1 = hAt(a + 1, b), v2 = hAt(a + 1, b + 1), v3 = hAt(a, b + 1);
+        const code = (v0 > lev ? 1 : 0) | (v1 > lev ? 2 : 0) | (v2 > lev ? 4 : 0) | (v3 > lev ? 8 : 0);
+        if (!code || code === 15) continue;
+        const X = a * Dd, Y = b * Dd, ip = (p, q) => (lev - p) / (q - p);
+        const E = e => e === 0 ? [X + ip(v0, v1) * Dd, Y] : e === 1 ? [X + Dd, Y + ip(v1, v2) * Dd] : e === 2 ? [X + ip(v3, v2) * Dd, Y + Dd] : [X, Y + ip(v0, v3) * Dd];
+        for (const [ea, eb] of MS[code]) { const pa = E(ea), pb = E(eb); g.moveTo(pa[0] * MK, (S - pa[1]) * MK); g.lineTo(pb[0] * MK, (S - pb[1]) * MK); }
+      }
+      const idx = lev % 50 === 0;
+      g.strokeStyle = idx ? 'rgba(140,88,44,.95)' : 'rgba(176,122,74,.7)'; g.lineWidth = idx ? 2.2 : 1.1; g.stroke();
+    }
+    const poly = (pts, lw, color, dash) => { g.beginPath(); pts.forEach((p, n) => n ? g.lineTo(p[0] * MK, (S - p[1]) * MK) : g.moveTo(p[0] * MK, (S - p[1]) * MK)); g.lineWidth = lw; g.strokeStyle = color; g.setLineDash(dash || []); g.lineJoin = 'round'; g.stroke(); g.setLineDash([]); };
+    poly(w.stream, 3, '#3a8fd2');
+    poly(w.DR, 3, '#2a2a2a', [12, 7]);
+    poly(w.MR, 9, '#262626'); poly(w.CR, 9, '#262626');
+    poly(w.MR, 5, '#e05a3a'); poly(w.CR, 5, '#e05a3a');
+    g.fillStyle = '#151515';
+    for (const b of w.bl) g.fillRect((b.x - 5) * MK, (S - (b.y - 5 + b.dc * CELL)) * MK, b.wc * CELL * MK, b.dc * CELL * MK);
+    const chx = (w.church.x + 5) * MK, chy = (S - w.church.y - 25) * MK;
+    g.fillRect(chx - 1.5, chy - 12, 3, 9); g.fillRect(chx - 5, chy - 9, 10, 3);
+    // spot elevations on local high points
+    g.font = 'italic 600 15px system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+    for (let by = 0; by < S; by += 500) for (let bx = 0; bx < S; bx += 500) {
+      let mx = 0, my = 0, mh = -1e9;
+      for (let y = by; y < by + 500; y += 20) for (let x = bx; x < bx + 500; x += 20) { const h = groundAt(w, x, y); if (h > mh) { mh = h; mx = x; my = y; } }
+      let top = true;
+      for (let a = 0; a < 16 && top; a++) { const ang = a / 16 * Math.PI * 2; if (groundAt(w, mx + Math.cos(ang) * 260, my + Math.sin(ang) * 260) > mh - 3) top = false; }
+      if (!top || mx < 60 || my < 60 || mx > S - 60 || my > S - 60) continue;
+      g.fillStyle = '#5a3a1c'; g.beginPath(); g.arc(mx * MK, (S - my) * MK, 3.2, 0, 7); g.fill();
+      g.fillText(String(Math.round(mh)), mx * MK + 6, (S - my) * MK - 1);
+    }
+    g.fillStyle = '#1a1a1a'; g.font = 'italic 700 22px Georgia, serif'; g.textAlign = 'center';
+    g.fillText(w.village, (w.J.x + 160) * MK, (S - w.J.y - 160) * MK);
+    return c;
+  }
+  function sizeMap() {
+    const css = MV.cv.clientWidth; if (!css) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), w = Math.round(css * dpr), h = Math.round(MV.cv.clientHeight * dpr);
+    if (w === MV.W && h === MV.H) return;
+    const fit = MV.W ? MV.scale / (MV.W / S) : 0;
+    MV.W = w; MV.H = h; MV.cv.width = w; MV.cv.height = h;
+    MV.scale = fit ? fit * w / S : w / S;
+    drawMap();
+  }
+  const minScale = () => MV.W / S * 0.9, maxScale = () => MV.W / S * 12;
+  function fitMap() { MV.scale = Math.min(MV.W, MV.H) / S; MV.cx = S / 2; MV.cy = S / 2; drawMap(); }
+  function drawMap() {
+    const g = MV.ctx, w = st.w; if (!w || !MV.W) return;
+    if (!MV.img) MV.img = buildMapImage(w);
+    const Wd = MV.W, Hd = MV.H, sc = MV.scale;
+    MV.cx = clamp(MV.cx, 0, S); MV.cy = clamp(MV.cy, 0, S);
+    const X = x => (x - MV.cx) * sc + Wd / 2, Y = y => Hd / 2 - (y - MV.cy) * sc;
+    g.fillStyle = '#d9d8cf'; g.fillRect(0, 0, Wd, Hd);
+    const wx0 = Math.max(0, MV.cx - Wd / 2 / sc), wx1 = Math.min(S, MV.cx + Wd / 2 / sc), wy0 = Math.max(0, MV.cy - Hd / 2 / sc), wy1 = Math.min(S, MV.cy + Hd / 2 / sc);
+    if (wx1 > wx0 && wy1 > wy0) {
+      g.imageSmoothingEnabled = true;
+      g.drawImage(MV.img, wx0 * MK, (S - wy1) * MK, (wx1 - wx0) * MK, (wy1 - wy0) * MK, X(wx0), Y(wy1), (wx1 - wx0) * sc, (wy1 - wy0) * sc);
+    }
+    const u = Wd / 600;
+    g.strokeStyle = 'rgba(20,20,20,.75)'; g.lineWidth = Math.max(1, u * 0.9);
+    g.beginPath();
+    for (let x = 0; x <= S; x += 1000) { g.moveTo(X(x), Y(0)); g.lineTo(X(x), Y(S)); }
+    for (let y = 0; y <= S; y += 1000) { g.moveTo(X(0), Y(y)); g.lineTo(X(S), Y(y)); }
+    g.stroke();
+    // grid numbers along the top and left edges
+    g.font = `700 ${Math.round(13 * u)}px ui-monospace, Menlo, monospace`; g.textBaseline = 'middle'; g.textAlign = 'center';
+    const lab = (t, x, y) => { const m = g.measureText(t).width + 6 * u; g.fillStyle = 'rgba(255,255,255,.88)'; g.fillRect(x - m / 2, y - 9 * u, m, 18 * u); g.fillStyle = '#111'; g.fillText(t, x, y); };
+    for (let x = 0; x <= S; x += 1000) { const sx = X(x); if (sx > 14 * u && sx < Wd - 14 * u) lab(String(((w.E0 + x) / 1000) % 100).padStart(2, '0'), sx, 11 * u); }
+    for (let y = 0; y <= S; y += 1000) { const sy = Y(y); if (sy > 28 * u && sy < Hd - 10 * u) lab(String(((w.N0 + y) / 1000) % 100).padStart(2, '0'), 15 * u, sy); }
+    // the OP point the instructor gives you
+    const ox = X(w.op.x), oy = Y(w.op.y);
+    g.strokeStyle = '#c0157a'; g.fillStyle = '#c0157a'; g.lineWidth = 2.4 * u;
+    g.beginPath(); g.arc(ox, oy, 9 * u, 0, 7); g.stroke(); g.beginPath(); g.arc(ox, oy, 2.2 * u, 0, 7); g.fill();
+    g.font = `800 ${Math.round(13 * u)}px system-ui, sans-serif`; g.textAlign = 'left';
+    g.fillStyle = 'rgba(255,255,255,.85)'; g.fillRect(ox + 11 * u, oy - 9 * u, 28 * u, 18 * u); g.fillStyle = '#c0157a'; g.fillText('OP', ox + 13 * u, oy);
+    // polar plot: pencil line with a tick every 100 m and a mark at the range
+    if (st.plot) {
+      const a = st.plot.az * MIL, sx = Math.sin(a), sy = Math.cos(a), len = 2400;
+      g.strokeStyle = 'rgba(40,40,40,.85)'; g.lineWidth = 1.5 * u;
+      g.beginPath(); g.moveTo(ox, oy); g.lineTo(X(w.op.x + sx * len), Y(w.op.y + sy * len)); g.stroke();
+      g.font = `600 ${Math.round(11 * u)}px ui-monospace, Menlo, monospace`; g.fillStyle = '#333'; g.textAlign = 'center';
+      for (let m = 100; m <= len; m += 100) {
+        const px = X(w.op.x + sx * m), py = Y(w.op.y + sy * m), tl = (m % 500 ? 4 : 8) * u;
+        g.beginPath(); g.moveTo(px - sy * tl, py - sx * tl); g.lineTo(px + sy * tl, py + sx * tl); g.stroke();
+        if (!(m % 500) && sc > minScale() * 1.4) g.fillText(String(m), px + sy * 18 * u, py + sx * 18 * u);
+      }
+      if (st.plot.r) {
+        const px = X(w.op.x + sx * st.plot.r), py = Y(w.op.y + sy * st.plot.r), k = 7 * u;
+        g.strokeStyle = '#111'; g.lineWidth = 2.2 * u; g.beginPath(); g.moveTo(px - k, py - k); g.lineTo(px + k, py + k); g.moveTo(px + k, py - k); g.lineTo(px - k, py + k); g.stroke();
+      }
+    }
+    if (guidedOn() && gStep() === 'tloc') {
+      const T = w.tgt; g.strokeStyle = '#e09a00'; g.lineWidth = 2.5 * u; g.setLineDash([7 * u, 5 * u]);
+      g.beginPath(); g.arc(X(T.x), Y(T.y), Math.max(10 * u, 110 * sc), 0, 7); g.stroke(); g.setLineDash([]);
+    }
+  }
+  (function mapInput() {
+    const cv = MV.cv;
+    const zoomAt = (f, px, py) => {
+      const ns = clamp(MV.scale * f, minScale(), maxScale()), wx = MV.cx + (px - MV.W / 2) / MV.scale, wy = MV.cy - (py - MV.H / 2) / MV.scale;
+      MV.cx = wx - (px - MV.W / 2) / ns; MV.cy = wy + (py - MV.H / 2) / ns; MV.scale = ns; drawMap();
+    };
+    const loc = e => { const rc = cv.getBoundingClientRect(), k = MV.W / rc.width; return [(e.clientX - rc.left) * k, (e.clientY - rc.top) * k]; };
+    cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); MV.ptr.set(e.pointerId, loc(e)); if (MV.ptr.size === 2) { const [a, b] = [...MV.ptr.values()]; MV.pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), s: MV.scale }; } });
+    cv.addEventListener('pointermove', e => {
+      if (!MV.ptr.has(e.pointerId)) return;
+      const p = loc(e), q = MV.ptr.get(e.pointerId); MV.ptr.set(e.pointerId, p);
+      if (MV.ptr.size === 2 && MV.pinch) {
+        const [a, b] = [...MV.ptr.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+        zoomAt(MV.pinch.s * d / MV.pinch.d / MV.scale, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2);
+      } else if (MV.ptr.size === 1) { MV.cx -= (p[0] - q[0]) / MV.scale; MV.cy += (p[1] - q[1]) / MV.scale; drawMap(); }
+    });
+    const end = e => { MV.ptr.delete(e.pointerId); if (MV.ptr.size < 2) MV.pinch = null; };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+    cv.addEventListener('wheel', e => { e.preventDefault(); const [x, y] = loc(e); zoomAt(Math.pow(1.0018, -e.deltaY), x, y); }, { passive: false });
+    $('zIn').addEventListener('click', () => zoomAt(1.6, MV.W / 2, MV.H / 2));
+    $('zOut').addEventListener('click', () => zoomAt(1 / 1.6, MV.W / 2, MV.H / 2));
+    $('zFit').addEventListener('click', fitMap);
+    $('plotBtn').addEventListener('click', () => {
+      readSheet();
+      const a = num(st.sheet.s6), r = num(st.sheet.s4);
+      if (a == null || a > 6400) { note('Plot uses line 6 (grid direction) and line 4 (range): fill them first.'); return; }
+      st.plot = { az: a, r: r && r < 6000 ? r : 0 };
+      if (st.plot.r) { const t = st.plot.az * MIL; MV.cx = st.w.op.x + Math.sin(t) * st.plot.r * 0.5; MV.cy = st.w.op.y + Math.cos(t) * st.plot.r * 0.5; MV.scale = Math.max(MV.scale, Math.min(MV.W, MV.H) / (st.plot.r * 1.5)); MV.scale = clamp(MV.scale, minScale(), maxScale()); }
+      drawMap(); refresh();
+    });
+  })();
+
+  // ---------- worksheet
+  const SROWS = ['s1', 's2', 's3', 's4', 's5', 's6', 's7'];
+  function readSheet() {
+    const s = st.sheet;
+    s.s1 = $('s1').value; s.s2n = $('s2n').value; s.s2t = $('s2t').value; s.s3 = $('s3').value; s.s4 = $('s4').value; s.s5 = $('s5').value; s.s6 = $('s6').value; s.s7 = $('s7').value;
+  }
+  // Guided checks (tight, to teach) and Exam checks (the standards)
+  function sheetCheck() {
+    const w = st.w, s = st.sheet, op = w.op, T = w.tgt, t = truth(), g = {}, x = {}, why = {};
+    const opw = gridToWorld(s.s1), opd = opw ? Math.hypot(opw.x - op.x, opw.y - op.y) : null;
+    g.s1 = x.s1 = opd != null && opd <= 150;
+    why.s1 = opd == null ? 'Write 6 or 8 digits.' : `That point is ${Math.round(opd)} m from your OP.`;
+    g.s2 = x.s2 = +s.s2n === T.n && s.s2t === T.ty;
+    const M = num(s.s3);
+    g.s3 = M != null && Math.abs(M - t.M) <= Math.max(0.8, t.M * 0.15);
+    const Rg = num(s.s4);
+    g.s4 = Rg != null && Math.abs(Rg - t.d) <= Math.max(150, t.d * 0.12);
+    const mag = num(s.s5);
+    g.s5 = mag != null && mag <= 6400 && Math.abs(dm(mag, t.mag)) <= 20;
+    const ga = num(s.s6);
+    g.s6 = ga != null && ga <= 6400 && Math.abs(dm(ga, t.az)) <= 30 && (mag == null || Math.abs(dm(ga, mag + gm())) <= 10);
+    x.s6 = ga != null && ga <= 6400 && Math.abs(dm(ga, t.az)) <= 100;
+    const tw = gridToWorld(s.s7), td = tw ? Math.hypot(tw.x - T.x, tw.y - T.y) : null;
+    g.s7 = x.s7 = td != null && td <= 250;
+    return { g, x, opd, td, M, Rg, mag, ga };
+  }
+
+  // ---------- radio: word chips
+  // the words on offer follow the mission phase (each set still has wrong choices in it)
+  function palSet() {
+    const ph = F.phase;
+    if (ph === 'cff1' || ph === 'cff2' || ph === 'cff3') return [
+      ['Identification · warning order', ['call', 'callr', 'af', 'ffe']],
+      ['Location', ['grid', 'dir']],
+      ['Description · engagement · fire and control', ['tgt', 'am_heq', 'am_vt', 'am_icm', 'am_smk', 'wr']],
+      ['', ['over', 'out']]];
+    if (ph === 'eom' || ph === 'done') return [['End of mission', ['eom', 'surv']], ['', ['over', 'out']]];
+    return [['Corrections', ['dir', 'L', 'R', 'A', 'D', 'ffe']], ['End of mission', ['eom', 'surv']], ['', ['over', 'out']]];
+  }
+  const VAL = { grid: 1, dir: 1, tgt: 1, L: 1, R: 1, A: 1, D: 1, surv: 1 };
+  function chipLabel(k) {
+    const w = st.w;
+    return ({ call: `${w.fdcCs}, THIS IS ${w.fo}`, callr: `${w.fo}, THIS IS ${w.fdcCs}`, af: 'ADJUST FIRE', ffe: 'FIRE FOR EFFECT', grid: 'GRID …', dir: 'DIRECTION …', tgt: 'TARGET …', wr: 'WHEN READY', L: 'LEFT …', R: 'RIGHT …', A: 'ADD …', D: 'DROP …', eom: 'END OF MISSION', surv: 'SURVEILLANCE …', over: 'OVER', out: 'OUT' })[k] || AMMO[k];
+  }
+  function tokLabel(t) {
+    switch (t.k) {
+      case 'grid': return `GRID ${gridTxt(t.v)}`;
+      case 'dir': return `DIRECTION ${fmt4(t.v)}`;
+      case 'tgt': return descTxt(t.n, t.ty, t.act);
+      case 'L': return `LEFT ${t.v}`; case 'R': return `RIGHT ${t.v}`; case 'A': return `ADD ${t.v}`; case 'D': return `DROP ${t.v}`;
+      case 'surv': return t.res + (t.cas ? `, ${t.cas} CASUALT${t.cas === 1 ? 'Y' : 'IES'}` : '');
+      default: return chipLabel(t.k);
+    }
+  }
+  const txText = toks => toks.map(tokLabel).join(', ');
+  function renderPal() {
+    const set = palSet(), key = JSON.stringify(set) + st.w.fo + st.w.fdcCs;
+    if (key === st.palKey) return;
+    st.palKey = key;
+    $('pal').innerHTML = set.map(([g, ks]) => `<div class="pg">${g ? `<span class="gl">${g}</span>` : ''}${ks.map(k => `<button class="tk" data-k="${k}">${esc(chipLabel(k))}</button>`).join('')}</div>`).join('');
+  }
+  function renderDraft() { $('draft').innerHTML = st.draft.map(t => `<span class="tk">${esc(tokLabel(t))}</span>`).join(''); }
+  function logLine(who, text) {
+    const el = document.createElement('div'); el.className = 'ln ' + who;
+    el.innerHTML = who === 'sys' ? esc(text) : `<span class="who">${who === 'fo' ? st.w.fo + ' (you)' : st.w.fdcCs + ' (FDC)'}</span>${esc(text)}`;
+    $('log').appendChild(el); $('log').scrollTop = $('log').scrollHeight;
+    if (who !== 'fo' && $('radioPanel').hidden) $('radioDot').hidden = false;
+  }
+  function setAck(label, text) { st.ack = { label, text }; renderAck(); refresh(); }
+  function renderAck() { const b = $('ack'); if (st.ack) { b.hidden = false; b.textContent = `Reply: ${st.ack.text}`; } else b.hidden = true; }
+  $('ack').addEventListener('click', () => { if (!st.ack) return; logLine('fo', st.ack.text); st.ack = null; renderAck(); refresh(); });
+
+  function openEditor(k) {
+    const w = st.w, s = st.sheet; st.ed = k;
+    const sel = (id, opts, v) => `<select id="${id}">${opts.map(o => `<option value="${esc(o[0])}"${String(o[0]) === String(v) ? ' selected' : ''}>${esc(o[1])}</option>`).join('')}</select>`;
+    let h = `<span class="et">${esc(chipLabel(k).replace(' …', ''))}</span>`;
+    if (k === 'grid') h += `<input id="edv" inputmode="numeric" maxlength="11" placeholder="6 or 8 digits" value="${esc(digits(s.s7))}">`;
+    else if (k === 'dir') h += `<input id="edv" inputmode="numeric" maxlength="4" placeholder="grid mils" value="${esc(digits(s.s6))}">`;
+    else if (k === 'L' || k === 'R' || k === 'A' || k === 'D') h += `<input id="edv" inputmode="numeric" maxlength="4" placeholder="meters">`;
+    else if (k === 'tgt') h += sel('edn', [1, 2, 3, 4, 5].map(n => [n, n]), s.s2n || 1) + sel('edt', [['BMP', 'BMPs'], ['T72', 'T-72 TANKS'], ['TRK', 'TRUCKS']], s.s2t || 'BMP') + sel('eda', [['IN THE OPEN', 'IN THE OPEN'], ['DUG IN', 'DUG IN'], ['MOVING', 'MOVING']], 'IN THE OPEN');
+    else if (k === 'surv') h += sel('edr', RESULTS.map(r => [r, r]), RESULTS[0]) + sel('edc', [[0, 'no casualty estimate'], ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => [n, `${n} CASUALT${n === 1 ? 'Y' : 'IES'}`])], 0);
+    h += `<button class="btn primary" id="edOk">Add</button><button class="btn" id="edNo">Cancel</button>`;
+    const ed = $('ed'); ed.innerHTML = h; ed.hidden = false;
+    const inp = $('edv'); if (inp) { inp.focus(); inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); edOk(); } }); }
+    $('edOk').addEventListener('click', edOk);
+    $('edNo').addEventListener('click', closeEditor);
+    refresh();
+  }
+  function closeEditor() { st.ed = null; $('ed').hidden = true; $('ed').innerHTML = ''; refresh(); }
+  function edOk() {
+    const k = st.ed; let t = { k };
+    if (k === 'grid') { const d = digits($('edv').value); if (![6, 8].includes(d.length)) { note('A grid is 6 or 8 digits.'); return; } t.v = d; }
+    else if (k === 'dir') { const v = num($('edv').value); if (v == null || v > 6400) { note('Direction is 0–6400 mils.'); return; } t.v = Math.round(v); }
+    else if (k === 'L' || k === 'R' || k === 'A' || k === 'D') { const v = num($('edv').value); if (!v || v > 3000) { note('Corrections are in meters, e.g. 400.'); return; } t.v = Math.round(v); }
+    else if (k === 'tgt') { t.n = +$('edn').value; t.ty = $('edt').value; t.act = $('eda').value; }
+    else if (k === 'surv') { t.res = $('edr').value; t.cas = +$('edc').value; }
+    if (guidedOn()) { const bad = gCheckValue(t); if (bad) { note(bad); shake($('edOk')); return; } }
+    st.draft.push(t); closeEditor(); renderDraft(); refresh();
+  }
+  $('pal').addEventListener('click', e => {
+    const b = e.target.closest('.tk'); if (!b || !st.w) return;
+    const k = b.dataset.k;
+    if (guidedOn()) {
+      const ex = gExpect();
+      if (ex.block) { note(ex.block); shake(b); want(ex.el && $(ex.el)); return; }
+      const need = ex.seq[st.draft.length];
+      if (need == null) { note('That transmission is complete. Press Transmit.'); shake(b); want($('txBtn')); return; }
+      if (k !== need) { note(`Next comes <b>${esc(chipLabel(need))}</b>. ${gWhy(need)}`); shake(b); want(document.querySelector(`#pal .tk[data-k="${need}"]`)); return; }
+    }
+    if (VAL[k]) openEditor(k); else { st.draft.push({ k }); renderDraft(); refresh(); }
+  });
+  $('bsp').addEventListener('click', () => { st.draft.pop(); renderDraft(); refresh(); });
+  $('clr').addEventListener('click', () => { st.draft = []; renderDraft(); refresh(); });
+  $('txBtn').addEventListener('click', transmit);
+  $('freq').addEventListener('input', () => { st.freq = digits($('freq').value); refresh(); });
+  $('freq').addEventListener('change', () => { if (guidedOn() && st.freq && st.freq !== st.w.freq) { note(`The fire net is <b>${freqTxt(st.w.freq)}</b>: type ${st.w.freq}.`); shake($('freq')); } });
+
+  // ---------- FDC
+  function newFdc() {
+    // the first round lands off target (unknown firing errors, as in the class simulator); corrections take it out
+    const rr = mulberry32(st.seed * 7 + 3), th = truth().az * MIL, rg = (rr() < 0.5 ? -1 : 1) * (160 + rr() * 220), lat = (rr() < 0.5 ? -1 : 1) * (20 + rr() * 70);
+    const bias = cfg.firstOff ? { x: Math.sin(th) * rg + Math.cos(th) * lat, y: Math.cos(th) * rg - Math.sin(th) * lat } : { x: 0, y: 0 };
+    F = { phase: 'cff1', mission: null, aim: null, dir: null, ammo: 'HE QUICK', inFlight: false, busy: false, waitRx: false, lastImpact: 0, lastBurst: null, spots: [], lastMag: 0, bracketed: false, adj: 0, result: 'NO EFFECT', killed: 0, bias };
+    R = { t0: performance.now(), answered: false, noAnswer: 0, sayAgain: [], t1: false, t2: false, t3: false, tCFF: null, mission: null, gridSent: null, desc: null, ammo: null, wr: false, t3order: true, dirSent: null, corr: [], adjRounds: 0, ffeAim: null, eom: false, surv: null, early: 0, noDir: false };
+  }
+  const fdcSay = t => logLine('fdc', t);
+  function sayAgain(why, cff) { fdcSay('SAY AGAIN, OVER.'); R.sayAgain.push({ why, cff: !!cff, phase: F.phase }); if (st.examOn) logLine('sys', '(the FDC could not copy that transmission)'); refresh(); }
+  function transmit() {
+    if (!st.w || st.ended) return;
+    if (st.ed) { note('Finish the word you are editing first (Add or Cancel).'); return; }
+    const toks = st.draft.slice(); if (!toks.length) { note('Build a transmission first: tap the words below.'); return; }
+    if (guidedOn()) {
+      const ex = gExpect();
+      if (ex.block) { note(ex.block); return; }
+      if (toks.length < ex.seq.length) { const need = ex.seq[toks.length]; note(`Not yet: <b>${esc(chipLabel(need))}</b> still has to go in.`); want(document.querySelector(`#pal .tk[data-k="${need}"]`)); return; }
+    }
+    logLine('fo', txText(toks));
+    st.draft = []; renderDraft();
+    if (st.freq !== st.w.freq) { R.noAnswer++; later(1600, () => logLine('sys', '(no answer: nobody on this frequency)')); refresh(); return; }
+    R.answered = true;
+    const tx = performance.now();
+    F.waitRx = true;
+    later(1100 * K(), () => { F.waitRx = false; fdcRx(toks, tx); refresh(); });
+    refresh();
+  }
+  function fdcRx(toks, tx) {
+    const w = st.w, last = toks[toks.length - 1], body = toks.slice(0, -1);
+    if (F.phase === 'done') { logLine('sys', '(the mission is over)'); return; }
+    if (!last || last.k !== 'over') return sayAgain('End the transmission with OVER (the FDC must answer).', F.phase.startsWith('cff'));
+    if (body.some(t => t.k === 'over' || t.k === 'out')) return sayAgain('OVER goes once, at the very end.', F.phase.startsWith('cff'));
+    if (F.phase === 'cff1') {
+      if (!body.length || (body[0].k !== 'call' && body[0].k !== 'callr')) return sayAgain('Transmission 1 starts with the call signs.', true);
+      if (body[0].k === 'callr') return sayAgain('Call signs reversed: the FDC first, then you.', true);
+      if (body.length !== 2 || (body[1].k !== 'af' && body[1].k !== 'ffe')) return sayAgain('Transmission 1 is the call signs and the warning order, nothing else.', true);
+      F.mission = R.mission = body[1].k; R.t1 = true;
+      fdcSay(`${w.fo}, THIS IS ${w.fdcCs}, ${chipLabel(body[1].k)}, OUT.`);
+      F.phase = 'cff2'; return;
+    }
+    if (F.phase === 'cff2') {
+      if (!body.length || body[0].k !== 'grid') return sayAgain('Transmission 2 is the target location: GRID.', true);
+      if (body.length > 2 || (body.length === 2 && body[1].k !== 'dir')) return sayAgain('Transmission 2 is only the grid (direction may follow).', true);
+      F.aim = gridToWorld(body[0].v); R.gridSent = body[0].v; R.t2 = true;
+      if (body[1]) { F.dir = body[1].v; R.dirSent = body[1].v; }
+      fdcSay(`${txText(body)}, OUT.`);
+      F.phase = 'cff3'; return;
+    }
+    if (F.phase === 'cff3') {
+      if (!body.length || body[0].k !== 'tgt') return sayAgain('Transmission 3 starts with the target description.', true);
+      const rank = { tgt: 0, ammo: 1, wr: 2, dir: 3 }; let prev = -1, ammo = null, wr = false, dir = null;
+      for (const t of body) {
+        const kk = AMMO[t.k] ? 'ammo' : t.k;
+        if (!(kk in rank)) return sayAgain('Transmission 3 is the target, the ammunition and WHEN READY.', true);
+        if (rank[kk] <= prev) R.t3order = false;
+        prev = Math.max(prev, rank[kk]);
+        if (kk === 'ammo') { if (ammo) return sayAgain('Only one ammunition.', true); ammo = AMMO[t.k]; }
+        if (kk === 'wr') wr = true;
+        if (kk === 'dir') dir = t.v;
+      }
+      R.desc = body[0]; R.ammo = ammo; R.wr = wr; R.t3 = true; R.tCFF = (tx - R.t0) / 1000;
+      if (dir != null) { F.dir = dir; R.dirSent = dir; }
+      F.ammo = ammo || 'HE QUICK';
+      fdcSay(`${txText(body)}, OUT.`);
+      F.phase = 'mto';
+      later(2500 * K(), () => {
+        const mto = `${w.bty}, 2 ROUNDS, TARGET NUMBER ${w.tn}`;
+        fdcSay(`${w.fo}, THIS IS ${w.fdcCs}, ${mto}, OVER.`);
+        setAck('MTO', `${mto}, OUT.`);
+        later(3000 * K(), () => F.mission === 'ffe' ? fireFFE() : fireAdj());
+      });
+      return;
+    }
+    if (body.length && body[0].k === 'eom') return handleEOM(body);
+    if (F.phase === 'eom') return sayAgain('Send END OF MISSION with what you saw.');
+    if (F.phase === 'mto' || F.phase === 'ffe' || F.busy || F.inFlight) { fdcSay('ROUNDS IN FLIGHT. WAIT FOR SPLASH, OUT.'); R.early++; return; }
+    // adjust phase: a correction
+    const rk = { dir: 0, L: 1, R: 1, A: 2, D: 2, ffe: 3 }; let prev = -1, dir = null, dev = 0, rng = 0, ffe = false;
+    if (!body.length) return sayAgain('Send a correction.');
+    for (const t of body) {
+      if (!(t.k in rk)) return sayAgain('A correction uses DIRECTION, LEFT/RIGHT, ADD/DROP and FIRE FOR EFFECT.');
+      if (rk[t.k] <= prev) return sayAgain('Correction order: direction, deviation, range, FIRE FOR EFFECT.');
+      prev = rk[t.k];
+      if (t.k === 'dir') dir = t.v; else if (t.k === 'L') dev = -t.v; else if (t.k === 'R') dev = t.v; else if (t.k === 'A') rng = t.v; else if (t.k === 'D') rng = -t.v; else ffe = true;
+    }
+    R.corr.push((tx - F.lastImpact) / 1000);
+    if (dir != null) { F.dir = dir; if (R.dirSent == null) R.dirSent = dir; }
+    if (F.dir == null) R.noDir = true;
+    const th = (F.dir != null ? F.dir : azOf(F.aim.x - w.op.x, F.aim.y - w.op.y)) * MIL;
+    F.aim = { x: F.aim.x + Math.cos(th) * dev + Math.sin(th) * rng, y: F.aim.y - Math.sin(th) * dev + Math.cos(th) * rng };
+    if (rng) F.lastMag = Math.abs(rng);
+    fdcSay(`${txText(body)}, OUT.`);
+    F.busy = true;
+    later(2200 * K(), () => ffe ? fireFFE() : fireAdj());
+  }
+  function fireAdj() {
+    F.busy = false; F.inFlight = true; F.phase = 'adjust';
+    fdcSay('SHOT, OVER.'); setAck('SHOT', 'SHOT, OUT.');
+    later(SPL(), () => { fdcSay('SPLASH, OVER.'); setAck('SPLASH', 'SPLASH, OUT.'); });
+    later(TOF(), () => {
+      const ix = F.aim.x + F.bias.x, iy = F.aim.y + F.bias.y;
+      addBurst(ix, iy, 'he');
+      F.inFlight = false; F.lastImpact = performance.now(); F.lastBurst = { x: ix, y: iy };
+      F.adj++; R.adjRounds = F.adj;
+      const sp = spotOf(F.lastBurst), prevSp = F.spots[F.spots.length - 1];
+      if (prevSp && prevSp !== 'RC' && sp.range !== 'RC' && prevSp !== sp.range) F.bracketed = true;
+      F.spots.push(sp.range);
+      refresh();
+    });
+  }
+  function fireFFE() {
+    const w = st.w, cx = F.aim.x + F.bias.x, cy = F.aim.y + F.bias.y; F.busy = false; F.inFlight = true; F.phase = 'ffe'; R.ffeAim = { x: cx, y: cy };
+    fdcSay('SHOT, OVER.'); setAck('SHOT', 'SHOT, OUT.');
+    later(SPL(), () => { fdcSay('SPLASH, OVER.'); setAck('SPLASH', 'SPLASH, OUT.'); });
+    const th = azOf(F.aim.x - w.op.x, F.aim.y - w.op.y) * MIL, rt = [Math.cos(th), -Math.sin(th)], u = [Math.sin(th), Math.cos(th)], pts = [];
+    for (let gun = 0; gun < 6; gun++) for (let rd = 0; rd < 2; rd++) {
+      const lat = (gun - 2.5) * 18 + (Math.random() - 0.5) * 10, lon = (Math.random() - 0.5) * 30;
+      pts.push([cx + rt[0] * lat + u[0] * lon, cy + rt[1] * lat + u[1] * lon]);
+    }
+    const kind = F.ammo === 'ICM' ? 'icm' : F.ammo === 'HE VT' ? 'vt' : F.ammo === 'SMOKE' ? 'smk' : 'he';
+    pts.forEach((p, n) => later(TOF() + n * 230, () => addBurst(p[0], p[1], kind)));
+    later(TOF() + 12 * 230 + 400, () => {
+      const T = w.tgt, armor = VEH[T.ty].armor, fits = ammoFits(T.ty, F.ammo), rad = F.ammo === 'SMOKE' ? 0 : fits ? 55 : armor ? 12 : 30;
+      let k = 0;
+      for (const v of T.veh) if (pts.some(p => Math.hypot(p[0] - v.x, p[1] - v.y) <= rad)) { v.dead = true; k++; }
+      F.killed = k; F.result = k === T.n ? RESULTS[0] : k ? RESULTS[1] : RESULTS[2];
+      F.inFlight = false; kick();
+    });
+    later(TOF() + 12 * 230 + 3200 * K(), () => { fdcSay('ROUNDS COMPLETE, OVER.'); setAck('ROUNDS COMPLETE', 'ROUNDS COMPLETE, OUT.'); F.phase = 'eom'; refresh(); });
+  }
+  function handleEOM(body) {
+    if (body.length > 2 || (body[1] && body[1].k !== 'surv')) return sayAgain('END OF MISSION, then the surveillance, then OVER.');
+    R.eom = true; R.surv = body[1] || null;
+    fdcSay(`${txText(body)}, OUT.`);
+    F.phase = 'done'; st.ack = null; renderAck();
+    later(1500, finish);
+  }
+  function spotOf(b) {
+    const w = st.w, op = w.op, t = truth(), azB = azOf(b.x - op.x, b.y - op.y), devM = dm(azB, t.az), th = t.az * MIL;
+    const er = (b.x - op.x) * Math.sin(th) + (b.y - op.y) * Math.cos(th) - t.d;
+    return { devM, er, range: er > 25 ? 'OVER' : er < -25 ? 'SHORT' : 'RC' };
+  }
+  // the correction the coach expects (successive bracketing, 400 → 200 → 100 → 50 + FFE)
+  function expCorr() {
+    const t = truth(), sp = spotOf(F.lastBurst), dv = r10(Math.abs(sp.devM) * t.otf);
+    const dev = dv >= 30 ? { k: sp.devM > 0 ? 'L' : 'R', m: dv } : null;
+    let rng = null, ffe = false, why = '';
+    if (sp.range === 'RC') { ffe = true; why = 'The burst is at the target\'s range: no range change.'; }
+    else {
+      const k = sp.range === 'SHORT' ? 'A' : 'D'; let c;
+      if (!F.bracketed) {
+        c = F.lastMag || 400; while (c <= Math.abs(sp.er)) c *= 2;
+        why = F.lastMag ? 'Still on the same side: no bracket yet, so repeat (or double) the jump.' : 'First range change: 400 (double it if the burst is farther off than that).';
+      } else { c = Math.max(50, F.lastMag / 2); why = `Bracketed: split it, half of ${F.lastMag} = ${c}.`; }
+      rng = { k, m: c };
+      if (F.bracketed && c === 50) { ffe = true; why += ' That splits the 100 m bracket: FIRE FOR EFFECT.'; }
+    }
+    return { needDir: F.dir == null, dev, dv, rng, ffe, sp, t, why };
+  }
+
+  // ---------- Guided coach and guard
+  const guidedOn = () => st.mode === 'guided' && !st.examOn && !st.ended;
+  function gStep() {
+    const g = st.gOk || {};
+    if (!g.s1) return 'op';
+    if (!st.seen && !g.s2) return 'find';
+    if (!g.s2) return 'size';
+    if (!g.s3) return 'appsize';
+    if (!g.s4) return 'range';
+    if (!g.s5) return 'mag';
+    if (!g.s6) return 'gm';
+    if (!g.s7) return 'tloc';
+    if (st.freq !== st.w.freq) return 'freq';
+    if (F.waitRx) return 'rx';
+    switch (F.phase) {
+      case 'cff1': return 't1';
+      case 'cff2': return 't2';
+      case 'cff3': return 't3';
+      case 'mto': return 'shot';
+      case 'adjust': return F.busy || F.inFlight ? (F.lastBurst ? 'wait' : 'shot') : 'adj';
+      case 'ffe': return 'ffe';
+      case 'eom': return 'eom';
+      default: return 'done';
+    }
+  }
+  function gExpect() {
+    const s = gStep(), T = st.w.tgt;
+    if (s === 't1') return { seq: ['call', 'af', 'over'] };
+    if (s === 't2') return { seq: ['grid', 'over'] };
+    if (s === 't3') return { seq: ['tgt', ammoBest(T.ty), 'wr', 'over'] };
+    if (s === 'adj') { const e = expCorr(); return { seq: [...(e.needDir ? ['dir'] : []), ...(e.dev ? [e.dev.k] : []), ...(e.rng ? [e.rng.k] : []), ...(e.ffe ? ['ffe'] : []), 'over'] }; }
+    if (s === 'eom') return { seq: ['eom', 'surv', 'over'] };
+    const where = { op: ['Worksheet line 1 first: your OP grid.', 's1'], find: ['First find the target in the binoculars.', 'binoBtn'], size: ['Worksheet line 2 first.', 's2n'], appsize: ['Worksheet line 3 first.', 's3'], range: ['Worksheet line 4 first.', 's4'], mag: ['Worksheet line 5 first.', 's5'], gm: ['Worksheet line 6 first.', 's6'], tloc: ['Worksheet line 7 first.', 's7'], freq: ['Set the radio to the fire net first.', 'freq'], rx: ['Wait for the FDC to read it back.', null], shot: ['Wait for the round. Answer the FDC with the reply button.', 'ack'], wait: ['Wait for the splash, then spot the round.', 'ack'], ffe: ['Fire for effect is on the way. Watch the target.', 'ack'], done: ['The mission is over.', null] }[s];
+    return { block: where[0], el: where[1] };
+  }
+  function gWhy(k) {
+    return ({ call: 'Observer identification: the FDC\'s call sign, THIS IS, then yours.', af: 'Warning order: you want an adjusting round first.', over: 'OVER ends every transmission the FDC must answer.', grid: 'Target location: your worksheet line 7.', tgt: 'Target description: what, how many, what it is doing.', am_icm: 'Method of engagement: ICM against armor.', am_heq: 'Method of engagement: HE QUICK against trucks.', wr: 'Method of fire and control: fire when ready.', dir: 'Grid mission: send the direction once, with the first correction.', L: 'Deviation first.', R: 'Deviation first.', A: 'Range after deviation.', D: 'Range after deviation.', ffe: 'Last word before OVER.', eom: 'End of mission.', surv: 'Surveillance: what you saw happen.' })[k] || '';
+  }
+  function gCheckValue(t) {
+    const w = st.w, T = w.tgt, tr = truth();
+    if (t.k === 'grid') { const p = gridToWorld(t.v), d = p ? Math.hypot(p.x - T.x, p.y - T.y) : 1e9; return d <= 250 ? '' : `That grid is ${Math.round(d)} m from the target. Use your worksheet line 7 (about ${worldToGrid(T.x, T.y, 8)}).`; }
+    if (t.k === 'dir') return Math.abs(dm(t.v, tr.az)) <= 30 ? (t.v % 10 ? `Send direction to the nearest 10 mils: ${fmt4(r10(t.v))}.` : '') : `Direction is the grid direction from your worksheet line 6 (about ${fmt4(r10(tr.az))}).`;
+    if (t.k === 'tgt') return t.n === T.n && t.ty === T.ty && t.act === 'IN THE OPEN' ? '' : `Describe what you see: ${descTxt(T.n, T.ty, 'IN THE OPEN')}.`;
+    if (t.k === 'surv') return t.res === F.result ? '' : `Report what you actually see: ${F.result}${F.result === RESULTS[1] ? ` (${F.killed} of ${T.n} burning)` : ''}.`;
+    if ('LRAD'.includes(t.k)) {
+      const e = expCorr();
+      if (t.k === 'L' || t.k === 'R') { const tol = e.t.otf >= 3 ? 20 : 10; return e.dev && t.k === e.dev.k && Math.abs(t.v - e.dev.m) <= tol ? '' : `Deviation: ${Math.abs(e.sp.devM).toFixed(0)} mils × OT factor ${e.t.otf} = ${e.dv} → ${e.dev.k === 'L' ? 'LEFT' : 'RIGHT'} ${e.dev.m}.`; }
+      return e.rng && t.k === e.rng.k && t.v === e.rng.m ? '' : `Range: ${e.sp.range} → ${e.rng.k === 'A' ? 'ADD' : 'DROP'} ${e.rng.m}. ${e.why}`;
+    }
+    return '';
+  }
+  function coach() {
+    const w = st.w, T = w.tgt, tr = truth(), s = st.sheet, chk = sheetCheck();
+    if (st.examOn) return ['Exam', 'No coach during the exam.', `Worksheet → radio → three transmissions → bracket → fire for effect → end of mission. Clock: call for fire within ${cfg.cffMin}:00.`];
+    if (st.ended) return ['Done', 'Mission complete.', 'Press New card for another target, or switch to Exam.'];
+    const g = gm(), gmw = g === 0 ? 'none' : `${w.gmAbs} mils ${w.gmEast ? 'EAST' : 'WEST'}`;
+    const nl = nearestLm(w, T.x, T.y);
+    switch (gStep()) {
+      case 'op': return ['Phase 1 · Step 1', 'Worksheet line 1: your location', `Your OP is the magenta circle on the map. Read right, then up. Use + to zoom. It reads about <b>${worldToGrid(w.op.x, w.op.y, 8)}</b>.`];
+      case 'find': return ['Phase 1 · Step 2', 'Find the target with the binoculars', 'Tap the yellow ring in the view to aim there, then press <b>Binoculars</b> (or B). Use ◀ ▶ ▲ ▼ to scan.'];
+      case 'size': return ['Phase 1 · Step 2', 'Worksheet line 2: how many, what', `Count them: <b>${T.n} ${T.n === 1 ? VEH[T.ty].one : VEH[T.ty].many}</b>. BMP: low hull, small turret, short gun. T-72: wide turret, long gun. Truck: tall box and cab.`];
+      case 'appsize': return ['Phase 1 · Step 3', 'Worksheet line 3: apparent size in mils', `Put one end of a vehicle on a tick of the horizontal scale and count to the other end (ticks every 5 mils, numbers every 10). This one is about <b>${tr.M.toFixed(1)} mils</b>.`];
+      case 'range': { const M = chk.M || tr.M, L = VEH[T.ty].L; return ['Phase 1 · Step 4', 'Worksheet line 4: range with W ÷ M', `W = ${L} m (${VEH[T.ty].one.toLowerCase()} on the vehicle card).<span class="calc">R = ${L} ÷ ${(+M).toFixed(1)} × 1000 = ${Math.round(L / M * 1000)} m</span>`]; }
+      case 'mag': return ['Phase 1 · Step 5', `Worksheet line 5: ${cfg.compass === 'grid' ? 'grid' : 'magnetic'} direction`, `Center the reticle on the middle of the group (◀ ▶, 1 mil per tap) and read the box at the top: about <b>${fmt4(tr.mag)}</b>.`];
+      case 'gm': { const m = chk.mag != null ? chk.mag : tr.mag, ga = w64(m + g); return ['Phase 1 · Step 6', 'Worksheet line 6: grid direction', g === 0 ? `Compass reads grid already: copy line 5, rounded to 10 mils: <b>${fmt4(r10(ga))}</b>.` : `G-M angle ${gmw}. Magnetic → grid: EAST add, WEST subtract.<span class="calc">${fmt4(m)} ${g > 0 ? '+' : '−'} ${w.gmAbs} = ${fmt4(ga)} → ${fmt4(r10(ga))}</span>`]; }
+      case 'tloc': return ['Phase 1 · Step 7', 'Worksheet line 7: target location', `Polar plot: press <b>Plot</b> beside line 7. It lays line 6 (${digits(s.s6) || '—'}) and line 4 (${digits(s.s4) || '—'} m) from the OP and marks ✕. Read the grid at the ✕. The target is ${Math.round(nl.d / 10) * 10} m ${nl.dir} of ${nl.lm.name} (orange circle): about <b>${worldToGrid(T.x, T.y, 8)}</b>.`];
+      case 'freq': return ['Phase 2', 'Set the radio to the fire net', `FREQ <b>${w.freq}</b> (${freqTxt(w.freq)} on the mission card). Call signs: FDC <b>${w.fdcCs}</b>, you <b>${w.fo}</b>.`];
+      case 'rx': return ['Phase 3', 'Wait for the read-back', 'The FDC repeats each transmission back to you.'];
+      case 't1': return ['Phase 3 · Transmission 1', 'Observer identification + warning order', `Tap <b>${w.fdcCs}, THIS IS ${w.fo}</b> → <b>ADJUST FIRE</b> → <b>OVER</b>, then Transmit.`];
+      case 't2': return ['Phase 3 · Transmission 2', 'Target location', `Tap <b>GRID …</b> (line 7 fills in) → Add → <b>OVER</b> → Transmit.`];
+      case 't3': return ['Phase 3 · Transmission 3', 'Description, engagement, fire and control', `<b>TARGET …</b> (${descTxt(T.n, T.ty, 'IN THE OPEN')}) → <b>${AMMO[ammoBest(T.ty)]}</b> (${VEH[T.ty].armor ? 'armor needs ICM' : 'soft trucks: HE QUICK'}) → <b>WHEN READY</b> → <b>OVER</b> → Transmit.`];
+      case 'shot': return ['Phase 3', 'Acknowledge the FDC', 'Tap the reply button to read back the MTO, then answer SHOT and SPLASH. At SPLASH, keep the binoculars on the target.'];
+      case 'wait': return ['Phase 4', 'Round on the way', 'Answer SHOT and SPLASH. Watch the target: the burst shows 5 s after SPLASH.'];
+      case 'adj': {
+        const e = expCorr(), sp = e.sp, side = sp.devM > 0 ? 'RIGHT' : 'LEFT', rl = { L: 'LEFT', R: 'RIGHT', A: 'ADD', D: 'DROP' };
+        const send = [...(e.needDir ? [`DIRECTION ${fmt4(r10(tr.az))}`] : []), ...(e.dev ? [`${rl[e.dev.k]} ${e.dev.m}`] : []), ...(e.rng ? [`${rl[e.rng.k]} ${e.rng.m}`] : []), ...(e.ffe ? ['FIRE FOR EFFECT'] : []), 'OVER'].join(', ');
+        const spotTxt = sp.range === 'RC' ? 'at the target\'s range' : sp.range === 'SHORT' ? 'SHORT (in front of the vehicles, lower in the view)' : 'OVER (behind the vehicles, higher in the view)';
+        return [`Phase 4 · Round ${F.adj}`, 'Spot the burst and send the correction', `Burst: <b>${Math.abs(sp.devM).toFixed(0)} mils ${side}</b>, ${spotTxt}.<span class="calc">Deviation ${Math.abs(sp.devM).toFixed(0)} × OT factor ${e.t.otf} = ${e.dv} m${e.dev ? '' : ' (under 30: leave it out)'}</span>${e.why}${e.needDir ? ' Add the direction (grid mission, first correction).' : ''}<span class="calc">${send}</span>`];
+      }
+      case 'ffe': return ['Phase 4', 'Fire for effect', 'Answer SHOT, SPLASH and ROUNDS COMPLETE. Watch what happens to each vehicle.'];
+      case 'eom': return ['Phase 5', 'End of mission', `<b>END OF MISSION</b> → <b>SURVEILLANCE …</b>: what you see (<b>${F.result}</b>${F.killed ? `, about ${w.cas} casualties` : ''}) → <b>OVER</b> → Transmit.`];
+      default: return ['Done', 'Mission complete', ''];
+    }
+  }
+  function hints() {
+    document.querySelectorAll('.hint').forEach(e => e.classList.remove('hint'));
+    if (!guidedOn() || !st.w) return;
+    const s = gStep(), add = el => el && el.classList.add('hint');
+    const map = { op: 's1', size: 's2n', appsize: 's3', range: 's4', mag: 's5', gm: 's6', freq: 'freq' };
+    if (map[s]) add($(map[s]));
+    if (s === 'size') add($('s2t'));
+    if (s === 'find') add($(st.bino ? 'panR' : 'binoBtn'));
+    if (s === 'appsize' || s === 'mag') { if (!st.bino) add($('binoBtn')); }
+    if (s === 'tloc') add($(st.plot && st.plot.r ? 's7' : 'plotBtn'));
+    if (s === 'op') add($('zIn'));
+    if (['shot', 'wait', 'ffe'].includes(s) && st.ack) add($('ack'));
+    if (st.ack && s === 'eom') add($('ack'));
+    const ex = gExpect();
+    if (ex.seq && !st.ed) { const need = ex.seq[st.draft.length]; add(need ? document.querySelector(`#pal .tk[data-k="${need}"]`) : $('txBtn')); }
+    if (st.ed) add($('edOk'));
+  }
+  function note(html) {
+    const t = $('toast'); t.innerHTML = (guidedOn() && !/^(Plot|A grid|Direction is|Corrections are|Finish|Build)/.test(html) ? '<b>Not that one.</b> ' : '') + html + '<small>Tap to close</small>';
+    t.hidden = false; t.classList.remove('pop'); void t.offsetWidth; t.classList.add('pop');
+    clearTimeout(note.t); note.t = setTimeout(() => { t.hidden = true; }, 6000);
+    $('coach').classList.remove('shake'); void $('coach').offsetWidth; $('coach').classList.add('shake');
+  }
+  $('toast').addEventListener('click', () => { $('toast').hidden = true; });
+  function shake(el) { if (!el) return; el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope'); setTimeout(() => el.classList.remove('nope'), 700); }
+  function want(el) { if (!el) return; el.classList.remove('want'); void el.offsetWidth; el.classList.add('want'); el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); setTimeout(() => el.classList.remove('want'), 1700); }
+
+  // worksheet inputs: Guided checks each line when you leave it
+  const SHEETMSG = {
+    s1: () => `Your OP (magenta circle) reads about <b>${worldToGrid(st.w.op.x, st.w.op.y, 8)}</b>. Read right, then up.`,
+    s2: () => `Count them in the binoculars: <b>${st.w.tgt.n} ${VEH[st.w.tgt.ty].many}</b>.`,
+    s3: () => `Measure one vehicle end to end on the horizontal scale: about <b>${truth().M.toFixed(1)}</b> mils.`,
+    s4: () => { const M = num(st.sheet.s3) || truth().M, L = VEH[st.w.tgt.ty].L; return `R = W ÷ M × 1000 = ${L} ÷ ${(+M).toFixed(1)} × 1000 ≈ <b>${Math.round(L / M * 1000)}</b> m.`; },
+    s5: () => `Center the reticle on the group and read the box: about <b>${fmt4(truth().mag)}</b>.`,
+    s6: () => { const g = gm(), m = num(st.sheet.s5); return g === 0 ? `No G-M step: copy line 5 (about <b>${fmt4(r10(truth().az))}</b>).` : `${m != null ? fmt4(m) : 'Line 5'} ${g > 0 ? '+' : '−'} ${st.w.gmAbs} (G-M ${st.w.gmEast ? 'EAST: add' : 'WEST: subtract'}) ≈ <b>${fmt4(r10(truth().az))}</b>.`; },
+    s7: () => `The target sits at about <b>${worldToGrid(st.w.tgt.x, st.w.tgt.y, 8)}</b>. Plot direction and range from the OP, then read the grid at the ✕.`
+  };
+  ['s1', 's2n', 's2t', 's3', 's4', 's5', 's6', 's7'].forEach(id => {
+    const el = $(id);
+    el.addEventListener('input', () => { readSheet(); refresh(); });
+    el.addEventListener('change', () => {
+      readSheet(); const c = sheetCheck(), row = id.startsWith('s2') ? 's2' : id;
+      if (guidedOn() && !c.g[row] && (row !== 's2' || (st.sheet.s2n && st.sheet.s2t)) && String(el.value).trim()) { note(SHEETMSG[row]()); shake(el); }
+      refresh();
+    });
+  });
+
+  // ---------- grading
+  function evalAll() {
+    const w = st.w, T = w.tgt, c = sheetCheck();
+    const descOk = !!R.desc && R.desc.n === T.n && R.desc.ty === T.ty && R.desc.act === 'IN THE OPEN';
+    const ammoOk = !!R.ammo && ammoFits(T.ty, R.ammo);
+    const gp = R.gridSent ? gridToWorld(R.gridSent) : null, gridOk = !!gp && Math.hypot(gp.x - T.x, gp.y - T.y) <= 250;
+    const cffSA = R.sayAgain.filter(x => x.cff).length;
+    const fe = R.ffeAim ? axisErr(R.ffeAim) : null;
+    const survOk = !!R.surv && R.surv.res === F.result;
+    return [
+      { t: 'Locate the target (worksheet)', subs: [
+        { txt: 'Line 1: OP grid within 150 m', ok: c.x.s1 },
+        { txt: 'Line 2: target size and type', ok: c.x.s2 },
+        { txt: `Line 6: grid direction within 100 mils${cfg.compass === 'grid' ? '' : ' (compass ± G-M angle)'}`, ok: c.x.s6 },
+        { txt: 'Line 7: target location within 250 m', ok: c.x.s7 }] },
+      { t: 'Send the call for fire', subs: [
+        { txt: 'Radio on the fire net, FDC answers', ok: R.answered },
+        { txt: '1: call signs + ADJUST FIRE', ok: R.t1 && R.mission === 'af' },
+        { txt: '2: GRID within 250 m', ok: R.t2 && gridOk },
+        { txt: '3: target, ammunition, WHEN READY (in order)', ok: R.t3 && descOk && ammoOk && R.wr && R.t3order },
+        { txt: 'No SAY AGAIN on the call for fire', ok: R.t3 && cffSA === 0 },
+        { txt: `All three sent within ${cfg.cffMin}:00`, ok: R.tCFF != null && R.tCFF <= cfg.cffMin * 60 }] },
+      { t: 'Adjust fire (bracketing)', subs: [
+        { txt: `Each correction within ${cfg.corrSec} s of the impact`, ok: !!R.ffeAim && R.corr.every(s => s <= cfg.corrSec) },
+        { txt: 'FIRE FOR EFFECT after 6 adjusting rounds or fewer', ok: !!R.ffeAim && R.adjRounds <= 6 }] },
+      { t: 'Fire for effect on the target', subs: [
+        { txt: 'Fire for effect within 50 m of the target', ok: !!fe && fe.max <= 50 }] },
+      { t: 'End of mission', subs: [
+        { txt: 'END OF MISSION sent', ok: R.eom },
+        { txt: 'Surveillance matches what happened', ok: R.eom && survOk }] }
+    ];
+  }
+  function feedback() {
+    const w = st.w, T = w.tgt, c = sheetCheck(), tr = truth(), out = [], s = st.sheet;
+    const bad = (t) => out.push(['bad', t]), ok = (t) => out.push(['', t]);
+    if (!c.x.s1) bad(`Line 1: ${s.s1 ? `"${gridTxt(s.s1)}" is ${c.opd != null ? Math.round(c.opd) + ' m' : 'not a grid'}` : 'left blank'}; the OP is at ${worldToGrid(w.op.x, w.op.y, 8)}.`);
+    if (!c.x.s2) bad(`Line 2: the target was ${T.n} ${VEH[T.ty].many}.`);
+    ok(`Apparent size ${tr.M.toFixed(1)} mils → range ${Math.round(VEH[T.ty].L / tr.M * 1000)} m (true ${Math.round(tr.d)} m). You wrote ${s.s3 || '—'} mils, ${s.s4 || '—'} m.`);
+    if (!c.x.s6) bad(`Line 6: ${s.s6 ? fmt4(+s.s6) : 'blank'}; the grid direction was ${fmt4(tr.az)}${gm() ? ` (magnetic ${fmt4(tr.mag)} ${gm() > 0 ? '+' : '−'} ${w.gmAbs})` : ''}.`);
+    if (!c.x.s7) bad(`Line 7: ${s.s7 ? `${gridTxt(s.s7)} is ${c.td != null ? Math.round(c.td) + ' m off' : 'not a grid'}` : 'blank'}; the target was at ${worldToGrid(T.x, T.y, 8)}.`);
+    if (!R.answered) bad(`The FDC never heard you: fire net ${freqTxt(w.freq)}.`);
+    if (R.noAnswer) bad(`${R.noAnswer} transmission(s) went out on the wrong frequency.`);
+    for (const x of R.sayAgain) bad(`SAY AGAIN: ${x.why}`);
+    if (R.t1 && R.mission !== 'af') bad('Warning order was FIRE FOR EFFECT: a 6/8-digit map grid needs ADJUST FIRE.');
+    if (R.t3) {
+      if (!(R.desc.n === T.n && R.desc.ty === T.ty && R.desc.act === 'IN THE OPEN')) bad(`Description: you sent ${tokLabel(R.desc)}; it was ${descTxt(T.n, T.ty, 'IN THE OPEN')}.`);
+      if (!R.ammo) bad('Transmission 3 had no ammunition.'); else if (!ammoFits(T.ty, R.ammo)) bad(`Ammunition ${R.ammo} does not fit ${VEH[T.ty].many}: use ${AMMO[ammoBest(T.ty)]}.`);
+      if (!R.wr) bad('Transmission 3 had no WHEN READY.');
+      if (!R.t3order) bad('Transmission 3 order: target, ammunition, WHEN READY.');
+      if (R.tCFF > cfg.cffMin * 60) bad(`Call for fire took ${mmss(R.tCFF)} (limit ${cfg.cffMin}:00).`); else ok(`Call for fire on the net at ${mmss(R.tCFF)}.`);
+    } else bad('The call for fire was never completed.');
+    R.corr.forEach((d, i) => { if (d > cfg.corrSec) bad(`Correction ${i + 1} went out ${Math.round(d)} s after the impact (limit ${cfg.corrSec} s).`); });
+    if (R.noDir) bad('No DIRECTION was sent: the FDC had to guess the observer-target line.');
+    if (R.ffeAim) {
+      const fe = axisErr(R.ffeAim);
+      (fe.max <= 50 ? ok : bad)(`Fire for effect after ${R.adjRounds} adjusting round(s), ${Math.round(fe.d)} m from the target (range ${Math.round(Math.abs(fe.rng))} m ${fe.rng > 0 ? 'over' : 'short'}, deviation ${Math.round(Math.abs(fe.dev))} m).`);
+      if (R.adjRounds > 6) bad('More than 6 adjusting rounds before fire for effect.');
+    } else bad('No fire for effect.');
+    if (!R.eom) bad('No END OF MISSION.');
+    else if (!R.surv) bad(`END OF MISSION had no surveillance: it was ${F.result}.`);
+    else if (R.surv.res !== F.result) bad(`Surveillance said ${R.surv.res}; what happened: ${F.result} (${F.killed} of ${T.n} destroyed).`);
+    return out;
+  }
+  function finish() {
+    if (st.ended) return;
+    st.ended = true; st.running = false; clearTimers();
+    st.ack = null; renderAck();
+    const ms = evalAll(), go = ms.every(m => m.subs.every(x => x.ok)), secs = (performance.now() - R.t0) / 1000, exam = st.examOn;
+    if (exam && go) { try { const b = +localStorage.getItem('cffT.best') || 0; if (!b || secs < b) localStorage.setItem('cffT.best', String(Math.round(secs))); } catch (e) { /* storage blocked */ } }
+    $('resT').textContent = exam ? 'Exam result' : 'Practice debrief';
+    const rows = ms.map((m, i) => { const ok = m.subs.every(x => x.ok); return `<tr><td>${i + 1}. ${esc(m.t)}</td><td class="${ok ? 'go' : 'nogo'}">${ok ? 'GO' : 'NO-GO'}</td></tr>`; }).join('');
+    $('resBody').innerHTML = `<p><span class="verdict ${go ? 'go' : 'nogo'}">${go ? 'GO' : 'NO-GO'}</span> &nbsp;Time ${mmss(secs)}</p><div class="tbl"><table><tr><th>Measure</th><th>Result</th></tr>${rows}</table></div><h3>Details</h3><ul class="fb">${feedback().map(([c, t]) => `<li class="${c}">${esc(t)}</li>`).join('')}</ul>`;
+    refresh();
+    if (exam && !go) { $('chStats').textContent = `NO-GO on ${ms.filter(m => !m.subs.every(x => x.ok)).length} of ${ms.length} measures · time ${mmss(secs)}`; openModal('mCharlie'); }
+    else openModal('mRes');
+  }
+
+  // ---------- render
+  function renderScore() {
+    const ms = evalAll(), show = !st.examOn || st.ended;
+    $('score').innerHTML = ms.map((m, i) => {
+      const done = show && m.subs.every(x => x.ok);
+      return `<li class="m${done ? ' done' : ''}"><span class="num">${i + 1}</span><div><div class="mt">${esc(m.t)}</div><ul class="subs">${m.subs.map(x => `<li class="${show && x.ok ? 'ok' : ''}">${esc(x.txt)}</li>`).join('')}</ul></div></li>`;
+    }).join('');
+  }
+  function renderMission() {
+    const w = st.w, g = gm();
+    $('mission').innerHTML = `<span>You <b>${w.fo}</b> → FDC <b>${w.fdcCs}</b></span><span>NET <b>${freqTxt(w.freq)}</b></span><span>G-M <b>${g === 0 ? 'none' : `${w.gmAbs} ${w.gmEast ? 'E' : 'W'}`}</b></span><button class="linkbtn" id="newCard">New card</button>`;
+    $('newCard').addEventListener('click', () => newCard());
+    $('csLine').textContent = `${w.fo} → ${w.fdcCs} · net ${freqTxt(w.freq)}`;
+    $('magTxt').textContent = g === 0 ? 'compass (grid)' : 'compass';
+    $('s6').placeholder = g === 0 ? 'same as 5' : `5 ${w.gmEast ? '+' : '−'} ${w.gmAbs}`;
+    $('mapNote').textContent = `Grid squares 1,000 m · contours 10 m · G-M angle ${g === 0 ? 'none' : `${w.gmAbs} mils (${(w.gmAbs * 0.05625).toFixed(1)}°) ${w.gmEast ? 'EAST' : 'WEST'}`} · card #${st.seed}`;
+  }
+  // tabs: Guided moves you to the tab where the next step is
+  function setTab(t) {
+    st.tab = t;
+    document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+    document.querySelectorAll('.panel').forEach(p => { p.hidden = p.dataset.panel !== t; });
+    if (t === 'radio') $('radioDot').hidden = true;
+    if (t === 'locate') { sizeMap(); drawMap(); }
+  }
+  document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+  function phaseIdx() {
+    if (guidedOn()) { const s = gStep(); return ['op', 'find', 'size', 'appsize', 'range', 'mag', 'gm', 'tloc'].includes(s) ? 0 : s === 'freq' ? 1 : ['t1', 't2', 't3', 'rx'].includes(s) && !R.t3 ? 2 : ['eom', 'done'].includes(s) ? 4 : 3; }
+    if (st.ended) return 5;
+    const ph = F.phase;
+    return ph.startsWith('cff') ? (R.answered ? 2 : st.freq === st.w.freq ? 1 : 0) : ph === 'eom' || ph === 'done' ? 4 : 3;
+  }
+  function refresh() {
+    if (!st.w) return;
+    readSheet();
+    const c = sheetCheck(); st.gOk = c.g;
+    SROWS.forEach((k, i) => $('r' + (i + 1)).classList.toggle('ok', guidedOn() && !!c.g[k]));
+    const [lbl, d, h] = coach();
+    $('cStep').textContent = lbl; $('cDo').textContent = d; $('cHow').innerHTML = h;
+    const pi = phaseIdx();
+    document.querySelectorAll('#phases li').forEach((li, i) => { li.className = i < pi ? 'done' : i === pi ? 'now' : ''; });
+    if (guidedOn()) { const cat = pi <= 0 ? 'locate' : 'radio'; if (cat !== st.lastCat) { st.lastCat = cat; setTab(cat); } }
+    renderPal(); hints(); renderScore(); renderAck();
+    $('endBar').hidden = !(st.examOn && st.running);
+    $('btnRef').disabled = st.examOn && st.running;
+    drawMap(); kick();
+  }
+
+  // ---------- cards, modes, clock
+  function newCard(seed) {
+    clearTimers(); closeEditor(); closeAll();
+    st.seed = seed != null ? seed : Math.floor(Math.random() * 90000) + 10000;
+    $('busy').hidden = false;
+    setTimeout(() => {
+      const w = genWorld(st.seed); st.w = w; MV.img = null;
+      st.bursts = []; st.draft = []; st.ack = null; st.seen = false; st.plot = null; st.ended = false; st.freq = '';
+      ['s1', 's2n', 's2t', 's3', 's4', 's5', 's6', 's7', 'freq'].forEach(id => { $(id).value = ''; });
+      st.palKey = ''; st.lastCat = ''; setTab('locate'); $('radioDot').hidden = true;
+      $('log').innerHTML = ''; renderDraft();
+      newFdc();
+      const tr = truth();
+      st.bino = false; $('binoBtn').setAttribute('aria-pressed', 'false');
+      const off = (w.r() < 0.5 ? -1 : 1) * (150 + w.r() * 200);
+      setView(tr.az + off, (groundAt(w, w.tgt.x, w.tgt.y) - w.eyeZ) / tr.d + 0.04);
+      renderPal(); renderMission();
+      sizeMap(); fitMap();
+      st.t0 = performance.now(); st.running = true;
+      $('busy').hidden = true;
+      refresh();
+    }, 30);
+  }
+  function setMode(m) {
+    st.mode = m;
+    $('mGuided').setAttribute('aria-pressed', String(m === 'guided')); $('mExam').setAttribute('aria-pressed', String(m === 'exam'));
+    if (m === 'exam') { renderIntro(); openModal('mIntro'); }
+    else { st.examOn = false; newCard(); }
+  }
+  function renderIntro() {
+    const items = [
+      'The clock starts when you press Start. Run ends at END OF MISSION or at 10:00.',
+      'Phase 1: fill the worksheet. OP grid from the map, target count and type, apparent size (mils), range = W ÷ M × 1000, magnetic direction, grid direction (G-M angle), target location (polar plot).',
+      `Phase 2–3: set FREQ to the fire net, then send three transmissions built from word chips. All three within ${cfg.cffMin}:00.`,
+      `Phase 4: bracket ADD/DROP 400 → 200 → 100 → 50 + FIRE FOR EFFECT. Each correction within ${cfg.corrSec} s of the impact; fire for effect after 6 adjusting rounds or fewer, within 50 m of the target.`,
+      'Phase 5: END OF MISSION with the surveillance you actually see.',
+      'No coach, no highlights, no ✓ marks, no Ref until the end. Any NO-GO sends you to Charlie Company.'
+    ];
+    $('exList').innerHTML = items.map(t => `<li>${esc(t)}</li>`).join('');
+    $('refStd').innerHTML = items.slice(1).map(t => `<li>${esc(t)}</li>`).join('');
+  }
+  function openModal(id) { $(id).hidden = false; document.body.classList.add('locked'); }
+  function closeModal(id) { $(id).hidden = true; if (!document.querySelector('.modal:not([hidden])')) document.body.classList.remove('locked'); }
+  function closeAll() { document.querySelectorAll('.modal').forEach(m => { m.hidden = true; }); document.body.classList.remove('locked'); }
+  document.addEventListener('click', e => { const c = e.target.closest('[data-close]'); if (c) closeModal(c.dataset.close); });
+  $('mGuided').addEventListener('click', () => { if (st.mode !== 'guided' || st.examOn) setMode('guided'); });
+  $('mExam').addEventListener('click', () => setMode('exam'));
+  $('exBack').addEventListener('click', () => { closeModal('mIntro'); setMode('guided'); });
+  $('exStart').addEventListener('click', () => { closeModal('mIntro'); st.examOn = true; newCard(); });
+  $('endExam').addEventListener('click', () => finish());
+  $('resNew').addEventListener('click', () => { closeModal('mRes'); newCard(); });
+  $('resSame').addEventListener('click', () => { closeModal('mRes'); newCard(st.seed); });
+  $('resGuided').addEventListener('click', () => { closeModal('mRes'); setMode('guided'); });
+  $('chWhy').addEventListener('click', () => { closeModal('mCharlie'); openModal('mRes'); });
+  $('chRetry').addEventListener('click', () => { closeModal('mCharlie'); newCard(); });
+  $('btnRef').addEventListener('click', () => { renderIntro(); openModal('mRef'); });
+  $('btnSet').addEventListener('click', () => {
+    document.querySelector(`input[name="cmp"][value="${cfg.compass}"]`).checked = true;
+    document.querySelector(`input[name="spd"][value="${cfg.speed}"]`).checked = true;
+    document.querySelector(`input[name="fro"][value="${cfg.firstOff ? 1 : 0}"]`).checked = true;
+    $('setCff').value = String(cfg.cffMin); $('setCorr').value = String(cfg.corrSec);
+    let b = 0; try { b = +localStorage.getItem('cffT.best') || 0; } catch (e) { /* storage blocked */ }
+    $('bestTxt').textContent = b ? `Best exam GO: ${mmss(b)}` : '';
+    openModal('mSet');
+  });
+  $('setSave').addEventListener('click', () => {
+    cfg.compass = document.querySelector('input[name="cmp"]:checked').value;
+    cfg.speed = document.querySelector('input[name="spd"]:checked').value;
+    cfg.firstOff = document.querySelector('input[name="fro"]:checked').value === '1';
+    cfg.cffMin = +$('setCff').value; cfg.corrSec = +$('setCorr').value;
+    saveCfg(); closeModal('mSet'); renderIntro(); newCard();
+  });
+  setInterval(() => {
+    if (!st.w) return;
+    const secs = st.running ? (performance.now() - (st.examOn ? R.t0 : st.t0)) / 1000 : 0;
+    if (st.running) $('clock').textContent = mmss(secs);
+    $('clock').classList.toggle('warn', st.examOn && st.running && !R.t3 && secs > cfg.cffMin * 60);
+    if (st.examOn && st.running && secs >= 600) finish();
+  }, 250);
+
+  new ResizeObserver(() => { sizeView(); sizeMap(); }).observe(document.body);
+  renderIntro();
+  window.__cff = { st, cfg, get F() { return F; }, get R() { return R; }, truth, expCorr, spotOf, worldToGrid, gStep, gExpect, newCard, setMode, evalAll, finish, timing: () => { const t = performance.now(); renderTerrain(); return performance.now() - t; }, dbg: { buildTerrain, placeTarget, visibleSet, openAround, nearestLm, los, groundAt, addBurst, setView } };
+  newCard(QS.get('seed') ? +QS.get('seed') : undefined);
+})();
+</script>
+</body>
+</html>
