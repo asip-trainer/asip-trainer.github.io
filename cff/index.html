@@ -100,9 +100,24 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .phases li.now { border-top-color: var(--accent); color: var(--accent); }
 .coach .lbl { color: var(--accent); }
 .coach .do { margin-top: 2px; font-size: 16px; font-weight: 700; line-height: 1.3; }
-.coach .how { margin-top: 3px; font-size: 13.5px; color: var(--muted); }
-.coach .how b { color: var(--ink); }
-.coach .how .calc { display: block; margin-top: 4px; font: 650 12.5px/1.5 var(--mono); color: var(--ink); }
+.coach .how { margin: 5px 0 0; padding-left: 18px; font-size: 13.5px; color: var(--muted); }
+.coach .how:empty { display: none; }
+.coach .how li { margin: 2px 0; }
+.coach .how b, .coach .how code { color: var(--ink); }
+.coach .why { margin-top: 6px; font-size: 13px; color: var(--muted); }
+.coach .why summary { cursor: pointer; font-weight: 650; color: var(--accent); }
+.coach .why p { margin: 4px 0 0; }
+/* Guided: the exact action, shown right beside the control you use */
+.gtip { display: block; margin-top: 8px; padding: 8px 10px; border: 2px solid var(--hint); border-radius: 10px; background: #fff4d2; color: #2a2208; font: 600 14px/1.9 var(--ui); scroll-margin-top: 72px; scroll-margin-bottom: 16px; }
+.gtip::before { content: "DO"; display: inline-block; margin-right: 8px; padding: 0 6px; border-radius: 6px; background: #2a2208; color: var(--hint); font: 800 10.5px/1.7 var(--ui); letter-spacing: .08em; vertical-align: 1px; }
+.gtip b { font: 800 15px var(--mono); }
+.gtip strong { font-weight: 800; }
+.gtip .tk { display: inline-block; margin: 0 4px 2px 0; cursor: default; padding: 3px 8px; border-color: #c9b06a; background: #fff; color: #2a2208; font-size: 12px; line-height: 1.3; }
+.gtip .tk.dn { opacity: .38; text-decoration: line-through; }
+.gtip .tk.nx { border-color: #a87800; background: var(--hint); }
+.gtip .tx { display: inline-block; padding: 3px 9px; line-height: 1.3; border-radius: 8px; background: #2a2208; color: #fff; font: 700 12px var(--ui); opacity: .35; }
+.gtip .tx.nx { opacity: 1; box-shadow: 0 0 0 3px var(--hint); }
+@media (max-width: 1099px) and (min-height: 640px) { .gtip { scroll-margin-top: calc(110px + 54vw); } }
 .coach .mission { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,.08); font: 650 12px/1.4 var(--mono); color: var(--muted); }
 .coach .mission b { color: var(--ink); }
 .coach .mission .linkbtn { margin-left: auto; font-family: var(--ui); }
@@ -123,7 +138,8 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .mnote { margin: 6px 0 0; font-size: 12px; }
 
 /* worksheet: two columns of small fields */
-.ws { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 12px; margin-top: 12px; }
+.ws { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-auto-flow: row dense; gap: 10px 12px; margin-top: 12px; }
+.ws > .gtip { grid-column: 1 / -1; margin-top: -2px; }
 .wc.wide { grid-column: 1 / -1; }
 .wc label { display: flex; align-items: baseline; gap: 6px; font-size: 12.5px; font-weight: 650; }
 .wc label small { font-weight: 500; color: var(--muted); }
@@ -262,8 +278,6 @@ legend { padding: 0 4px; font-weight: 650; }
       </div>
       <div class="vctl">
         <button class="ibtn" id="panL" aria-label="Turn left">◀</button>
-        <button class="ibtn" id="tiltU" aria-label="Look up">▲</button>
-        <button class="ibtn" id="tiltD" aria-label="Look down">▼</button>
         <button class="ibtn" id="panR" aria-label="Turn right">▶</button>
         <button class="btn bino" id="binoBtn" aria-pressed="false">Binoculars</button>
         <span class="azr" id="azRead"></span>
@@ -276,9 +290,11 @@ legend { padding: 0 4px; font-weight: 650; }
       <ol class="phases" id="phases"><li>Locate</li><li>Radio</li><li>Call</li><li>Adjust</li><li>End</li></ol>
       <span class="lbl" id="cStep"></span>
       <div class="do" id="cDo"></div>
-      <div class="how" id="cHow"></div>
+      <ul class="how" id="cHow"></ul>
+      <details class="why" id="cWhyBox"><summary>Why</summary><p id="cWhy"></p></details>
       <div class="mission" id="mission"></div>
     </section>
+    <div class="gtip" id="gtip" hidden></div>
 
     <section class="card tools" id="tools">
       <div class="tabs" role="tablist" aria-label="Tools">
@@ -306,7 +322,7 @@ legend { padding: 0 4px; font-weight: 650; }
       </div>
 
       <div class="panel rp" data-panel="radio" id="radioPanel" hidden>
-        <div class="rh">
+        <div class="rh" id="radioHead">
           <span class="cs" id="csLine"></span>
           <label class="fq">FREQ <input id="freq" inputmode="numeric" maxlength="6" placeholder="00000" autocomplete="off" aria-label="Radio frequency, 5 digits"></label>
         </div>
@@ -674,7 +690,7 @@ legend { padding: 0 4px; font-weight: 650; }
     const r = w.r, op = w.op, cand = [];
     for (let y = 1300; y <= 3000; y += 40) for (let x = 200; x <= 5800; x += 40) {
       const dx = x - op.x, dy = y - op.y, d = Math.hypot(dx, dy);
-      if (d < 950 || d > 1800) continue;
+      if (d < 850 || d > 1450) continue;
       const az = azOf(dx, dy);
       if (Math.abs(dm(az, 0)) > 700) continue;
       if (!openAround(w, x, y, 70)) continue;
@@ -725,8 +741,9 @@ legend { padding: 0 4px; font-weight: 650; }
   const gm = () => cfg.compass === 'grid' ? 0 : (st.w.gmEast ? st.w.gmAbs : -st.w.gmAbs); // grid = magnetic + gm
   const truth = () => {
     const w = st.w, T = w.tgt, op = w.op, az = azOf(T.x - op.x, T.y - op.y), d = Math.hypot(T.x - op.x, T.y - op.y);
-    const sp = VEH[T.ty];
-    return { az, mag: w64(az - gm()), d, M: sp.L / d * 1000, otf: d >= 1000 ? Math.round(d / 1000) : Math.round(d / 100) / 10 };
+    const v = T.veh[0], sp = VEH[T.ty], rel = v.head - Math.atan2(v.x - op.x, v.y - op.y);
+    const M = (Math.abs(sp.L * Math.sin(rel)) + Math.abs(sp.Wd * Math.cos(rel))) / Math.hypot(v.x - op.x, v.y - op.y) / MIL;
+    return { az, mag: w64(az - gm()), d, M, otf: d >= 1000 ? Math.round(d / 1000) : Math.round(d / 100) / 10 };
   };
   function gridToWorld(s) {
     const d = digits(s); if (![6, 8, 10].includes(d.length)) return null;
@@ -914,13 +931,16 @@ legend { padding: 0 4px; font-weight: 650; }
         if (big) g.fillText(fmt4(m), x, th * 0.38);
       }
       g.fillStyle = '#ffc53d'; g.beginPath(); g.moveTo(Wd / 2, th + 1); g.lineTo(Wd / 2 - 6 * sc, th + 9 * sc); g.lineTo(Wd / 2 + 6 * sc, th + 9 * sc); g.closePath(); g.fill();
-      if (st.mode === 'guided' && !st.examOn && gStep() === 'find') {
-        const T = st.w.tgt, p = proj(T.x, T.y, groundAt(st.w, T.x, T.y) + 2);
-        if (p.sx > -20 && p.sx < Wd + 20) { g.strokeStyle = '#ffc53d'; g.lineWidth = 2 * sc; g.setLineDash([6 * sc, 5 * sc]); g.beginPath(); g.arc(p.sx, p.sy, Math.max(16 * sc, 90 * p.s), 0, Math.PI * 2); g.stroke(); g.setLineDash([]); }
+      if (guidedOn() && ['find', 'size', 'appsize', 'mag', 'wait', 'adj'].includes(gStep())) {
+        const T = st.w.tgt, p = proj(T.x, T.y, groundAt(st.w, T.x, T.y) + 2), r = Math.max(16 * sc, 90 * p.s);
+        if (p.sx > -20 && p.sx < Wd + 20) {
+          g.strokeStyle = '#ffc53d'; g.lineWidth = 2 * sc; g.setLineDash([6 * sc, 5 * sc]); g.beginPath(); g.arc(p.sx, p.sy, r, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
+          hudTag(g, 'Tap here', p.sx, p.sy - r - 4 * sc, sc);
+        }
       }
       g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(0, Hd - 20 * sc, Wd, 20 * sc);
       g.fillStyle = '#e8eadf'; g.textAlign = 'left'; g.font = `500 ${Math.round(11 * sc)}px system-ui, sans-serif`;
-      g.fillText('Drag to look · tap to aim · B = binoculars', 8 * sc, Hd - 10 * sc);
+      g.fillText('Tap a spot to look at it through the binoculars · drag to look around', 8 * sc, Hd - 10 * sc);
     } else {
       const cx = Wd / 2, cy = Hd / 2;
       if (!V.mask || V.mask.width !== Wd || V.mask.height !== Hd) {
@@ -950,6 +970,35 @@ legend { padding: 0 4px; font-weight: 650; }
       g.fillStyle = 'rgba(0,0,0,.72)'; g.fillRect(cx - bw / 2, 6 * sc, bw, bh);
       g.fillStyle = '#9ef08a'; g.font = `700 ${Math.round(13 * sc)}px ui-monospace, Menlo, monospace`;
       g.fillText(`${cfg.compass === 'grid' ? 'GRID' : 'MAG'} AZ ${fmt4(mag)}`, cx, 6 * sc + bh / 2);
+      if (guidedOn()) guideMarks(g, sc, pm, cx - bw / 2, 6 * sc, bw, bh);
+      g.fillStyle = 'rgba(232,234,223,.85)'; g.font = `500 ${Math.round(11 * sc)}px system-ui, sans-serif`; g.textAlign = 'center';
+      g.fillText('Tap the vehicles to center on them · Binoculars button = back to the open view', cx, Hd - 9 * sc);
+    }
+    g.restore();
+  }
+  function hudTag(g, txt, x, y, sc) {
+    g.save(); g.font = `800 ${Math.round(12.5 * sc)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const m = g.measureText(txt).width + 10 * sc, h = 18 * sc;
+    g.fillStyle = 'rgba(0,0,0,.75)'; g.fillRect(x - m / 2, y - h, m, h); g.fillStyle = '#ffc53d'; g.fillText(txt, x, y - h / 2);
+    g.restore();
+  }
+  // Guided marks inside the binoculars: count tags, the two ends of vehicle 1, the burst's offset from the target
+  function guideMarks(g, sc, pm, bx, by, bw, bh) {
+    const s = gStep(), w = st.w, T = w.tgt, Y = '#ffc53d';
+    g.save(); g.strokeStyle = Y; g.lineWidth = 2 * sc;
+    if (s === 'size') T.veh.forEach((v, i) => { const p = proj(v.x, v.y, v.z + 3.2); hudTag(g, String(i + 1), p.sx, p.sy - 4 * sc, sc); });
+    if (s === 'appsize') {
+      const v = T.veh[0], p = proj(v.x, v.y, v.z), sp = VEH[T.ty], rel = v.head - p.a, half = (Math.abs(sp.L * Math.sin(rel)) + Math.abs(sp.Wd * Math.cos(rel))) / 2 * p.s, top = p.sy - (sp.hull + sp.tur + 0.6) * p.s - 6 * sc;
+      for (const x of [p.sx - half, p.sx + half]) { g.beginPath(); g.moveTo(x, top); g.lineTo(x, p.sy + 6 * sc); g.stroke(); }
+      hudTag(g, `${truth().M.toFixed(1)} mils`, p.sx, top - 4 * sc, sc);
+    }
+    if (s === 'mag') { g.strokeRect(bx - 3 * sc, by - 3 * sc, bw + 6 * sc, bh + 6 * sc); hudTag(g, 'Read this', bx + bw / 2, by + bh + 24 * sc, sc); }
+    if ((s === 'adj' || s === 'eom') && F.lastBurst && s === 'adj') {
+      const b = F.lastBurst, pb = proj(b.x, b.y, groundAt(w, b.x, b.y)), pt = proj(T.x, T.y, groundAt(w, T.x, T.y)), sp = spotOf(b);
+      g.setLineDash([5 * sc, 4 * sc]); g.beginPath(); g.moveTo(pt.sx, pb.sy); g.lineTo(pb.sx, pb.sy); g.stroke(); g.setLineDash([]);
+      g.beginPath(); g.moveTo(pt.sx, pt.sy + 4 * sc); g.lineTo(pt.sx, pb.sy + 6 * sc); g.moveTo(pt.sx, Math.min(pt.sy, pb.sy) - 8 * sc); g.lineTo(pt.sx, Math.min(pt.sy, pb.sy) - 2 * sc); g.stroke();
+      g.beginPath(); g.arc(pb.sx, pb.sy, 7 * sc, 0, Math.PI * 2); g.stroke();
+      hudTag(g, `${Math.abs(sp.devM).toFixed(0)} mils ${sp.devM > 0 ? 'RIGHT' : 'LEFT'} · ${sp.range === 'RC' ? 'ON RANGE' : sp.range}`, (pt.sx + pb.sx) / 2, pb.sy + 30 * sc, sc);
     }
     g.restore();
   }
@@ -968,7 +1017,7 @@ legend { padding: 0 4px; font-weight: 650; }
     if (Math.abs(el - st.pitch) * camF() > V.H * 0.42) return;
     st.seen = true; refresh();
   }
-  function setBino(on) { st.bino = on; $('binoBtn').setAttribute('aria-pressed', String(on)); V.dirty = true; kick(); checkSeen(); azRead(); refresh(); }
+  function setBino(on) { if (!on) st.lastAim = { az: st.az, pitch: st.pitch }; st.bino = on; $('binoBtn').setAttribute('aria-pressed', String(on)); V.dirty = true; kick(); checkSeen(); azRead(); refresh(); }
   (function viewInput() {
     const cv = V.cv; let drag = null;
     cv.addEventListener('pointerdown', e => { if (!st.w) return; cv.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, az: st.az, p: st.pitch, moved: false }; });
@@ -983,7 +1032,11 @@ legend { padding: 0 4px; font-weight: 650; }
       if (!drag) return;
       if (!drag.moved) {
         const rc = cv.getBoundingClientRect(), k = V.W / rc.width, x = (e.clientX - rc.left) * k, y = (e.clientY - rc.top) * k, f = camF();
-        setView(st.az + (x - V.W / 2) / (f * MIL), st.pitch + (V.H / 2 - y) / f, false);
+        let az = st.az + (x - V.W / 2) / (f * MIL), pitch = st.pitch + (V.H / 2 - y) / f;
+        const t = truth(), el = (groundAt(st.w, st.w.tgt.x, st.w.tgt.y) + 1 - st.w.eyeZ) / t.d, snap = st.bino ? 12 : 60;
+        if (Math.abs(dm(az, t.az)) < snap && Math.abs(pitch - el) / MIL < snap) { az = t.az; pitch = el; }
+        setView(az, pitch, false);
+        if (!st.bino) setBino(true);
       }
       drag = null;
     };
@@ -997,8 +1050,6 @@ legend { padding: 0 4px; font-weight: 650; }
     };
     rep('panL', () => setView(st.az - (st.bino ? 1 : 25), st.pitch, !st.bino));
     rep('panR', () => setView(st.az + (st.bino ? 1 : 25), st.pitch, !st.bino));
-    rep('tiltU', () => setView(st.az, st.pitch + (st.bino ? 1 : 10) * MIL, !st.bino));
-    rep('tiltD', () => setView(st.az, st.pitch - (st.bino ? 1 : 10) * MIL, !st.bino));
     $('binoBtn').addEventListener('click', () => setBino(!st.bino));
     document.addEventListener('keydown', e => {
       if (!st.w || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || document.querySelector('.modal:not([hidden])')) return;
@@ -1056,12 +1107,14 @@ legend { padding: 0 4px; font-weight: 650; }
     g.fillRect(chx - 1.5, chy - 12, 3, 9); g.fillRect(chx - 5, chy - 9, 10, 3);
     // spot elevations on local high points
     g.font = 'italic 600 15px system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+    const tops = [];
     for (let by = 0; by < S; by += 500) for (let bx = 0; bx < S; bx += 500) {
       let mx = 0, my = 0, mh = -1e9;
       for (let y = by; y < by + 500; y += 20) for (let x = bx; x < bx + 500; x += 20) { const h = groundAt(w, x, y); if (h > mh) { mh = h; mx = x; my = y; } }
       let top = true;
       for (let a = 0; a < 16 && top; a++) { const ang = a / 16 * Math.PI * 2; if (groundAt(w, mx + Math.cos(ang) * 260, my + Math.sin(ang) * 260) > mh - 3) top = false; }
-      if (!top || mx < 60 || my < 60 || mx > S - 60 || my > S - 60) continue;
+      if (!top || mx < 60 || my < 60 || mx > S - 60 || my > S - 60 || tops.some(q => Math.hypot(q[0] - mx, q[1] - my) < 400)) continue;
+      tops.push([mx, my]);
       g.fillStyle = '#5a3a1c'; g.beginPath(); g.arc(mx * MK, (S - my) * MK, 3.2, 0, 7); g.fill();
       g.fillText(String(Math.round(mh)), mx * MK + 6, (S - my) * MK - 1);
     }
@@ -1375,10 +1428,11 @@ legend { padding: 0 4px; font-weight: 650; }
     F.busy = true;
     later(2200 * K(), () => ffe ? fireFFE() : fireAdj());
   }
+  function splashBinos() { if (!st.bino) { if (st.lastAim) setView(st.lastAim.az, st.lastAim.pitch); setBino(true); } }
   function fireAdj() {
     F.busy = false; F.inFlight = true; F.phase = 'adjust';
     fdcSay('SHOT, OVER.'); setAck('SHOT', 'SHOT, OUT.');
-    later(SPL(), () => { fdcSay('SPLASH, OVER.'); setAck('SPLASH', 'SPLASH, OUT.'); });
+    later(SPL(), () => { fdcSay('SPLASH, OVER.'); setAck('SPLASH', 'SPLASH, OUT.'); splashBinos(); });
     later(TOF(), () => {
       const ix = F.aim.x + F.bias.x, iy = F.aim.y + F.bias.y;
       addBurst(ix, iy, 'he');
@@ -1393,7 +1447,7 @@ legend { padding: 0 4px; font-weight: 650; }
   function fireFFE() {
     const w = st.w, cx = F.aim.x + F.bias.x, cy = F.aim.y + F.bias.y; F.busy = false; F.inFlight = true; F.phase = 'ffe'; R.ffeAim = { x: cx, y: cy };
     fdcSay('SHOT, OVER.'); setAck('SHOT', 'SHOT, OUT.');
-    later(SPL(), () => { fdcSay('SPLASH, OVER.'); setAck('SPLASH', 'SPLASH, OUT.'); });
+    later(SPL(), () => { fdcSay('SPLASH, OVER.'); setAck('SPLASH', 'SPLASH, OUT.'); splashBinos(); });
     const th = azOf(F.aim.x - w.op.x, F.aim.y - w.op.y) * MIL, rt = [Math.cos(th), -Math.sin(th)], u = [Math.sin(th), Math.cos(th)], pts = [];
     for (let gun = 0; gun < 6; gun++) for (let rd = 0; rd < 2; rd++) {
       const lat = (gun - 2.5) * 18 + (Math.random() - 0.5) * 10, lon = (Math.random() - 0.5) * 30;
@@ -1427,15 +1481,15 @@ legend { padding: 0 4px; font-weight: 650; }
     const t = truth(), sp = spotOf(F.lastBurst), dv = r10(Math.abs(sp.devM) * t.otf);
     const dev = dv >= 30 ? { k: sp.devM > 0 ? 'L' : 'R', m: dv } : null;
     let rng = null, ffe = false, why = '';
-    if (sp.range === 'RC') { ffe = true; why = 'The burst is at the target\'s range: no range change.'; }
+    if (sp.range === 'RC') { ffe = true; why = 'on the target\'s range → no ADD/DROP, FIRE FOR EFFECT.'; }
     else {
-      const k = sp.range === 'SHORT' ? 'A' : 'D'; let c;
+      const k = sp.range === 'SHORT' ? 'A' : 'D', kw = k === 'A' ? 'ADD' : 'DROP'; let c;
       if (!F.bracketed) {
         c = F.lastMag || 400; while (c <= Math.abs(sp.er)) c *= 2;
-        why = F.lastMag ? 'Still on the same side: no bracket yet, so repeat (or double) the jump.' : 'First range change: 400 (double it if the burst is farther off than that).';
-      } else { c = Math.max(50, F.lastMag / 2); why = `Bracketed: split it, half of ${F.lastMag} = ${c}.`; }
+        why = F.lastMag ? `still ${sp.range}, no bracket yet → ${kw} ${c} again.` : `${sp.range} → ${kw} ${c} (first jump${c > 400 ? ', doubled: the burst is far off' : ''}).`;
+      } else { c = Math.max(50, F.lastMag / 2); why = `${sp.range}, bracketed → half of ${F.lastMag} = ${kw} ${c}.`; }
       rng = { k, m: c };
-      if (F.bracketed && c === 50) { ffe = true; why += ' That splits the 100 m bracket: FIRE FOR EFFECT.'; }
+      if (F.bracketed && c === 50) { ffe = true; why += ' That splits the 100 m bracket → FIRE FOR EFFECT.'; }
     }
     return { needDir: F.dir == null, dev, dv, rng, ffe, sp, t, why };
   }
@@ -1491,38 +1545,68 @@ legend { padding: 0 4px; font-weight: 650; }
     }
     return '';
   }
-  function coach() {
-    const w = st.w, T = w.tgt, tr = truth(), s = st.sheet, chk = sheetCheck();
-    if (st.examOn) return ['Exam', 'No coach during the exam.', `Worksheet → radio → three transmissions → bracket → fire for effect → end of mission. Clock: call for fire within ${cfg.cffMin}:00.`];
-    if (st.ended) return ['Done', 'Mission complete.', 'Press New card for another target, or switch to Exam.'];
-    const g = gm(), gmw = g === 0 ? 'none' : `${w.gmAbs} mils ${w.gmEast ? 'EAST' : 'WEST'}`;
-    const nl = nearestLm(w, T.x, T.y);
-    switch (gStep()) {
-      case 'op': return ['Phase 1 · Step 1', 'Worksheet line 1: your location', `Your OP is the magenta circle on the map. Read right, then up. Use + to zoom. It reads about <b>${worldToGrid(w.op.x, w.op.y, 8)}</b>.`];
-      case 'find': return ['Phase 1 · Step 2', 'Find the target with the binoculars', 'Tap the yellow ring in the view to aim there, then press <b>Binoculars</b> (or B). Use ◀ ▶ ▲ ▼ to scan.'];
-      case 'size': return ['Phase 1 · Step 2', 'Worksheet line 2: how many, what', `Count them: <b>${T.n} ${T.n === 1 ? VEH[T.ty].one : VEH[T.ty].many}</b>. BMP: low hull, small turret, short gun. T-72: wide turret, long gun. Truck: tall box and cab.`];
-      case 'appsize': return ['Phase 1 · Step 3', 'Worksheet line 3: apparent size in mils', `Put one end of a vehicle on a tick of the horizontal scale and count to the other end (ticks every 5 mils, numbers every 10). This one is about <b>${tr.M.toFixed(1)} mils</b>.`];
-      case 'range': { const M = chk.M || tr.M, L = VEH[T.ty].L; return ['Phase 1 · Step 4', 'Worksheet line 4: range with W ÷ M', `W = ${L} m (${VEH[T.ty].one.toLowerCase()} on the vehicle card).<span class="calc">R = ${L} ÷ ${(+M).toFixed(1)} × 1000 = ${Math.round(L / M * 1000)} m</span>`]; }
-      case 'mag': return ['Phase 1 · Step 5', `Worksheet line 5: ${cfg.compass === 'grid' ? 'grid' : 'magnetic'} direction`, `Center the reticle on the middle of the group (◀ ▶, 1 mil per tap) and read the box at the top: about <b>${fmt4(tr.mag)}</b>.`];
-      case 'gm': { const m = chk.mag != null ? chk.mag : tr.mag, ga = w64(m + g); return ['Phase 1 · Step 6', 'Worksheet line 6: grid direction', g === 0 ? `Compass reads grid already: copy line 5, rounded to 10 mils: <b>${fmt4(r10(ga))}</b>.` : `G-M angle ${gmw}. Magnetic → grid: EAST add, WEST subtract.<span class="calc">${fmt4(m)} ${g > 0 ? '+' : '−'} ${w.gmAbs} = ${fmt4(ga)} → ${fmt4(r10(ga))}</span>`]; }
-      case 'tloc': return ['Phase 1 · Step 7', 'Worksheet line 7: target location', `Polar plot: press <b>Plot</b> beside line 7. It lays line 6 (${digits(s.s6) || '—'}) and line 4 (${digits(s.s4) || '—'} m) from the OP and marks ✕. Read the grid at the ✕. The target is ${Math.round(nl.d / 10) * 10} m ${nl.dir} of ${nl.lm.name} (orange circle): about <b>${worldToGrid(T.x, T.y, 8)}</b>.`];
-      case 'freq': return ['Phase 2', 'Set the radio to the fire net', `FREQ <b>${w.freq}</b> (${freqTxt(w.freq)} on the mission card). Call signs: FDC <b>${w.fdcCs}</b>, you <b>${w.fo}</b>.`];
-      case 'rx': return ['Phase 3', 'Wait for the read-back', 'The FDC repeats each transmission back to you.'];
-      case 't1': return ['Phase 3 · Transmission 1', 'Observer identification + warning order', `Tap <b>${w.fdcCs}, THIS IS ${w.fo}</b> → <b>ADJUST FIRE</b> → <b>OVER</b>, then Transmit.`];
-      case 't2': return ['Phase 3 · Transmission 2', 'Target location', `Tap <b>GRID …</b> (line 7 fills in) → Add → <b>OVER</b> → Transmit.`];
-      case 't3': return ['Phase 3 · Transmission 3', 'Description, engagement, fire and control', `<b>TARGET …</b> (${descTxt(T.n, T.ty, 'IN THE OPEN')}) → <b>${AMMO[ammoBest(T.ty)]}</b> (${VEH[T.ty].armor ? 'armor needs ICM' : 'soft trucks: HE QUICK'}) → <b>WHEN READY</b> → <b>OVER</b> → Transmit.`];
-      case 'shot': return ['Phase 3', 'Acknowledge the FDC', 'Tap the reply button to read back the MTO, then answer SHOT and SPLASH. At SPLASH, keep the binoculars on the target.'];
-      case 'wait': return ['Phase 4', 'Round on the way', 'Answer SHOT and SPLASH. Watch the target: the burst shows 5 s after SPLASH.'];
-      case 'adj': {
-        const e = expCorr(), sp = e.sp, side = sp.devM > 0 ? 'RIGHT' : 'LEFT', rl = { L: 'LEFT', R: 'RIGHT', A: 'ADD', D: 'DROP' };
-        const send = [...(e.needDir ? [`DIRECTION ${fmt4(r10(tr.az))}`] : []), ...(e.dev ? [`${rl[e.dev.k]} ${e.dev.m}`] : []), ...(e.rng ? [`${rl[e.rng.k]} ${e.rng.m}`] : []), ...(e.ffe ? ['FIRE FOR EFFECT'] : []), 'OVER'].join(', ');
-        const spotTxt = sp.range === 'RC' ? 'at the target\'s range' : sp.range === 'SHORT' ? 'SHORT (in front of the vehicles, lower in the view)' : 'OVER (behind the vehicles, higher in the view)';
-        return [`Phase 4 · Round ${F.adj}`, 'Spot the burst and send the correction', `Burst: <b>${Math.abs(sp.devM).toFixed(0)} mils ${side}</b>, ${spotTxt}.<span class="calc">Deviation ${Math.abs(sp.devM).toFixed(0)} × OT factor ${e.t.otf} = ${e.dv} m${e.dev ? '' : ' (under 30: leave it out)'}</span>${e.why}${e.needDir ? ' Add the direction (grid mission, first correction).' : ''}<span class="calc">${send}</span>`];
+  // Guided: one step at a time. title = what, tip = the exact action (shown beside the control), bullets = how, why = background
+  const GN = { op: 1, find: 2, size: 3, appsize: 4, range: 5, mag: 6, gm: 7, tloc: 8, freq: 9, t1: 10, t2: 11, t3: 12, shot: 13, wait: 14, adj: 14, ffe: 15, eom: 16, done: 16 };
+  const PHN = ['Locate', 'Radio', 'Call', 'Adjust', 'End', 'Done'];
+  const chipsHtml = (labels, done) => labels.map((l, i) => `<span class="tk${i < done ? ' dn' : i === done ? ' nx' : ''}">${esc(l)}</span>`).join('') + `<span class="tx${done >= labels.length ? ' nx' : ''}">Transmit</span>`;
+  function seqLabels(seq) {
+    const w = st.w, T = w.tgt, s = st.sheet, tr = truth(), RL = { L: 'LEFT', R: 'RIGHT', A: 'ADD', D: 'DROP' };
+    return seq.map(k => {
+      if (k === 'grid') return `GRID ${digits(s.s7) ? gridTxt(digits(s.s7)) : '…'}`;
+      if (k === 'dir') return `DIRECTION ${fmt4(num(s.s6) != null ? +s.s6 : r10(tr.az))}`;
+      if (k === 'tgt') return descTxt(T.n, T.ty, 'IN THE OPEN');
+      if (RL[k]) { const e = expCorr(); return `${RL[k]} ${k === 'L' || k === 'R' ? e.dev.m : e.rng.m}`; }
+      if (k === 'surv') return `${F.result}${F.killed ? `, ${w.cas} CASUALTIES` : ''}`;
+      return chipLabel(k);
+    });
+  }
+  function coachData() {
+    const w = st.w, T = w.tgt, tr = truth(), chk = sheetCheck(), g = gm(), unit = VEH[T.ty];
+    if (st.examOn) return { lbl: st.ended ? 'Exam over' : 'Exam', title: st.ended ? 'See your result' : 'No coach in the exam', bullets: ['Locate → radio → 3 transmissions → bracket → fire for effect → end of mission.', `Call for fire within ${cfg.cffMin}:00 · each correction within ${cfg.corrSec} s of the impact.`] };
+    if (st.ended) return { lbl: 'Done', title: 'Mission complete', bullets: ['Press New card for another target, or switch to Exam.'] };
+    const step = gStep(), reply = st.ack ? `Tap the orange <strong>Reply</strong> button (${esc(st.ack.text)})` : '';
+    const nl = nearestLm(w, T.x, T.y), typeName = T.ty === 'T72' ? 'T-72' : T.ty === 'BMP' ? 'BMP' : 'Truck';
+    switch (step) {
+      case 'op': return { title: 'Read your OP grid', tip: `Line 1 → <b>${worldToGrid(w.op.x, w.op.y, 8)}</b>`, bullets: ['Your OP is the magenta ◎ on the map (zoom in with +).', 'Read right (4 digits), then up (4 digits).'], why: 'Everything you send is measured from where you stand.' };
+      case 'find': return { title: 'Find the enemy', tip: st.bino ? 'Tap the dark vehicles, or press <strong>◀ ▶</strong> until they are in the glass' : 'Tap the <strong>yellow ring</strong>: the binoculars open on it', bullets: ['The yellow ring marks the target area.'] };
+      case 'size': return { title: 'Count them', tip: `Line 2 → <b>${T.n}</b> · <b>${typeName}</b>`, bullets: ['The yellow numbers in the binoculars count them for you.', 'Truck: tall box and cab. BMP: low hull, small turret. T-72: wide turret, long gun.'] };
+      case 'appsize': return { title: 'Measure one vehicle', tip: `Line 3 → <b>${tr.M.toFixed(1)}</b> mils`, bullets: ['The yellow marks in the binoculars are the two ends of vehicle 1.', 'Count the mils between them on the scale: a tick every 5, a number every 10.'], why: 'Apparent size M and real length W give the range on the next line.' };
+      case 'range': { const M = chk.M || tr.M, Rr = r10(unit.L / M * 1000); return { title: 'Work out the range', tip: `Line 4 → <b>${Rr}</b> m`, bullets: ['R = W ÷ M × 1000', `${unit.L} ÷ ${(+M).toFixed(1)} × 1000 = ${Rr} m`], why: `W is the real length of one ${unit.one.toLowerCase()}: ${unit.L} m (card under the worksheet).` }; }
+      case 'mag': { const off = dm(tr.az, st.az); return { title: 'Read the compass', tip: `Line 5 → <b>${fmt4(tr.mag)}</b>`, bullets: [st.bino ? (Math.abs(off) > 2 ? 'Tap the middle of the group: the reticle jumps onto it.' : 'The reticle is on the group: read the green MAG AZ box.') : 'Tap the vehicles to open the binoculars on them.', 'Direction always goes to the middle of the group.'] }; }
+      case 'gm': { const m = chk.mag != null ? chk.mag : tr.mag, ga = w64(m + g); return { title: 'Convert to grid direction', tip: `Line 6 → <b>${fmt4(r10(ga))}</b>`, bullets: g === 0 ? ['Your compass reads grid: copy line 5 to the nearest 10.'] : [`G-M ${w.gmAbs} mils ${w.gmEast ? 'EAST: add' : 'WEST: subtract'}.`, `${fmt4(m)} ${g > 0 ? '+' : '−'} ${w.gmAbs} = ${fmt4(ga)} → nearest 10: ${fmt4(r10(ga))}`], why: 'The FDC works in grid directions; your compass reads magnetic.' }; }
+      case 'tloc': return { title: 'Plot the target', tip: st.plot && st.plot.r ? `Line 7 → <b>${worldToGrid(T.x, T.y, 8)}</b>` : 'Press <strong>Plot</strong> beside line 7', bullets: ['Plot lays line 6 and line 4 from your OP and marks ✕ on the map.', `Read the grid at the ✕. The vehicles are ${Math.round(nl.d / 10) * 10} m ${nl.dir} of ${nl.lm.name} (orange circle).`] };
+      case 'freq': return { title: 'Set the radio', tip: `FREQ → <b>${w.freq}</b>`, bullets: [`Fire net ${freqTxt(w.freq)} · you ${w.fo} · FDC ${w.fdcCs}.`] };
+      case 'rx': return { title: 'Wait for the read-back', tip: 'The FDC is repeating your transmission', bullets: [] };
+      case 'shot': return { title: 'Answer the FDC', tip: reply || 'Wait for the FDC', bullets: ['Read back the MTO, then SHOT, OUT and SPLASH, OUT.', 'At SPLASH keep the binoculars on the target.'] };
+      case 'wait': return { title: 'Round on the way', tip: reply || 'Watch the target', bullets: ['The burst shows 5 s after SPLASH.', st.bino ? 'Keep the binoculars on the target.' : 'Turn the binoculars on to spot it.'] };
+      case 'ffe': return { title: 'Fire for effect', tip: reply || 'Watch the vehicles', bullets: ['Burning = destroyed. Count them for your report.'] };
+      case 't1': case 't2': case 't3': case 'adj': case 'eom': {
+        const tip = chipsHtml(seqLabels(gExpect().seq), st.draft.length);
+        if (step === 't1') return { title: 'Transmission 1 · who you are, what you want', tip, bullets: ['Observer ID: the FDC\'s call sign first, then yours.', 'Warning order: ADJUST FIRE.'] };
+        if (step === 't2') return { title: 'Transmission 2 · where', tip, bullets: ['GRID opens with line 7 already filled in: press Add.'] };
+        if (step === 't3') return { title: 'Transmission 3 · what, with what, when', tip, bullets: ['TARGET opens with line 2 filled in: press Add.', unit.armor ? 'Armor → ICM.' : 'Trucks → HE QUICK.', 'WHEN READY: fire as soon as you can.'] };
+        if (step === 'eom') return { title: 'End the mission', tip, bullets: [`Report what you see: ${F.result}${F.killed ? ` (${F.killed} of ${T.n} burning)` : ''}.`, 'Casualties are your estimate.'] };
+        const e = expCorr(), sp = e.sp;
+        const b = [`Spot: ${Math.abs(sp.devM).toFixed(0)} mils ${sp.devM > 0 ? 'RIGHT' : 'LEFT'} · ${sp.range === 'RC' ? 'on the target\'s range' : sp.range === 'SHORT' ? 'SHORT (in front, lower)' : 'OVER (behind, higher)'}.`,
+          `Deviation: ${Math.abs(sp.devM).toFixed(0)} × OT factor ${e.t.otf} = ${e.dv} m → ${e.dev ? `${e.dev.k === 'L' ? 'LEFT' : 'RIGHT'} ${e.dev.m}` : 'under 30, leave it out'}.`,
+          `Range: ${e.why}`];
+        if (e.needDir) b.push('Grid mission: DIRECTION goes in front, once.');
+        return { title: `Round ${F.adj}: spot it, correct it`, tip, bullets: b };
       }
-      case 'ffe': return ['Phase 4', 'Fire for effect', 'Answer SHOT, SPLASH and ROUNDS COMPLETE. Watch what happens to each vehicle.'];
-      case 'eom': return ['Phase 5', 'End of mission', `<b>END OF MISSION</b> → <b>SURVEILLANCE …</b>: what you see (<b>${F.result}</b>${F.killed ? `, about ${w.cas} casualties` : ''}) → <b>OVER</b> → Transmit.`];
-      default: return ['Done', 'Mission complete', ''];
+      default: return { title: 'Mission complete', bullets: [] };
     }
+  }
+  const TIPAT = { op: ['r1', 'after'], size: ['r2', 'after'], appsize: ['r3', 'after'], range: ['r4', 'after'], mag: ['r5', 'after'], gm: ['r6', 'after'], tloc: ['r7', 'after'], find: ['viewCard', 'in'], freq: ['radioHead', 'after'], t1: ['pal', 'before'], t2: ['pal', 'before'], t3: ['pal', 'before'], adj: ['pal', 'before'], eom: ['pal', 'before'], shot: ['ack', 'after'], wait: ['ack', 'after'], ffe: ['ack', 'after'], rx: ['log', 'after'] };
+  function placeTip(cd) {
+    const tip = $('gtip'), step = guidedOn() ? gStep() : '', at = TIPAT[step];
+    if (!at || !cd.tip) { tip.hidden = true; st.tipStep = step; return; }
+    if (tip.innerHTML !== cd.tip) tip.innerHTML = cd.tip;
+    tip.hidden = false;
+    const el = $(at[0]);
+    if (at[1] === 'in') { if (tip.parentNode !== el) el.appendChild(tip); }
+    else if (at[1] === 'before') { if (tip.nextElementSibling !== el) el.before(tip); }
+    else if (tip.previousElementSibling !== el) el.after(tip);
+    if (step !== st.tipStep) { const first = !st.tipStep; st.tipStep = step; if (!first) setTimeout(() => { if (!tip.hidden) tip.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60); }
   }
   function hints() {
     document.querySelectorAll('.hint').forEach(e => e.classList.remove('hint'));
@@ -1531,8 +1615,7 @@ legend { padding: 0 4px; font-weight: 650; }
     const map = { op: 's1', size: 's2n', appsize: 's3', range: 's4', mag: 's5', gm: 's6', freq: 'freq' };
     if (map[s]) add($(map[s]));
     if (s === 'size') add($('s2t'));
-    if (s === 'find') add($(st.bino ? 'panR' : 'binoBtn'));
-    if (s === 'appsize' || s === 'mag') { if (!st.bino) add($('binoBtn')); }
+    if ((s === 'appsize' || s === 'mag' || s === 'size') && !st.bino) add($('binoBtn'));
     if (s === 'tloc') add($(st.plot && st.plot.r ? 's7' : 'plotBtn'));
     if (s === 'op') add($('zIn'));
     if (['shot', 'wait', 'ffe'].includes(s) && st.ack) add($('ack'));
@@ -1557,7 +1640,7 @@ legend { padding: 0 4px; font-weight: 650; }
     s2: () => `Count them in the binoculars: <b>${st.w.tgt.n} ${VEH[st.w.tgt.ty].many}</b>.`,
     s3: () => `Measure one vehicle end to end on the horizontal scale: about <b>${truth().M.toFixed(1)}</b> mils.`,
     s4: () => { const M = num(st.sheet.s3) || truth().M, L = VEH[st.w.tgt.ty].L; return `R = W ÷ M × 1000 = ${L} ÷ ${(+M).toFixed(1)} × 1000 ≈ <b>${Math.round(L / M * 1000)}</b> m.`; },
-    s5: () => `Center the reticle on the group and read the box: about <b>${fmt4(truth().mag)}</b>.`,
+    s5: () => `Tap the middle of the group in the binoculars, then read the MAG AZ box: about <b>${fmt4(truth().mag)}</b>.`,
     s6: () => { const g = gm(), m = num(st.sheet.s5); return g === 0 ? `No G-M step: copy line 5 (about <b>${fmt4(r10(truth().az))}</b>).` : `${m != null ? fmt4(m) : 'Line 5'} ${g > 0 ? '+' : '−'} ${st.w.gmAbs} (G-M ${st.w.gmEast ? 'EAST: add' : 'WEST: subtract'}) ≈ <b>${fmt4(r10(truth().az))}</b>.`; },
     s7: () => `The target sits at about <b>${worldToGrid(st.w.tgt.x, st.w.tgt.y, 8)}</b>. Plot direction and range from the OP, then read the grid at the ✕.`
   };
@@ -1685,9 +1768,11 @@ legend { padding: 0 4px; font-weight: 650; }
     readSheet();
     const c = sheetCheck(); st.gOk = c.g;
     SROWS.forEach((k, i) => $('r' + (i + 1)).classList.toggle('ok', guidedOn() && !!c.g[k]));
-    const [lbl, d, h] = coach();
-    $('cStep').textContent = lbl; $('cDo').textContent = d; $('cHow').innerHTML = h;
-    const pi = phaseIdx();
+    const cd = coachData(), pi = phaseIdx();
+    $('cStep').textContent = guidedOn() ? `Step ${GN[gStep()] || ({ cff1: 10, cff2: 11, cff3: 12, eom: 16 })[F.phase] || 14} of 16 · ${PHN[pi]}` : cd.lbl;
+    $('cDo').textContent = cd.title; $('cHow').innerHTML = (cd.bullets || []).map(b => `<li>${b}</li>`).join('');
+    $('cWhyBox').hidden = !cd.why; $('cWhy').textContent = cd.why || '';
+    placeTip(cd);
     document.querySelectorAll('#phases li').forEach((li, i) => { li.className = i < pi ? 'done' : i === pi ? 'now' : ''; });
     if (guidedOn()) { const cat = pi <= 0 ? 'locate' : 'radio'; if (cat !== st.lastCat) { st.lastCat = cat; setTab(cat); } }
     renderPal(); hints(); renderScore(); renderAck();
@@ -1705,7 +1790,7 @@ legend { padding: 0 4px; font-weight: 650; }
       const w = genWorld(st.seed); st.w = w; MV.img = null;
       st.bursts = []; st.draft = []; st.ack = null; st.seen = false; st.plot = null; st.ended = false; st.freq = '';
       ['s1', 's2n', 's2t', 's3', 's4', 's5', 's6', 's7', 'freq'].forEach(id => { $(id).value = ''; });
-      st.palKey = ''; st.lastCat = ''; setTab('locate'); $('radioDot').hidden = true;
+      st.palKey = ''; st.lastCat = ''; st.tipStep = ''; setTab('locate'); $('radioDot').hidden = true;
       $('log').innerHTML = ''; renderDraft();
       newFdc();
       const tr = truth();
@@ -1778,7 +1863,7 @@ legend { padding: 0 4px; font-weight: 650; }
 
   new ResizeObserver(() => { sizeView(); sizeMap(); }).observe(document.body);
   renderIntro();
-  window.__cff = { st, cfg, get F() { return F; }, get R() { return R; }, truth, expCorr, spotOf, worldToGrid, gStep, gExpect, newCard, setMode, evalAll, finish, timing: () => { const t = performance.now(); renderTerrain(); return performance.now() - t; }, dbg: { buildTerrain, placeTarget, visibleSet, openAround, nearestLm, los, groundAt, addBurst, setView } };
+  window.__cff = { st, cfg, get F() { return F; }, get R() { return R; }, truth, expCorr, spotOf, worldToGrid, gStep, gExpect, newCard, setMode, evalAll, finish, timing: () => { const t = performance.now(); renderTerrain(); return performance.now() - t; }, mapScale: () => ({ ratio: MV.scale / (MV.W / S), cx: MV.cx, cy: MV.cy }), dbg: { buildTerrain, placeTarget, genWorld, visibleSet, openAround, nearestLm, los, groundAt, addBurst, setView, proj, camF, gridToWorld, sheetCheck } };
   newCard(QS.get('seed') ? +QS.get('seed') : undefined);
 })();
 </script>
