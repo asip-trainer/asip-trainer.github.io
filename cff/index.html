@@ -103,12 +103,12 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .phases li.now { border-top-color: var(--accent); color: var(--accent); }
 .coach .lbl { color: var(--accent); }
 .coach .do { margin-top: 2px; font-size: 16px; font-weight: 700; line-height: 1.3; }
+.coach .goto { margin-top: 8px; border: 2px solid var(--hint); background: #fff4d2; color: #2a2208; font-weight: 700; }
+@media (min-width: 1100px) { .coach .goto { display: none; } }
 .coach .how { margin: 5px 0 0; padding-left: 18px; font-size: 13.5px; color: var(--muted); }
 .coach .how:empty { display: none; }
 .coach .how li { margin: 2px 0; }
 .coach .how b, .coach .how code { color: var(--ink); }
-.coach .why { margin-top: 6px; font-size: 13px; color: var(--muted); }
-.coach .why summary { cursor: pointer; font-weight: 650; color: var(--accent); }
 .coach .why p { margin: 4px 0 0; }
 /* Guided: the exact action, shown right beside the control you use */
 .gtip { display: block; margin-top: 8px; padding: 8px 10px; border: 2px solid var(--hint); border-radius: 10px; background: #fff4d2; color: #2a2208; font: 600 14px/1.9 var(--ui); scroll-margin-top: 72px; scroll-margin-bottom: 16px; }
@@ -117,9 +117,11 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .gtip strong { font-weight: 800; }
 .gtip .tk { display: inline-block; margin: 0 4px 2px 0; cursor: default; padding: 3px 8px; border-color: #c9b06a; background: #fff; color: #2a2208; font-size: 12px; line-height: 1.3; }
 .gtip .tk.dn { opacity: .38; text-decoration: line-through; }
-.gtip .tk.nx { border-color: #a87800; background: var(--hint); }
+.gtip .tw { display: block; margin-top: 4px; font: 500 12.5px/1.4 var(--ui); color: #6b5a1e; }
+.gtip .tw em { margin-right: 4px; font-style: normal; font-weight: 800; }
+.gtip .tk.nx { border-color: #a87800; background: var(--hint); cursor: pointer; }
 .gtip .tx { display: inline-block; padding: 3px 9px; line-height: 1.3; border-radius: 8px; background: #2a2208; color: #fff; font: 700 12px var(--ui); opacity: .35; }
-.gtip .tx.nx { opacity: 1; box-shadow: 0 0 0 3px var(--hint); }
+.gtip .tx.nx { opacity: 1; box-shadow: 0 0 0 3px var(--hint); cursor: pointer; }
 @media (max-width: 1099px) and (min-height: 640px) { .gtip { scroll-margin-top: calc(var(--stick, 300px) + 10px); } body.kbd .gtip { scroll-margin-top: 70px; } }
 .coach .mission { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,.08); font: 650 12px/1.4 var(--mono); color: var(--muted); }
 .coach .mission b { color: var(--ink); }
@@ -177,16 +179,16 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .fq { display: inline-flex; align-items: center; gap: 6px; font: 700 11px var(--ui); letter-spacing: .06em; color: var(--muted); }
 .fq input { width: 92px; text-align: center; }
 .log { display: flex; flex-direction: column; gap: 4px; height: 128px; overflow-y: auto; padding: 8px; border-radius: 10px; background: var(--bg); font: 600 12px/1.35 var(--mono); }
+.log:empty { height: 44px; }
 .log:empty::before { content: "Radio log: the FDC's answers show here."; margin: auto; color: var(--muted); font: 500 12.5px var(--ui); }
 .log .ln { max-width: 92%; padding: 4px 8px; border-radius: 8px; }
 .log .fo { align-self: flex-end; background: var(--surface); border: 1px solid var(--line); text-align: right; }
 .log .fdc { align-self: flex-start; background: var(--accent-soft); }
 .log .sys { align-self: center; color: var(--muted); font: italic 500 12px var(--ui); }
 .log .who { display: block; font: 700 9.5px/1.2 var(--ui); letter-spacing: .08em; color: var(--muted); }
-.ack { width: 100%; margin-top: 8px; border-color: var(--accent) !important; background: var(--accent-soft) !important; font-family: var(--mono) !important; font-size: 13px !important; }
 .drow { display: flex; align-items: stretch; gap: 6px; margin-top: 8px; }
 .draft { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; min-height: 42px; padding: 6px; border: 1.5px dashed var(--line); border-radius: 10px; }
-.draft:empty::before { content: "Tap words to build a transmission"; padding-left: 4px; color: var(--muted); font-size: 13px; }
+.draft:empty::before { content: "Tap the words below · OVER is added for you"; padding-left: 4px; color: var(--muted); font-size: 13px; }
 .draft .tk { cursor: default; background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .drow .ibtn { height: auto; }
 .ed { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; padding: 10px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent-soft); }
@@ -236,6 +238,9 @@ code { padding: 1px 5px; border: 1px solid var(--line); border-radius: 5px; back
 td.go { color: var(--go); font-weight: 700; }
 td.nogo { color: var(--nogo); font-weight: 700; }
 .fb { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; }
+.modal.vid { z-index: 60; flex-direction: column; align-items: stretch; padding: 0; overflow: hidden; background: var(--bg); }
+.vbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 8px) max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--line); }
+#vidFrame { flex: 1; width: 100%; border: 0; background: var(--bg); }
 .vidlink { display: flex; align-items: center; min-height: 44px; margin: 4px 0 6px; padding: 10px 14px; border-radius: 12px; background: var(--ink); color: var(--bg); font-weight: 700; text-decoration: none; }
 .coach .mission a { color: var(--accent); font: 650 12.5px var(--ui); text-decoration: none; }
 .fb li { margin: 3px 0; }
@@ -329,8 +334,8 @@ legend { padding: 0 4px; font-weight: 650; }
       <ol class="phases" id="phases"><li>Locate</li><li>Call</li><li>Adjust</li><li>End</li></ol>
       <span class="lbl" id="cStep"></span>
       <div class="do" id="cDo"></div>
+      <button class="btn goto" id="cGo" hidden></button>
       <ul class="how" id="cHow"></ul>
-      <details class="why" id="cWhyBox"><summary>Why</summary><p id="cWhy"></p></details>
       <div class="mission" id="mission"></div>
     </section>
     <div class="gtip" id="gtip" hidden></div>
@@ -362,7 +367,6 @@ legend { padding: 0 4px; font-weight: 650; }
           <span class="cs" id="csLine"></span>
         </div>
         <div class="log" id="log" aria-live="polite"></div>
-        <button class="btn ack" id="ack" hidden></button>
         <div class="drow">
           <div class="draft" id="draft"></div>
           <button class="ibtn" id="bsp" aria-label="Remove the last word">⌫</button>
@@ -380,6 +384,11 @@ legend { padding: 0 4px; font-weight: 650; }
     </section>
   </div>
 </main>
+
+<div class="modal vid" id="mVid" hidden>
+  <div class="vbar"><b>Math video</b><button class="btn primary" id="vidClose">✕ Back to the trainer</button></div>
+  <iframe id="vidFrame" title="CFF math video"></iframe>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="assertive" hidden></div>
 
@@ -467,13 +476,9 @@ legend { padding: 0 4px; font-weight: 650; }
     </ol>
     <h3>Phase 2 · Radio</h3>
     <p>The radio is already on the fire net. Check call signs: the FDC's first, then yours. The six elements: observer identification, warning order, target location, target description, method of engagement, method of fire and control.</p>
-    <h3>Phase 3 · Call for fire: three transmissions</h3>
-    <ol>
-      <li><code>Z57, THIS IS H44, ADJUST FIRE, OVER</code> (observer ID + warning order)</li>
-      <li><code>GRID 4523 9671, OVER</code> (target location)</li>
-      <li><code>3 BMPs IN THE OPEN, ICM, WHEN READY, OVER</code> (description, method of engagement, method of fire and control)</li>
-    </ol>
-    <p>The FDC reads each one back. Then the message to observer (MTO): unit to fire, rounds, target number. Read it back. <code>SHOT, OVER</code> → <code>SHOT, OUT</code>. <code>SPLASH, OVER</code> (5 s before impact) → <code>SPLASH, OUT</code> and watch the target.</p>
+    <h3>Phase 3 · Call for fire: one transmission</h3>
+    <p><code>Z57, THIS IS H44, ADJUST FIRE, GRID 4523 9671, 3 BMPs IN THE OPEN, ICM, WHEN READY, OVER</code></p>
+    <p>In order: observer ID, warning order, target location, target description, method of engagement, method of fire and control. OVER is added when you press Transmit. The FDC reads it back, then sends the MTO (unit, rounds, target number), SHOT and SPLASH (5 s before impact): nothing to answer, just watch the target.</p>
     <div class="tbl"><table>
       <tr><th>Target</th><th>Ammunition (method of engagement)</th></tr>
       <tr><td>BMPs, T-72 tanks (armor)</td><td><code>ICM</code></td></tr>
@@ -487,7 +492,7 @@ legend { padding: 0 4px; font-weight: 650; }
       <li>Grid mission: send <code>DIRECTION ####</code> once, with the first correction. Order: direction, deviation, range, FIRE FOR EFFECT. Example: <code>DIRECTION 0860, LEFT 40, ADD 400, OVER</code>.</li>
     </ul>
     <h3>Phase 5 · End of mission</h3>
-    <p>After <code>ROUNDS COMPLETE, OVER</code>: <code>END OF MISSION, TARGET DESTROYED, 2 CASUALTIES, OVER</code>. Report what you actually see: destroyed (every vehicle burning), damaged (some), or no effect.</p>
+    <p>After <code>ROUNDS COMPLETE</code>: <code>END OF MISSION, TARGET DESTROYED, 2 CASUALTIES, OVER</code>. Report what you actually see: destroyed (every vehicle burning), damaged (some), or no effect.</p>
     <h3>Standards used in Exam</h3>
     <ul id="refStd"></ul>
     <p class="muted">Sources: Adjust Indirect Fire task standards (EIB / STP), FM 6-30 and ATP 3-09.30 call-for-fire format, the CFFT's published capabilities (no dispersion, fixed time of flight), and your class steps. Where a source and the class differ, the class wins.</p>
@@ -1112,7 +1117,9 @@ legend { padding: 0 4px; font-weight: 650; }
     if (Math.abs(el - st.pitch) * camF() > V.H * 0.42) return;
     st.seen = true; refresh();
   }
-  function setCmp(on) { st.cmp = on; $('cmpBtn').setAttribute('aria-pressed', String(on)); if (on && st.bino) setBino(false); V.dirty = true; kick(); refresh(); }
+  // Measure swings the view so a vehicle sits in the corner of the small scale; the compass and spotting want the target back in the centre
+  function unswing() { if (st.measured == null) return; const t = truth(); st.measured = null; st.lastAim = { az: t.az, pitch: (groundAt(st.w, st.w.tgt.x, st.w.tgt.y) + 1 - st.w.eyeZ) / t.d }; setView(st.lastAim.az, st.lastAim.pitch); }
+  function setCmp(on) { if (on) unswing(); st.cmp = on; $('cmpBtn').setAttribute('aria-pressed', String(on)); if (on && st.bino) setBino(false); V.dirty = true; kick(); refresh(); }
   function setBino(on) { if (!on) st.lastAim = { az: st.az, pitch: st.pitch }; if (on && st.cmp) { st.cmp = false; $('cmpBtn').setAttribute('aria-pressed', 'false'); } st.bino = on; $('measBtn').hidden = !on; $('binoBtn').setAttribute('aria-pressed', String(on)); V.dirty = true; kick(); checkSeen(); refresh(); }
   (function viewInput() {
     const cv = V.cv; let drag = null;
@@ -1445,18 +1452,17 @@ legend { padding: 0 4px; font-weight: 650; }
   // the words on offer follow the mission phase (each set still has wrong choices in it)
   function palSet() {
     const ph = F.phase;
-    if (ph === 'cff1' || ph === 'cff2' || ph === 'cff3') return [
-      ['Identification · warning order', ['call', 'callr', 'af', 'ffe']],
-      ['Location', ['grid', 'dir']],
-      ['Description · engagement · fire and control', ['tgt', 'am_heq', 'am_vt', 'am_icm', 'am_smk', 'wr']],
-      ['', ['over', 'out']]];
-    if (ph === 'eom' || ph === 'done') return [['End of mission', ['eom', 'surv']], ['', ['over', 'out']]];
-    return [['Corrections', ['dir', 'L', 'R', 'A', 'D', 'ffe']], ['End of mission', ['eom', 'surv']], ['', ['over', 'out']]];
+    if (ph === 'cff') return [
+      ['Who · what you want', ['call', 'callr', 'af', 'ffe']],
+      ['Where', ['grid', 'dir']],
+      ['What · with what · when', ['tgt', 'am_heq', 'am_vt', 'am_icm', 'am_smk', 'wr']]];
+    if (ph === 'eom' || ph === 'done') return [['End of mission', ['eom', 'surv']]];
+    return [['Corrections', ['dir', 'L', 'R', 'A', 'D', 'ffe']], ['End of mission', ['eom', 'surv']]];
   }
   const VAL = { grid: 1, dir: 1, tgt: 1, L: 1, R: 1, A: 1, D: 1, surv: 1 };
   function chipLabel(k) {
     const w = st.w;
-    return ({ call: `${w.fdcCs}, THIS IS ${w.fo}`, callr: `${w.fo}, THIS IS ${w.fdcCs}`, af: 'ADJUST FIRE', ffe: 'FIRE FOR EFFECT', grid: 'GRID …', dir: 'DIRECTION …', tgt: 'TARGET …', wr: 'WHEN READY', L: 'LEFT …', R: 'RIGHT …', A: 'ADD …', D: 'DROP …', eom: 'END OF MISSION', surv: 'SURVEILLANCE …', over: 'OVER', out: 'OUT' })[k] || AMMO[k];
+    return ({ call: `${w.fdcCs}, THIS IS ${w.fo}`, callr: `${w.fo}, THIS IS ${w.fdcCs}`, af: 'ADJUST FIRE', ffe: 'FIRE FOR EFFECT', grid: 'GRID …', dir: 'DIRECTION …', tgt: 'TARGET …', wr: 'WHEN READY', L: 'LEFT …', R: 'RIGHT …', A: 'ADD …', D: 'DROP …', eom: 'END OF MISSION', surv: 'SURVEILLANCE …' })[k] || AMMO[k];
   }
   function tokLabel(t) {
     switch (t.k) {
@@ -1482,9 +1488,6 @@ legend { padding: 0 4px; font-weight: 650; }
     $('log').appendChild(el); $('log').scrollTop = $('log').scrollHeight;
     if (who !== 'fo' && $('radioPanel').hidden) $('radioDot').hidden = false;
   }
-  function setAck(label, text) { st.ack = { label, text }; renderAck(); refresh(); }
-  function renderAck() { const b = $('ack'); if (st.ack) { b.hidden = false; b.textContent = `Reply: ${st.ack.text}`; } else b.hidden = true; }
-  $('ack').addEventListener('click', () => { if (!st.ack) return; logLine('fo', st.ack.text); st.ack = null; renderAck(); refresh(); });
 
   function openEditor(k) {
     const w = st.w, s = st.sheet; st.ed = k;
@@ -1502,6 +1505,15 @@ legend { padding: 0 4px; font-weight: 650; }
     $('edOk').addEventListener('click', edOk);
     $('edNo').addEventListener('click', closeEditor);
     refresh();
+  }
+  // Guided: GRID, DIRECTION and TARGET come from the worksheet, the surveillance from what you saw
+  function preTok(k) {
+    const s = st.sheet;
+    if (k === 'grid') { const d = digits(s.s7); return [6, 8].includes(d.length) && { k, v: d }; }
+    if (k === 'dir') { const v = num(s.s6); return v != null && v <= 6400 && { k, v: Math.round(v) }; }
+    if (k === 'tgt') return !!(s.s2n && s.s2t) && { k, n: +s.s2n, ty: s.s2t, act: 'IN THE OPEN' };
+    if (k === 'surv') return { k, res: F.result, cas: F.killed ? st.w.cas : 0 };
+    return null;
   }
   function closeEditor() { st.ed = null; $('ed').hidden = true; $('ed').innerHTML = ''; refresh(); }
   function edOk() {
@@ -1524,22 +1536,31 @@ legend { padding: 0 4px; font-weight: 650; }
       if (need == null) { note('That transmission is complete. Press Transmit.'); shake(b); want($('txBtn')); return; }
       if (k !== need) { note(`Next comes <b>${esc(chipLabel(need))}</b>. ${gWhy(need)}`); shake(b); want(document.querySelector(`#pal .tk[data-k="${need}"]`)); return; }
     }
-    if (VAL[k]) openEditor(k); else { st.draft.push({ k }); renderDraft(); refresh(); }
+    const pre = guidedOn() && preTok(k);
+    if (pre && !gCheckValue(pre)) { st.draft.push(pre); renderDraft(); refresh(); }
+    else if (VAL[k]) openEditor(k); else { st.draft.push({ k }); renderDraft(); refresh(); }
   });
   $('bsp').addEventListener('click', () => { st.draft.pop(); renderDraft(); refresh(); });
   $('clr').addEventListener('click', () => { st.draft = []; renderDraft(); refresh(); });
   $('txBtn').addEventListener('click', transmit);
+  // Guided: tap the next word in the yellow box (same as finding it in the palette), or its Transmit
+  $('gtip').addEventListener('click', e => {
+    const c = e.target.closest('.nx'); if (!c || !guidedOn()) return;
+    if (c.classList.contains('tx')) { transmit(); return; }
+    const ex = gExpect(), b = ex.seq && document.querySelector(`#pal .tk[data-k="${ex.seq[st.draft.length]}"]`); if (b) b.click();
+    setTimeout(() => { if (!$('gtip').hidden) $('gtip').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60);
+  });
 
   // ---------- FDC
   function newFdc() {
     // the first round lands off target (unknown firing errors, as in the class simulator); corrections take it out
     const rr = mulberry32(st.seed * 7 + 3), th = truth().az * MIL, rg = (rr() < 0.5 ? -1 : 1) * (160 + rr() * 220), lat = (rr() < 0.5 ? -1 : 1) * (20 + rr() * 70);
     const bias = cfg.firstOff ? { x: Math.sin(th) * rg + Math.cos(th) * lat, y: Math.cos(th) * rg - Math.sin(th) * lat } : { x: 0, y: 0 };
-    F = { phase: 'cff1', mission: null, aim: null, dir: null, ammo: 'HE QUICK', inFlight: false, busy: false, waitRx: false, lastImpact: 0, lastBurst: null, spots: [], lastMag: 0, bracketed: false, adj: 0, result: 'NO EFFECT', killed: 0, bias };
+    F = { phase: 'cff', mission: null, aim: null, dir: null, ammo: 'HE QUICK', inFlight: false, busy: false, waitRx: false, lastImpact: 0, lastBurst: null, spots: [], lastMag: 0, bracketed: false, adj: 0, result: 'NO EFFECT', killed: 0, bias };
     R = { t0: performance.now(), answered: false, noAnswer: 0, sayAgain: [], t1: false, t2: false, t3: false, tCFF: null, mission: null, gridSent: null, desc: null, ammo: null, wr: false, t3order: true, dirSent: null, corr: [], adjRounds: 0, ffeAim: null, eom: false, surv: null, early: 0, noDir: false };
   }
   const fdcSay = t => logLine('fdc', t);
-  function sayAgain(why, cff) { fdcSay('SAY AGAIN, OVER.'); R.sayAgain.push({ why, cff: !!cff, phase: F.phase }); if (st.examOn) logLine('sys', '(the FDC could not copy that transmission)'); refresh(); }
+  function sayAgain(why, cff) { fdcSay('SAY AGAIN.'); R.sayAgain.push({ why, cff: !!cff, phase: F.phase }); if (st.examOn) logLine('sys', '(the FDC could not copy that transmission)'); refresh(); }
   function transmit() {
     if (!st.w || st.ended) return;
     if (st.ed) { note('Finish the word you are editing first (Add or Cancel).'); return; }
@@ -1549,7 +1570,7 @@ legend { padding: 0 4px; font-weight: 650; }
       if (ex.block) { note(ex.block); return; }
       if (toks.length < ex.seq.length) { const need = ex.seq[toks.length]; note(`Not yet: <b>${esc(chipLabel(need))}</b> still has to go in.`); want(document.querySelector(`#pal .tk[data-k="${need}"]`)); return; }
     }
-    logLine('fo', txText(toks));
+    logLine('fo', txText(toks) + ', OVER');
     st.draft = []; renderDraft();
     if (st.freq !== st.w.freq) { R.noAnswer++; later(1600, () => logLine('sys', '(no answer: nobody on this frequency)')); refresh(); return; }
     R.answered = true;
@@ -1559,54 +1580,42 @@ legend { padding: 0 4px; font-weight: 650; }
     refresh();
   }
   function fdcRx(toks, tx) {
-    const w = st.w, last = toks[toks.length - 1], body = toks.slice(0, -1);
+    const w = st.w, body = toks;
     if (F.phase === 'done') { logLine('sys', '(the mission is over)'); return; }
-    if (!last || last.k !== 'over') return sayAgain('End the transmission with OVER (the FDC must answer).', F.phase.startsWith('cff'));
-    if (body.some(t => t.k === 'over' || t.k === 'out')) return sayAgain('OVER goes once, at the very end.', F.phase.startsWith('cff'));
-    if (F.phase === 'cff1') {
-      if (!body.length || (body[0].k !== 'call' && body[0].k !== 'callr')) return sayAgain('Transmission 1 starts with the call signs.', true);
+    if (F.phase === 'cff') {
+      // one call for fire: call signs, warning order, grid, then target, ammunition, WHEN READY
+      if (body[0].k !== 'call' && body[0].k !== 'callr') return sayAgain('Start with the call signs.', true);
       if (body[0].k === 'callr') return sayAgain('Call signs reversed: the FDC first, then you.', true);
-      if (body.length !== 2 || (body[1].k !== 'af' && body[1].k !== 'ffe')) return sayAgain('Transmission 1 is the call signs and the warning order, nothing else.', true);
-      F.mission = R.mission = body[1].k; R.t1 = true;
-      fdcSay(`${w.fo}, THIS IS ${w.fdcCs}, ${chipLabel(body[1].k)}, OUT.`);
-      F.phase = 'cff2'; return;
-    }
-    if (F.phase === 'cff2') {
-      if (!body.length || body[0].k !== 'grid') return sayAgain('Transmission 2 is the target location: GRID.', true);
-      if (body.length > 2 || (body.length === 2 && body[1].k !== 'dir')) return sayAgain('Transmission 2 is only the grid (direction may follow).', true);
-      F.aim = gridToWorld(body[0].v); R.gridSent = body[0].v; R.t2 = true;
-      if (body[1]) { F.dir = body[1].v; R.dirSent = body[1].v; }
-      fdcSay(`${txText(body)}, OUT.`);
-      F.phase = 'cff3'; return;
-    }
-    if (F.phase === 'cff3') {
-      if (!body.length || body[0].k !== 'tgt') return sayAgain('Transmission 3 starts with the target description.', true);
-      const rank = { tgt: 0, ammo: 1, wr: 2, dir: 3 }; let prev = -1, ammo = null, wr = false, dir = null;
-      for (const t of body) {
+      if (!body[1] || (body[1].k !== 'af' && body[1].k !== 'ffe')) return sayAgain('After the call signs: the warning order (ADJUST FIRE).', true);
+      if (!body[2] || body[2].k !== 'grid') return sayAgain('After ADJUST FIRE: the target location (GRID).', true);
+      const rank = { tgt: 0, ammo: 1, wr: 2 }; let prev = -1, ammo = null, wr = false, dir = null, desc = null;
+      for (const t of body.slice(3)) {
+        if (t.k === 'dir') { dir = t.v; continue; }
         const kk = AMMO[t.k] ? 'ammo' : t.k;
-        if (!(kk in rank)) return sayAgain('Transmission 3 is the target, the ammunition and WHEN READY.', true);
+        if (!(kk in rank)) return sayAgain('After the grid: the target, the ammunition and WHEN READY.', true);
         if (rank[kk] <= prev) R.t3order = false;
         prev = Math.max(prev, rank[kk]);
         if (kk === 'ammo') { if (ammo) return sayAgain('Only one ammunition.', true); ammo = AMMO[t.k]; }
+        if (kk === 'tgt') desc = t;
         if (kk === 'wr') wr = true;
-        if (kk === 'dir') dir = t.v;
       }
-      R.desc = body[0]; R.ammo = ammo; R.wr = wr; R.t3 = true; R.tCFF = (tx - R.t0) / 1000;
+      if (!desc) return sayAgain('The call for fire needs the target description after the grid.', true);
+      F.mission = R.mission = body[1].k; R.t1 = true;
+      F.aim = gridToWorld(body[2].v); R.gridSent = body[2].v; R.t2 = true;
+      R.desc = desc; R.ammo = ammo; R.wr = wr; R.t3 = true; R.tCFF = (tx - R.t0) / 1000;
       if (dir != null) { F.dir = dir; R.dirSent = dir; }
       F.ammo = ammo || 'HE QUICK';
-      fdcSay(`${txText(body)}, OUT.`);
+      fdcSay(`${txText(body.slice(1))}, OUT.`);
       F.phase = 'mto';
       later(2500 * K(), () => {
-        const mto = `${w.bty}, 2 ROUNDS, TARGET NUMBER ${w.tn}`;
-        fdcSay(`${w.fo}, THIS IS ${w.fdcCs}, ${mto}, OVER.`);
-        setAck('MTO', `${mto}, OUT.`);
+        fdcSay(`${w.bty}, 2 ROUNDS, TARGET NUMBER ${w.tn}.`);
         later(3000 * K(), () => F.mission === 'ffe' ? fireFFE() : fireAdj());
       });
       return;
     }
     if (body.length && body[0].k === 'eom') return handleEOM(body);
     if (F.phase === 'eom') return sayAgain('Send END OF MISSION with what you saw.');
-    if (F.phase === 'mto' || F.phase === 'ffe' || F.busy || F.inFlight) { fdcSay('ROUNDS IN FLIGHT. WAIT FOR SPLASH, OUT.'); R.early++; return; }
+    if (F.phase === 'mto' || F.phase === 'ffe' || F.busy || F.inFlight) { fdcSay('ROUNDS IN FLIGHT. WAIT FOR SPLASH.'); R.early++; return; }
     // adjust phase: a correction
     const rk = { dir: 0, L: 1, R: 1, A: 2, D: 2, ffe: 3 }; let prev = -1, dir = null, dev = 0, rng = 0, ffe = false;
     if (!body.length) return sayAgain('Send a correction.');
@@ -1626,11 +1635,14 @@ legend { padding: 0 4px; font-weight: 650; }
     F.busy = true;
     later(2200 * K(), () => ffe ? fireFFE() : fireAdj());
   }
-  function splashBinos() { if (st.stage !== 'view') setStage('view'); if (!st.bino) { if (st.lastAim) setView(st.lastAim.az, st.lastAim.pitch); setBino(true); } }
+  function splashBinos() {
+    if (st.stage !== 'view') setStage('view');
+    unswing();
+    if (!st.bino) { if (st.lastAim) setView(st.lastAim.az, st.lastAim.pitch); setBino(true); } }
   function fireAdj() {
     F.busy = false; F.inFlight = true; F.phase = 'adjust';
-    fdcSay('SHOT, OVER.'); setAck('SHOT', 'SHOT, OUT.');
-    later(SPL(), () => { fdcSay('SPLASH, OVER.'); setAck('SPLASH', 'SPLASH, OUT.'); splashBinos(); });
+    fdcSay('SHOT.'); refresh();
+    later(SPL(), () => { fdcSay('SPLASH.'); splashBinos(); refresh(); });
     later(TOF(), () => {
       const ix = F.aim.x + F.bias.x, iy = F.aim.y + F.bias.y;
       addBurst(ix, iy, 'he');
@@ -1644,8 +1656,8 @@ legend { padding: 0 4px; font-weight: 650; }
   }
   function fireFFE() {
     const w = st.w, cx = F.aim.x + F.bias.x, cy = F.aim.y + F.bias.y; F.busy = false; F.inFlight = true; F.phase = 'ffe'; R.ffeAim = { x: cx, y: cy };
-    fdcSay('SHOT, OVER.'); setAck('SHOT', 'SHOT, OUT.');
-    later(SPL(), () => { fdcSay('SPLASH, OVER.'); setAck('SPLASH', 'SPLASH, OUT.'); splashBinos(); });
+    fdcSay('SHOT.'); refresh();
+    later(SPL(), () => { fdcSay('SPLASH.'); splashBinos(); refresh(); });
     const th = azOf(F.aim.x - w.op.x, F.aim.y - w.op.y) * MIL, rt = [Math.cos(th), -Math.sin(th)], u = [Math.sin(th), Math.cos(th)], pts = [];
     for (let gun = 0; gun < 6; gun++) for (let rd = 0; rd < 2; rd++) {
       const lat = (gun - 2.5) * 18 + (Math.random() - 0.5) * 10, lon = (Math.random() - 0.5) * 30;
@@ -1660,13 +1672,13 @@ legend { padding: 0 4px; font-weight: 650; }
       F.killed = k; F.result = k === T.n ? RESULTS[0] : k ? RESULTS[1] : RESULTS[2];
       F.inFlight = false; kick();
     });
-    later(TOF() + 12 * 230 + 3200 * K(), () => { fdcSay('ROUNDS COMPLETE, OVER.'); setAck('ROUNDS COMPLETE', 'ROUNDS COMPLETE, OUT.'); F.phase = 'eom'; refresh(); });
+    later(TOF() + 12 * 230 + 3200 * K(), () => { fdcSay('ROUNDS COMPLETE.'); F.phase = 'eom'; refresh(); });
   }
   function handleEOM(body) {
-    if (body.length > 2 || (body[1] && body[1].k !== 'surv')) return sayAgain('END OF MISSION, then the surveillance, then OVER.');
+    if (body.length > 2 || (body[1] && body[1].k !== 'surv')) return sayAgain('END OF MISSION, then the surveillance.');
     R.eom = true; R.surv = body[1] || null;
     fdcSay(`${txText(body)}, OUT.`);
-    F.phase = 'done'; st.ack = null; renderAck();
+    F.phase = 'done';
     later(1500, finish);
   }
   function spotOf(b) {
@@ -1709,9 +1721,7 @@ legend { padding: 0 4px; font-weight: 650; }
     }
     if (F.waitRx) return 'rx';
     switch (F.phase) {
-      case 'cff1': return 't1';
-      case 'cff2': return 't2';
-      case 'cff3': return 't3';
+      case 'cff': return 'call';
       case 'mto': return 'shot';
       case 'adjust': return F.busy || F.inFlight ? (F.lastBurst ? 'wait' : 'shot') : 'adj';
       case 'ffe': return 'ffe';
@@ -1721,17 +1731,15 @@ legend { padding: 0 4px; font-weight: 650; }
   }
   function gExpect() {
     const s = gStep(), T = st.w.tgt;
-    if (s === 't1') return { seq: ['call', 'af', 'over'] };
-    if (s === 't2') return { seq: ['grid', 'over'] };
-    if (s === 't3') return { seq: ['tgt', ammoBest(T.ty), 'wr', 'over'] };
-    if (s === 'adj') { const e = expCorr(); return { seq: [...(e.needDir ? ['dir'] : []), ...(e.dev ? [e.dev.k] : []), ...(e.rng ? [e.rng.k] : []), ...(e.ffe ? ['ffe'] : []), 'over'] }; }
-    if (s === 'eom') return { seq: ['eom', 'surv', 'over'] };
+    if (s === 'call') return { seq: ['call', 'af', 'grid', 'tgt', ammoBest(T.ty), 'wr'] };
+    if (s === 'adj') { const e = expCorr(); return { seq: [...(e.needDir ? ['dir'] : []), ...(e.dev ? [e.dev.k] : []), ...(e.rng ? [e.rng.k] : []), ...(e.ffe ? ['ffe'] : [])] }; }
+    if (s === 'eom') return { seq: ['eom', 'surv'] };
     const p1 = ['First get the target grid on line 7. Lines 1–6 help you work it out, in any order.', 's7'];
-    const where = { op: p1, find: p1, size: p1, appsize: p1, range: p1, mag: p1, gm: p1, tloc: p1, rx: ['Wait for the FDC to read it back.', null], shot: ['Wait for the round. Answer the FDC with the reply button.', 'ack'], wait: ['Wait for the splash, then spot the round.', 'ack'], ffe: ['Fire for effect is on the way. Watch the target.', 'ack'], done: ['The mission is over.', null] }[s];
+    const where = { op: p1, find: p1, size: p1, appsize: p1, range: p1, mag: p1, gm: p1, tloc: p1, rx: ['Wait for the FDC to read it back.', null], shot: ['The round is on the way. Watch the target.', null], wait: ['Wait for the splash, then spot the round.', null], ffe: ['Fire for effect is on the way. Watch the target.', null], done: ['The mission is over.', null] }[s];
     return { block: where[0], el: where[1] };
   }
   function gWhy(k) {
-    return ({ call: 'Observer identification: the FDC\'s call sign, THIS IS, then yours.', af: 'Warning order: you want an adjusting round first.', over: 'OVER ends every transmission the FDC must answer.', grid: 'Target location: your worksheet line 7.', tgt: 'Target description: what, how many, what it is doing.', am_icm: 'Method of engagement: ICM against armor.', am_heq: 'Method of engagement: HE QUICK against trucks.', wr: 'Method of fire and control: fire when ready.', dir: 'Grid mission: send the direction once, with the first correction.', L: 'Deviation first.', R: 'Deviation first.', A: 'Range after deviation.', D: 'Range after deviation.', ffe: 'Last word before OVER.', eom: 'End of mission.', surv: 'Surveillance: what you saw happen.' })[k] || '';
+    return ({ call: 'Observer identification: the FDC\'s call sign, THIS IS, then yours.', af: 'Warning order: you want an adjusting round first.', grid: 'Target location: your worksheet line 7.', tgt: 'Target description: what, how many, what it is doing.', am_icm: 'Method of engagement: ICM against armor.', am_heq: 'Method of engagement: HE QUICK against trucks.', wr: 'Method of fire and control: fire when ready.', dir: 'Grid mission: send the direction once, with the first correction.', L: 'Deviation first.', R: 'Deviation first.', A: 'Range after deviation.', D: 'Range after deviation.', ffe: 'Last word before OVER.', eom: 'End of mission.', surv: 'Surveillance: what you saw happen.' })[k] || '';
   }
   function gCheckValue(t) {
     const w = st.w, T = w.tgt, tr = truth();
@@ -1747,7 +1755,7 @@ legend { padding: 0 4px; font-weight: 650; }
     return '';
   }
   // Guided: one step at a time. title = what, tip = the exact action (shown beside the control), bullets = how, why = background
-  const GN = { op: 1, find: 2, size: 3, appsize: 4, range: 5, mag: 6, gm: 7, tloc: 8, t1: 9, t2: 10, t3: 11, shot: 12, wait: 13, adj: 13, ffe: 14, eom: 15, done: 15 };
+  const GN = { op: 1, find: 2, size: 3, appsize: 4, range: 5, mag: 6, gm: 7, tloc: 8, call: 9, shot: 10, wait: 11, adj: 11, ffe: 12, eom: 13, done: 13 };
   const PHN = ['Locate', 'Call', 'Adjust', 'End', 'Done'];
   const chipsHtml = (labels, done) => labels.map((l, i) => `<span class="tk${i < done ? ' dn' : i === done ? ' nx' : ''}">${esc(l)}</span>`).join('') + `<span class="tx${done >= labels.length ? ' nx' : ''}">Transmit</span>`;
   function seqLabels(seq) {
@@ -1763,29 +1771,27 @@ legend { padding: 0 4px; font-weight: 650; }
   }
   function coachData() {
     const w = st.w, T = w.tgt, tr = truth(), chk = sheetCheck(), g = gm(), unit = VEH[T.ty];
-    if (st.examOn) return { lbl: st.ended ? 'Exam over' : 'Exam', title: st.ended ? 'See your result' : 'No coach in the exam', bullets: ['Locate → radio → 3 transmissions → bracket → fire for effect → end of mission.', `Call for fire within ${cfg.cffMin}:00 · each correction within ${cfg.corrSec} s of the impact.`] };
+    if (st.examOn) return { lbl: st.ended ? 'Exam over' : 'Exam', title: st.ended ? 'See your result' : 'No coach in the exam', bullets: ['Locate → one call for fire → bracket → fire for effect → end of mission.', `Call for fire within ${cfg.cffMin}:00 · each correction within ${cfg.corrSec} s of the impact.`] };
     if (st.ended) return { lbl: 'Done', title: 'Mission complete', bullets: ['Press New card for another target, or switch to Exam.'] };
-    const step = gStep(), reply = st.ack ? `Tap the orange <strong>Reply</strong> button (${esc(st.ack.text)})` : '';
+    const step = gStep();
     const nl = nearestLm(w, T.x, T.y), typeName = T.ty === 'T72' ? 'T-72' : T.ty === 'BMP' ? 'BMP' : 'Truck';
     switch (step) {
-      case 'op': { const r = proRead(w.op); return { title: 'Read your OP grid', tip: `Line 1 → <b>${r.sqE}${r.e} ${r.sqN}${r.n}</b>`, bullets: [`Protractor on the OP: right ${r.e[0]}.${r.e[1]} → ${r.sqE}${r.e}, up ${r.n[0]}.${r.n[1]} → ${r.sqN}${r.n}.`], why: 'Read right (where the square\'s left line crosses the bottom scale), then up (where the point sits on the side scale). Lines 1–6 can go in any order; the radio only needs line 7.' }; }
+      case 'op': { const r = proRead(w.op); return { title: 'Read your OP grid', tip: `Line 1 → <b>${r.sqE}${r.e} ${r.sqN}${r.n}</b>`, bullets: [`Protractor on the OP: right ${r.e[0]}.${r.e[1]} → ${r.sqE}${r.e}, up ${r.n[0]}.${r.n[1]} → ${r.sqN}${r.n}.`, 'Right: where the square\'s left line crosses the bottom scale. Up: where the OP sits on the side scale.'] }; }
       case 'find': return { title: 'Find the target', tip: st.bino ? 'Tap the dark vehicles, or press <strong>◀ ▶</strong>' : 'Tap the <strong>yellow ring</strong>: the binoculars open on it', bullets: [] };
       case 'size': return { title: 'Count them', tip: `Line 2 → <b>${T.n}</b> · <b>${typeName}</b>`, bullets: ['Truck: tall box. BMP: low, small turret. T-72: long gun.'] };
       case 'appsize': { const hi = st.sheet.s3k === 'H'; return { title: 'Measure one vehicle', tip: !st.bino ? 'Tap the vehicles to open the binoculars' : st.measured == null ? 'Press <strong>Measure</strong>' : `Line 3 → <b>${(hi ? tr.Mh : tr.M).toFixed(1)}</b> (${hi ? 'high' : 'wide'})`, bullets: ['You measure M here: how many mils the vehicle covers. Its real size W comes from the cadre.', 'Measure puts a vehicle in the corner of the small scale at the left: bottom scale = width, side scale = height. Pick wide or high on line 3.'] }; }
       case 'range': { const M = chk.M || chk.tM, Rr = r10(chk.W / M * 1000), hi = st.sheet.s3k === 'H'; return { title: 'Range = W ÷ M × 1000', tip: `Line 4 → <b>${Rr}</b> m`, bullets: [`W = ${chk.W} m: the target ${hi ? 'height' : 'width'} the cadre gave you (box at the top). You do not measure W.`, `M = ${(+M).toFixed(1)} mils: what you measured on line 3.`, `R = W ÷ M × 1000 = ${chk.W} ÷ ${(+M).toFixed(1)} × 1000 = ${Rr} m`] }; }
       case 'mag': { const off = Math.abs(dm(tr.az, st.az)), dg = tr.mag * 0.05625; return { title: 'Read the compass', tip: !st.cmp ? 'Press <strong>Compass</strong>' : off > 3 ? 'Tap the vehicles to aim the compass' : `Line 5 → <b>${dg.toFixed(0)}</b> °`, bullets: ['Read the outer ring (degrees) under the yellow line. The red inner ring is mils, if you prefer mils.'] }; }
       case 'gm': { const m = chk.mag != null ? chk.mag : tr.mag, ga = w64(m + g), gd = w.gmAbs * 0.05625, d5 = chk.deg5 && chk.m5 != null ? chk.m5 : m * 0.05625, dg = d5 + (g > 0 ? gd : -gd);
-        return { title: 'Grid direction (mils)', tip: `Line 6 → <b>${fmt4(r10(chk.deg5 ? w64(dg / 0.05625) : ga))}</b>`, bullets: g === 0 ? ['Compass reads grid: line 5 in mils, nearest 10.'] : chk.deg5 ? [`${d5.toFixed(1)}° ${g > 0 ? '+' : '−'} ${gd.toFixed(1)}° (G-M ${w.gmEast ? 'EAST: add' : 'WEST: subtract'}) = ${dg.toFixed(1)}°`, `${dg.toFixed(1)}° × 17.78 = ${fmt4(w64(dg / 0.05625))} → ${fmt4(r10(w64(dg / 0.05625)))} mils`] : [`${fmt4(m)} ${g > 0 ? '+' : '−'} ${w.gmAbs} (G-M ${w.gmEast ? 'EAST: add' : 'WEST: subtract'}) = ${fmt4(ga)} → ${fmt4(r10(ga))}`], why: 'The FDC works in grid mils. 1° = 17.78 mils (6400 mils = 360°).' }; }
+        return { title: 'Grid direction (mils)', tip: `Line 6 → <b>${fmt4(r10(chk.deg5 ? w64(dg / 0.05625) : ga))}</b>`, bullets: g === 0 ? ['Compass reads grid: line 5 in mils, nearest 10.'] : chk.deg5 ? [`${d5.toFixed(1)}° ${g > 0 ? '+' : '−'} ${gd.toFixed(1)}° (G-M ${w.gmEast ? 'EAST: add' : 'WEST: subtract'}) = ${dg.toFixed(1)}°`, `${dg.toFixed(1)}° × 17.78 = ${fmt4(w64(dg / 0.05625))} → ${fmt4(r10(w64(dg / 0.05625)))} mils`] : [`${fmt4(m)} ${g > 0 ? '+' : '−'} ${w.gmAbs} (G-M ${w.gmEast ? 'EAST: add' : 'WEST: subtract'}) = ${fmt4(ga)} → ${fmt4(r10(ga))}`] }; }
       case 'tloc': { const pp = plotPoint(), r = pp && proRead(pp); return { title: 'Plot the target', tip: r ? `Line 7 → <b>${r.sqE}${r.e} ${r.sqN}${r.n}</b>` : 'Press <strong>Plot</strong> beside line 7', bullets: r ? [`Protractor on the ✕: right ${r.e[0]}.${r.e[1]} → ${r.sqE}${r.e}, up ${r.n[0]}.${r.n[1]} → ${r.sqN}${r.n}.`] : ['Plot lays line 6 and line 4 from your OP and marks ✕. Or find the target on the map yourself and type its grid.'] }; }
       case 'rx': return { title: 'Wait for the read-back', tip: 'The FDC is repeating your transmission', bullets: [] };
-      case 'shot': return { title: 'Answer the FDC', tip: reply || 'Wait for the FDC', bullets: ['Read back the MTO, then SHOT, OUT and SPLASH, OUT.', 'At SPLASH keep the binoculars on the target.'] };
-      case 'wait': return { title: 'Round on the way', tip: reply || 'Watch the target', bullets: ['The burst shows 5 s after SPLASH.', st.bino ? 'Keep the binoculars on the target.' : 'Turn the binoculars on to spot it.'] };
-      case 'ffe': return { title: 'Fire for effect', tip: reply || 'Watch the vehicles', bullets: ['Burning = destroyed. Count them for your report.'] };
-      case 't1': case 't2': case 't3': case 'adj': case 'eom': {
+      case 'shot': return { title: 'Round on the way', tip: 'Watch the target: SPLASH = 5 s to impact', bullets: ['The FDC reads back your call, then MTO, SHOT and SPLASH. Nothing to answer.', 'At SPLASH the binoculars open on the target.'] };
+      case 'wait': return { title: 'Round on the way', tip: 'Watch the target', bullets: ['The burst shows 5 s after SPLASH.', st.bino ? 'Keep the binoculars on the target.' : 'Turn the binoculars on to spot it.'] };
+      case 'ffe': return { title: 'Fire for effect', tip: 'Watch the vehicles', bullets: ['Burning = destroyed. Count them for your report.'] };
+      case 'call': case 'adj': case 'eom': {
         const tip = chipsHtml(seqLabels(gExpect().seq), st.draft.length);
-        if (step === 't1') return { title: 'Transmission 1 · who you are, what you want', tip, bullets: ['Observer ID: the FDC\'s call sign first, then yours.', 'Warning order: ADJUST FIRE.'] };
-        if (step === 't2') return { title: 'Transmission 2 · where', tip, bullets: ['GRID opens with line 7 already filled in: press Add.'] };
-        if (step === 't3') return { title: 'Transmission 3 · what, with what, when', tip, bullets: ['TARGET opens with line 2 filled in: press Add.', unit.armor ? 'Armor → ICM.' : 'Trucks → HE QUICK.', 'WHEN READY: fire as soon as you can.'] };
+        if (step === 'call') return { title: 'Call for fire · one transmission', tip, bullets: ['Who (the FDC\'s call sign first), ADJUST FIRE, where (GRID = line 7), what (line 2), ammunition, WHEN READY.', unit.armor ? 'Armor → ICM.' : 'Trucks → HE QUICK.', 'Tap the words in the yellow box in order, or find them in the word list below. GRID and TARGET come from your worksheet; OVER is added for you.'] };
         if (step === 'eom') return { title: 'End the mission', tip, bullets: [`Report what you see: ${F.result}${F.killed ? ` (${F.killed} of ${T.n} burning)` : ''}.`, 'Casualties are your estimate.'] };
         const e = expCorr(), sp = e.sp;
         const b = [`Spot: ${Math.abs(sp.devM).toFixed(0)} mils ${sp.devM > 0 ? 'RIGHT' : 'LEFT'} · ${sp.range === 'RC' ? 'on the target\'s range' : sp.range === 'SHORT' ? 'SHORT (in front, lower)' : 'OVER (behind, higher)'}.`,
@@ -1797,11 +1803,14 @@ legend { padding: 0 4px; font-weight: 650; }
       default: return { title: 'Mission complete', bullets: [] };
     }
   }
-  const TIPAT = { op: ['r1', 'after'], size: ['r2', 'after'], appsize: ['r3', 'after'], range: ['r4', 'after'], mag: ['r5', 'after'], gm: ['r6', 'after'], tloc: ['r7', 'after'], find: ['viewCard', 'in'], t1: ['pal', 'before'], t2: ['pal', 'before'], t3: ['pal', 'before'], adj: ['pal', 'before'], eom: ['pal', 'before'], shot: ['ack', 'after'], wait: ['ack', 'after'], ffe: ['ack', 'after'], rx: ['log', 'after'] };
+  const TIPAT = { op: ['r1', 'after'], size: ['r2', 'after'], appsize: ['r3', 'after'], range: ['r4', 'after'], mag: ['r5', 'after'], gm: ['r6', 'after'], tloc: ['r7', 'after'], find: ['viewCard', 'in'], call: ['pal', 'before'], adj: ['pal', 'before'], eom: ['pal', 'before'], shot: ['viewCard', 'in'], wait: ['viewCard', 'in'], ffe: ['viewCard', 'in'], rx: ['log', 'after'] };
+  // why each step matters, in one line under the action
+  const WHY = { op: 'Every direction and distance starts from your own position.', find: 'You can only adjust fire on a target you can see.', size: 'What it is picks the ammunition; how many goes in the call.', appsize: 'M (the mils it covers) and its real size W give the range.', range: 'Range and direction from your OP put the target on the map.', mag: 'The compass gives the direction from you to the target.', gm: 'The map and the FDC use grid north, not magnetic north.', tloc: 'This grid is where the FDC will aim.', call: 'One call tells the FDC who you are, what you want, where, what and how.', shot: 'You have to see where it lands to correct it.', wait: 'You have to see where it lands to correct it.', adj: 'Each correction walks the next round onto the target.', ffe: 'What you see now is your report at the end.', eom: 'Tells the FDC the mission is over and what the rounds did.' };
   function placeTip(cd) {
     const tip = $('gtip'), step = guidedOn() ? gStep() : '', at = TIPAT[step];
     if (!at || !cd.tip) { tip.hidden = true; st.tipStep = step; return; }
-    if (tip.innerHTML !== cd.tip) tip.innerHTML = cd.tip;
+    const html = cd.tip + (WHY[step] ? `<small class="tw"><em>Why</em> ${WHY[step]}</small>` : '');
+    if (tip.innerHTML !== html) tip.innerHTML = html;
     tip.hidden = false;
     const el = $(at[0]);
     if (at[1] === 'in') { if (tip.parentNode !== el) el.appendChild(tip); }
@@ -1820,8 +1829,6 @@ legend { padding: 0 4px; font-weight: 650; }
     if (s === 'mag' && !st.cmp) add($('cmpBtn'));
     if (s === 'appsize' && st.bino && st.measured == null) add($('measBtn'));
     if (s === 'tloc') add($(st.plot && st.plot.r ? 's7' : 'plotBtn'));
-    if (['shot', 'wait', 'ffe'].includes(s) && st.ack) add($('ack'));
-    if (st.ack && s === 'eom') add($('ack'));
     const ex = gExpect();
     if (ex.seq && !st.ed) { const need = ex.seq[st.draft.length]; add(need ? document.querySelector(`#pal .tk[data-k="${need}"]`) : $('txBtn')); }
     if (st.ed) add($('edOk'));
@@ -1846,14 +1853,25 @@ legend { padding: 0 4px; font-weight: 650; }
     s6: () => { const c = sheetCheck(), g = gm(), d = c.deg5 && c.m5 != null ? c.m5 : truth().mag * 0.05625, gd = st.w.gmAbs * 0.05625, gridD = d + (g > 0 ? gd : -gd); return g === 0 ? `No G-M step: line 5 in mils, nearest 10: about <b>${fmt4(r10(truth().az))}</b>.` : `${d.toFixed(1)}° ${g > 0 ? '+' : '−'} ${gd.toFixed(1)}° (G-M ${st.w.gmEast ? 'EAST: add' : 'WEST: subtract'}) = ${gridD.toFixed(1)}° × 17.78 ≈ <b>${fmt4(r10(gridD / 0.05625))}</b> mils.`; },
     s7: () => { const pp = plotPoint(), r = pp && proRead(pp); return r ? `Read the ✕ with the protractor: right ${r.e[0]}.${r.e[1]}, up ${r.n[0]}.${r.n[1]} → <b>${r.sqE}${r.e} ${r.sqN}${r.n}</b>.` : `Press Plot first: it marks ✕ from lines 6 and 4 and puts the protractor on it.`; }
   };
+  // Guided: once the line you are typing is right and you pause, move on by itself (next line, or close the keyboard)
+  function autoNext(el) {
+    clearTimeout(st.jumpT);
+    const gs = guidedOn() && document.activeElement === el ? gStep() : '';
+    if (!gs || gs === st.typeStep) return;
+    st.jumpT = setTimeout(() => {
+      if (document.activeElement !== el || gStep() !== gs) return;
+      const nx = { range: 's4', gm: 's6' }[gs];
+      if (nx) $(nx).focus(); else { el.blur(); setTimeout(() => { if (!$('gtip').hidden) $('gtip').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 150); }
+    }, 1200);
+  }
   ['s1', 's2n', 's2t', 's3', 's3k', 's4', 's5', 's5u', 's6', 's7'].forEach(id => {
     const el = $(id);
-    el.addEventListener('input', () => { readSheet(); refresh(); });
+    el.addEventListener('input', () => { readSheet(); refresh(); autoNext(el); });
     el.addEventListener('change', () => {
       readSheet(); const c = sheetCheck(), row = id.startsWith('s2') ? 's2' : id === 's3k' ? 's3' : id === 's5u' ? 's5' : id;
       const vEl = id === 's3k' ? $('s3') : id === 's5u' ? $('s5') : el;
       if (guidedOn() && !c.g[row] && (row !== 's2' || (st.sheet.s2n && st.sheet.s2t)) && String(vEl.value).trim()) { note(SHEETMSG[row]()); shake(vEl); }
-      refresh();
+      refresh(); if (el.tagName === 'SELECT') autoNext(el);
     });
   });
 
@@ -1873,11 +1891,11 @@ legend { padding: 0 4px; font-weight: 650; }
         { txt: 'Direction within 100 mils (line 6 or the DIRECTION you sent)', ok: c.x.s6 },
         { txt: 'Line 7: target location within 250 m', ok: c.x.s7 }] },
       { t: 'Send the call for fire', subs: [
-        { txt: '1: call signs + ADJUST FIRE', ok: R.t1 && R.mission === 'af' },
-        { txt: '2: GRID within 250 m', ok: R.t2 && gridOk },
-        { txt: '3: target, ammunition, WHEN READY (in order)', ok: R.t3 && descOk && ammoOk && R.wr && R.t3order },
+        { txt: 'Call signs + ADJUST FIRE', ok: R.t1 && R.mission === 'af' },
+        { txt: 'GRID within 250 m', ok: R.t2 && gridOk },
+        { txt: 'Target, ammunition, WHEN READY (in order)', ok: R.t3 && descOk && ammoOk && R.wr && R.t3order },
         { txt: 'No SAY AGAIN on the call for fire', ok: R.t3 && cffSA === 0 },
-        { txt: `All three sent within ${cfg.cffMin}:00`, ok: R.tCFF != null && R.tCFF <= cfg.cffMin * 60 }] },
+        { txt: `Call for fire sent within ${cfg.cffMin}:00`, ok: R.tCFF != null && R.tCFF <= cfg.cffMin * 60 }] },
       { t: 'Adjust fire (bracketing)', subs: [
         { txt: `Each correction within ${cfg.corrSec} s of the impact`, ok: !!R.ffeAim && R.corr.every(s => s <= cfg.corrSec) },
         { txt: 'FIRE FOR EFFECT after 6 adjusting rounds or fewer', ok: !!R.ffeAim && R.adjRounds <= 6 }] },
@@ -1900,9 +1918,9 @@ legend { padding: 0 4px; font-weight: 650; }
     if (R.t1 && R.mission !== 'af') bad('Warning order was FIRE FOR EFFECT: a 6/8-digit map grid needs ADJUST FIRE.');
     if (R.t3) {
       if (!(R.desc.n === T.n && R.desc.ty === T.ty && R.desc.act === 'IN THE OPEN')) bad(`Description: you sent ${tokLabel(R.desc)}; it was ${descTxt(T.n, T.ty, 'IN THE OPEN')}.`);
-      if (!R.ammo) bad('Transmission 3 had no ammunition.'); else if (!ammoFits(T.ty, R.ammo)) bad(`Ammunition ${R.ammo} does not fit ${VEH[T.ty].many}: use ${AMMO[ammoBest(T.ty)]}.`);
-      if (!R.wr) bad('Transmission 3 had no WHEN READY.');
-      if (!R.t3order) bad('Transmission 3 order: target, ammunition, WHEN READY.');
+      if (!R.ammo) bad('The call for fire had no ammunition.'); else if (!ammoFits(T.ty, R.ammo)) bad(`Ammunition ${R.ammo} does not fit ${VEH[T.ty].many}: use ${AMMO[ammoBest(T.ty)]}.`);
+      if (!R.wr) bad('The call for fire had no WHEN READY.');
+      if (!R.t3order) bad('Wrong order after the grid: target, ammunition, WHEN READY.');
       if (R.tCFF > cfg.cffMin * 60) bad(`Call for fire took ${mmss(R.tCFF)} (limit ${cfg.cffMin}:00).`); else ok(`Call for fire on the net at ${mmss(R.tCFF)}.`);
     } else bad('The call for fire was never completed.');
     R.corr.forEach((d, i) => { if (d > cfg.corrSec) bad(`Correction ${i + 1} went out ${Math.round(d)} s after the impact (limit ${cfg.corrSec} s).`); });
@@ -1920,7 +1938,6 @@ legend { padding: 0 4px; font-weight: 650; }
   function finish() {
     if (st.ended) return;
     st.ended = true; st.running = false; clearTimers();
-    st.ack = null; renderAck();
     const ms = evalAll(), go = ms.every(m => m.subs.every(x => x.ok)), secs = (performance.now() - R.t0) / 1000, exam = st.examOn;
     if (exam && go) { try { const b = +localStorage.getItem('cffT.best') || 0; if (!b || secs < b) localStorage.setItem('cffT.best', String(Math.round(secs))); } catch (e) { /* storage blocked */ } }
     $('resT').textContent = exam ? 'Exam result' : 'Practice debrief';
@@ -1952,7 +1969,7 @@ legend { padding: 0 4px; font-weight: 650; }
     $('mapNote').textContent = `Grid squares 1,000 m · contours 10 m · G-M angle ${g === 0 ? 'none' : `${w.gmAbs} mils (${(w.gmAbs * 0.05625).toFixed(1)}°) ${w.gmEast ? 'EAST' : 'WEST'}`} · card #${st.seed}`;
   }
   // the stage at the top shows what the step needs: the 3D view or the map
-  const STAGE = { op: 'map', tloc: 'map', find: 'view', size: 'view', appsize: 'view', mag: 'view', shot: 'view', wait: 'view', adj: 'view', ffe: 'view', eom: 'view' };
+  const STAGE = { op: 'map', tloc: 'map', find: 'view', size: 'view', appsize: 'view', mag: 'view', call: 'view', shot: 'view', wait: 'view', adj: 'view', ffe: 'view', eom: 'view' };
   function setStage(m) {
     st.stage = m;
     $('paneView').hidden = m !== 'view'; $('paneMap').hidden = m !== 'map';
@@ -1972,7 +1989,7 @@ legend { padding: 0 4px; font-weight: 650; }
   }
   document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
   function phaseIdx() {
-    if (guidedOn()) { const s = gStep(); return ['op', 'find', 'size', 'appsize', 'range', 'mag', 'gm', 'tloc'].includes(s) ? 0 : ['t1', 't2', 't3', 'rx'].includes(s) && !R.t3 ? 1 : ['eom', 'done'].includes(s) ? 3 : 2; }
+    if (guidedOn()) { const s = gStep(); return ['op', 'find', 'size', 'appsize', 'range', 'mag', 'gm', 'tloc'].includes(s) ? 0 : ['call', 'rx'].includes(s) && !R.t3 ? 1 : ['eom', 'done'].includes(s) ? 3 : 2; }
     if (st.ended) return 4;
     const ph = F.phase;
     return ph.startsWith('cff') ? (R.answered ? 1 : 0) : ph === 'eom' || ph === 'done' ? 3 : 2;
@@ -1984,14 +2001,16 @@ legend { padding: 0 4px; font-weight: 650; }
     SROWS.forEach((k, i) => $('r' + (i + 1)).classList.toggle('ok', guidedOn() && !!c.g[k]));
     const cd = coachData(), pi = phaseIdx();
     if (guidedOn() && pi >= 1 && cd.bullets) { const miss = [['s1', 'Line 1 (OP grid)'], ['s2', 'Line 2 (target)']].filter(x => !c.g[x[0]]).map(x => x[1]); if (miss.length) cd.bullets = cd.bullets.concat(`${miss.join(' and ')} still empty: the exam checks ${miss.length > 1 ? 'them' : 'it'}.`); }
-    $('cStep').textContent = guidedOn() ? `Step ${GN[gStep()] || ({ cff1: 9, cff2: 10, cff3: 11, eom: 15 })[F.phase] || 13} of 15 · ${PHN[pi]}` : cd.lbl;
+    $('cStep').textContent = guidedOn() ? `Step ${GN[gStep()] || ({ cff: 9, eom: 13 })[F.phase] || 11} of 13 · ${PHN[pi]}` : cd.lbl;
     $('cDo').textContent = cd.title; $('cHow').innerHTML = (cd.bullets || []).map(b => `<li>${b}</li>`).join('');
-    $('cWhyBox').hidden = !cd.why; $('cWhy').textContent = cd.why || '';
     placeTip(cd);
+    // phones: the worksheet line is often below the fold, so the coach card has a jump button to it
+    const at = TIPAT[guidedOn() ? gStep() : ''], row = at && /^r\d$/.test(at[0]) ? at[0] : '';
+    $('cGo').hidden = !row; if (row) $('cGo').textContent = `↓ Go to line ${row.slice(1)}`;
     document.querySelectorAll('#phases li').forEach((li, i) => { li.className = i < pi ? 'done' : i === pi ? 'now' : ''; });
     if (guidedOn()) { const cat = pi <= 0 ? 'locate' : 'radio'; if (cat !== st.lastCat) { st.lastCat = cat; setTab(cat); } }
-    if (guidedOn()) { const gs = gStep(); if (gs !== st.stageStep) { st.stageStep = gs; if (STAGE[gs] && STAGE[gs] !== st.stage) setStage(STAGE[gs]); } }
-    renderPal(); hints(); renderScore(); renderAck();
+    if (guidedOn()) { const gs = gStep(); if (gs !== st.stageStep) { st.stageStep = gs; if (STAGE[gs] && STAGE[gs] !== st.stage) setStage(STAGE[gs]); if (gs === 'call' && st.cmp) setBino(true); } }
+    renderPal(); hints(); renderScore();
     $('endBar').hidden = !(st.examOn && st.running);
     $('btnRef').disabled = st.examOn && st.running;
     drawMap(); kick();
@@ -2004,7 +2023,7 @@ legend { padding: 0 4px; font-weight: 650; }
     $('busy').hidden = false;
     setTimeout(() => {
       const w = genWorld(st.seed); st.w = w; MV.img = null;
-      st.bursts = []; st.draft = []; st.ack = null; st.seen = false; st.plot = null; st.ended = false; st.freq = w.freq; st.cmp = false;
+      st.bursts = []; st.draft = []; st.seen = false; st.plot = null; st.ended = false; st.freq = w.freq; st.cmp = false;
       ['s1', 's2n', 's2t', 's3', 's4', 's5', 's6', 's7'].forEach(id => { $(id).value = ''; }); $('s3k').value = 'L'; $('s5u').value = 'D';
       st.palKey = ''; st.lastCat = ''; st.tipStep = ''; st.stageStep = ''; st.measured = null; setTab('locate'); $('radioDot').hidden = true;
       $('log').innerHTML = ''; renderDraft();
@@ -2031,7 +2050,7 @@ legend { padding: 0 4px; font-weight: 650; }
     const items = [
       'The clock starts when you press Start. Run ends at END OF MISSION or at 10:00.',
       'Phase 1: fill the worksheet in any order. The cadre gives you the target size W and the G-M angle (box at the top of the worksheet); you measure M. OP grid (protractor), target count and type, apparent size M (Measure in the binoculars), range = W ÷ M × 1000, compass direction (Compass), grid direction (± G-M angle, then mils), target grid (Plot).',
-      `Phase 2: the radio is already on the fire net. Send three transmissions built from word chips, all within ${cfg.cffMin}:00.`,
+      `Phase 2: the radio is already on the fire net. Send one call for fire built from word chips (call signs, ADJUST FIRE, GRID, target, ammunition, WHEN READY) within ${cfg.cffMin}:00. OVER is added when you transmit.`,
       `Phase 3: bracket ADD/DROP 400 → 200 → 100 → 50 + FIRE FOR EFFECT. Each correction within ${cfg.corrSec} s of the impact; fire for effect after 6 adjusting rounds or fewer, within 50 m of the target.`,
       'Phase 4: END OF MISSION with the surveillance you actually see.',
       'No coach, no highlights, no ✓ marks, no Ref until the end. Any NO-GO sends you to Charlie Company.'
@@ -2054,6 +2073,17 @@ legend { padding: 0 4px; font-weight: 650; }
   $('chWhy').addEventListener('click', () => { closeModal('mCharlie'); openModal('mRes'); });
   $('chRetry').addEventListener('click', () => { closeModal('mCharlie'); newCard(); });
   $('btnRef').addEventListener('click', () => { renderIntro(); openModal('mRef'); });
+  $('cGo').addEventListener('click', () => $('gtip').scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+  // math video in a layer over the trainer: the page never leaves, so the worksheet and the mission stay as they are
+  function openVid() {
+    if (!$('mVid').hidden) return;
+    if (!$('vidFrame').getAttribute('src')) $('vidFrame').src = 'math/';
+    openModal('mVid'); history.pushState({ vid: 1 }, '');
+  }
+  function shutVid() { try { $('vidFrame').contentDocument.getElementById('vid').pause(); } catch (e) { /* not loaded yet */ } closeModal('mVid'); }
+  document.addEventListener('click', e => { const a = e.target.closest('a[href="math/"]'); if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); openVid(); });
+  $('vidClose').addEventListener('click', () => { if (history.state && history.state.vid) history.back(); else shutVid(); });
+  window.addEventListener('popstate', () => { if (!$('mVid').hidden) shutVid(); });
   $('btnSet').addEventListener('click', () => {
     document.querySelector(`input[name="cmp"][value="${cfg.compass}"]`).checked = true;
     document.querySelector(`input[name="spd"][value="${cfg.speed}"]`).checked = true;
@@ -2081,7 +2111,7 @@ legend { padding: 0 4px; font-weight: 650; }
   new ResizeObserver(() => { sizeView(); sizeMap(); }).observe(document.body);
   document.querySelectorAll('input').forEach(i => { i.setAttribute('autocorrect', 'off'); i.setAttribute('autocapitalize', 'off'); i.spellcheck = false; });
   // phones: while a field in the tool card has focus, let the view scroll away so the keyboard and the field both fit
-  document.addEventListener('focusin', e => { if (e.target.matches('#tools input, #tools select')) document.body.classList.add('kbd'); });
+  document.addEventListener('focusin', e => { if (e.target.matches('#tools input, #tools select')) { document.body.classList.add('kbd'); st.typeStep = st.w && guidedOn() ? gStep() : ''; } });
   document.addEventListener('focusout', () => setTimeout(() => { if (!document.activeElement || !document.activeElement.matches('#tools input, #tools select')) document.body.classList.remove('kbd'); }, 50));
   renderIntro();
   window.__cff = { st, cfg, get F() { return F; }, get R() { return R; }, truth, expCorr, spotOf, worldToGrid, gStep, gExpect, newCard, setMode, evalAll, finish, timing: () => { const t = performance.now(); renderTerrain(); return performance.now() - t; }, mapScale: () => ({ ratio: MV.scale / (MV.W / S), cx: MV.cx, cy: MV.cy, lab: MV.lab, u: MV.W / MV.cv.clientWidth, pro: st.pro && MV.pro, box: st.pro && MV.proBox, W: MV.W, H: MV.H, plot: plotPoint() }), frames: () => V.n, mapOff: () => MV.off, dbg: { onScale, LS, compassReading, setCmp, buildTerrain, placeTarget, genWorld, visibleSet, openAround, nearestLm, los, groundAt, addBurst, setView, proj, camF, gridToWorld, sheetCheck } };
