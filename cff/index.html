@@ -136,7 +136,8 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 /* map */
 .mapbox { position: relative; }
 #map { display: block; width: 100%; height: min(calc(100vw - 54px), 36vh); touch-action: none; border: 1px solid var(--line); border-radius: 10px; background: #fbfaf5; cursor: grab; }
-@media (max-height: 639px) { #map { height: 72vh; } }
+@media (min-width: 700px) { #map { height: 32vh; } }
+@media (max-height: 639px) { #map { height: calc(100vh - 124px); } }
 @media (min-width: 1100px) { #map { height: min(640px, calc(100vh - 250px)); } }
 .stageSeg { display: flex; gap: 6px; margin-bottom: 6px; }
 .stageSeg button { flex: 1; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-weight: 700; cursor: pointer; }
@@ -811,11 +812,11 @@ legend { padding: 0 4px; font-weight: 650; }
   function sizeView() {
     const css = $('vwrap').clientWidth; if (!css) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    // phones: ~26% of the long screen side in portrait, ~62% of the short side in landscape; tablets ≤ 40%
+    // phones: ~26% of the long screen side in portrait, ~62% of the short side in landscape; tablets ~32%
     const sw = (window.screen && screen.width) || 800, sh = (window.screen && screen.height) || 800, longS = Math.max(sw, sh), shortS = Math.min(sw, sh);
     const hCss = innerWidth > innerHeight && innerHeight < 520 ? Math.min(css * 0.5, shortS * 0.62)
       : css < 600 ? Math.min(css * 0.54, Math.max(140, longS * (longS < 720 ? 0.22 : 0.26)))
-      : innerWidth < 1100 ? Math.min(css * 0.6, longS * 0.36) : css * 0.6;
+      : innerWidth < 1100 ? Math.min(css * 0.6, longS * 0.32) : css * 0.6;
     const w = clamp(Math.round(css * dpr), 300, 980), h = Math.round(w * hCss / css);
     if (w === V.W && h === V.H) return;
     V.W = w; V.H = h; V.cv.width = w; V.cv.height = h;
@@ -1369,9 +1370,9 @@ legend { padding: 0 4px; font-weight: 650; }
     // inside a square with no grid line on screen: grey numbers say which square you are in
     g.fillStyle = '#8b8b80';
     const e0 = Math.floor((MV.cx + (side - Wd / 2) / sc) / 1000) * 1000;
-    if (e0 >= 0 && X(e0) <= side + 10 * u && X(e0 + 1000) - side > 40 * u) { g.textAlign = 'left'; g.fillText(en(e0), side + 4 * u, band / 2 + u); g.fillText(en(e0), side + 4 * u, Hd - band / 2 + u); lab.pe = en(e0); }
+    if (zoomed() && e0 >= 0 && X(e0) <= side + 10 * u && X(e0 + 1000) - side > 40 * u) { g.textAlign = 'left'; g.fillText(en(e0), side + 4 * u, band / 2 + u); g.fillText(en(e0), side + 4 * u, Hd - band / 2 + u); lab.pe = en(e0); }
     const n0 = Math.floor((MV.cy - (Hd / 2 - band) / sc) / 1000) * 1000;
-    if (n0 >= 0 && Y(n0) >= Hd - band - 9 * u && Hd - band - Y(n0 + 1000) > 30 * u) { g.textAlign = 'center'; g.fillText(nn(n0), side / 2, Hd - band - 10 * u); lab.pn = nn(n0); }
+    if (zoomed() && n0 >= 0 && Y(n0) >= Hd - band - 9 * u && Hd - band - Y(n0 + 1000) > 30 * u) { g.textAlign = 'center'; g.fillText(nn(n0), side / 2, Hd - band - 10 * u); lab.pn = nn(n0); }
     g.fillStyle = '#fff'; g.fillRect(0, 0, side, band); g.fillRect(0, Hd - band, side, band);
     g.fillStyle = '#111'; g.font = `800 ${Math.round(10.5 * u)}px system-ui, sans-serif`; g.textAlign = 'center';
     g.fillText('GA', side / 2, band / 2 + u); g.fillText('GA', side / 2, Hd - band / 2 + u);
@@ -1771,7 +1772,7 @@ legend { padding: 0 4px; font-weight: 650; }
       case 'find': return { title: 'Find the target', tip: st.bino ? 'Tap the dark vehicles, or press <strong>◀ ▶</strong>' : 'Tap the <strong>yellow ring</strong>: the binoculars open on it', bullets: [] };
       case 'size': return { title: 'Count them', tip: `Line 2 → <b>${T.n}</b> · <b>${typeName}</b>`, bullets: ['Truck: tall box. BMP: low, small turret. T-72: long gun.'] };
       case 'appsize': { const hi = st.sheet.s3k === 'H'; return { title: 'Measure one vehicle', tip: !st.bino ? 'Tap the vehicles to open the binoculars' : st.measured == null ? 'Press <strong>Measure</strong>' : `Line 3 → <b>${(hi ? tr.Mh : tr.M).toFixed(1)}</b> (${hi ? 'high' : 'wide'})`, bullets: ['You measure M here: how many mils the vehicle covers. Its real size W comes from the cadre.', 'Measure puts a vehicle in the corner of the small scale at the left: bottom scale = width, side scale = height. Pick wide or high on line 3.'] }; }
-      case 'range': { const M = chk.M || chk.tM, Rr = r10(chk.W / M * 1000), hi = st.sheet.s3k === 'H'; return { title: 'Range = W ÷ M × 1000', tip: `Line 4 → <b>${Rr}</b> m`, bullets: [`W = ${chk.W} m: the target ${hi ? 'height' : 'width'} the cadre gave you (box at the top). You do not measure W.`, `M = ${(+M).toFixed(1)} mils: what you measured on line 3.`, `R = ${chk.W} ÷ ${(+M).toFixed(1)} × 1000 = ${Rr} m`] }; }
+      case 'range': { const M = chk.M || chk.tM, Rr = r10(chk.W / M * 1000), hi = st.sheet.s3k === 'H'; return { title: 'Range = W ÷ M × 1000', tip: `Line 4 → <b>${Rr}</b> m`, bullets: [`W = ${chk.W} m: the target ${hi ? 'height' : 'width'} the cadre gave you (box at the top). You do not measure W.`, `M = ${(+M).toFixed(1)} mils: what you measured on line 3.`, `R = W ÷ M × 1000 = ${chk.W} ÷ ${(+M).toFixed(1)} × 1000 = ${Rr} m`] }; }
       case 'mag': { const off = Math.abs(dm(tr.az, st.az)), dg = tr.mag * 0.05625; return { title: 'Read the compass', tip: !st.cmp ? 'Press <strong>Compass</strong>' : off > 3 ? 'Tap the vehicles to aim the compass' : `Line 5 → <b>${dg.toFixed(0)}</b> °`, bullets: ['Read the outer ring (degrees) under the yellow line. The red inner ring is mils, if you prefer mils.'] }; }
       case 'gm': { const m = chk.mag != null ? chk.mag : tr.mag, ga = w64(m + g), gd = w.gmAbs * 0.05625, d5 = chk.deg5 && chk.m5 != null ? chk.m5 : m * 0.05625, dg = d5 + (g > 0 ? gd : -gd);
         return { title: 'Grid direction (mils)', tip: `Line 6 → <b>${fmt4(r10(chk.deg5 ? w64(dg / 0.05625) : ga))}</b>`, bullets: g === 0 ? ['Compass reads grid: line 5 in mils, nearest 10.'] : chk.deg5 ? [`${d5.toFixed(1)}° ${g > 0 ? '+' : '−'} ${gd.toFixed(1)}° (G-M ${w.gmEast ? 'EAST: add' : 'WEST: subtract'}) = ${dg.toFixed(1)}°`, `${dg.toFixed(1)}° × 17.78 = ${fmt4(w64(dg / 0.05625))} → ${fmt4(r10(w64(dg / 0.05625)))} mils`] : [`${fmt4(m)} ${g > 0 ? '+' : '−'} ${w.gmAbs} (G-M ${w.gmEast ? 'EAST: add' : 'WEST: subtract'}) = ${fmt4(ga)} → ${fmt4(r10(ga))}`], why: 'The FDC works in grid mils. 1° = 17.78 mils (6400 mils = 360°).' }; }
