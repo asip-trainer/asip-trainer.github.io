@@ -87,9 +87,9 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
   const v = document.getElementById('vid'), box = document.getElementById('chaps');
   const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
   box.innerHTML = CH.map(([t, s], i) => `<button data-t="${s}"><b>${mmss(s)}</b><span>${i ? i + ' · ' : ''}${t}</span></button>`).join('');
-  box.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; v.currentTime = +b.dataset.t; v.play().catch(() => {}); });
-  const mark = () => { const t = v.currentTime; let k = 0; CH.forEach((c, i) => { if (t >= c[1] - 0.05) k = i; }); box.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-current', String(i === k))); };
-  v.addEventListener('timeupdate', mark); mark();
+  const mark = t => { if (t == null) t = v.currentTime; let k = 0; CH.forEach((c, i) => { if (t >= c[1] - 0.05) k = i; }); box.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-current', String(i === k))); };
+  box.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; v.currentTime = +b.dataset.t; mark(+b.dataset.t); v.play().catch(() => {}); });
+  v.addEventListener('timeupdate', () => mark()); v.addEventListener('seeked', () => mark()); mark();
 })();
 </script>
 </body>
