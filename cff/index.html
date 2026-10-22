@@ -135,13 +135,23 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 
 /* map */
 .mapbox { position: relative; }
-#map { display: block; width: 100%; aspect-ratio: 1 / 1; touch-action: none; border: 1px solid var(--line); border-radius: 10px; background: #fbfaf5; cursor: grab; }
+#map { display: block; width: 100%; height: min(calc(100vw - 54px), 36vh); touch-action: none; border: 1px solid var(--line); border-radius: 10px; background: #fbfaf5; cursor: grab; }
+@media (max-height: 639px) { #map { height: 72vh; } }
+@media (min-width: 1100px) { #map { height: min(640px, calc(100vh - 250px)); } }
+.stageSeg { display: flex; gap: 6px; margin-bottom: 6px; }
+.stageSeg button { flex: 1; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-weight: 700; cursor: pointer; }
+.stageSeg button[aria-selected="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.given { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 12px; padding: 10px 12px; border: 1.5px dashed var(--accent); border-radius: 12px; background: var(--accent-soft); font-size: 14px; }
+.given .gt { grid-column: 1 / -1; margin-bottom: 4px; font: 800 11px/1.2 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.given span { color: var(--muted); }
+.given b { font-family: var(--mono); }
 .mz { display: flex; gap: 6px; }
 .mnote { margin: 6px 0 0; font-size: 12px; }
-.prow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.prow { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 8px; }
+@media (pointer: coarse), (max-width: 640px) { .stageSeg button { padding-block: 8px; } }
 .prow .pro { display: flex; align-items: center; gap: 6px; }
 .prow .lbl { margin-right: 2px; }
-.prow .btn { padding: 7px 11px; font-size: 13.5px; }
+.prow .btn { padding: 7px 10px; font-size: 13.5px; white-space: nowrap; }
 .prow .btn[aria-pressed="true"] { border-color: #1e3c6e; background: #1e3c6e; color: #fff; }
 
 /* worksheet: two columns of small fields */
@@ -283,7 +293,12 @@ legend { padding: 0 4px; font-weight: 650; }
 
 <main class="wrap">
   <div class="colL">
-    <section class="card vcard" id="viewCard" aria-label="Observer view">
+    <section class="card vcard" id="viewCard" aria-label="Observer view and map">
+      <div class="stageSeg" role="tablist" aria-label="Top screen">
+        <button id="stView" role="tab" aria-selected="true">3D view</button>
+        <button id="stMap" role="tab" aria-selected="false">Map</button>
+      </div>
+      <div id="paneView">
       <div class="vwrap" id="vwrap">
         <canvas id="view" aria-label="View from the observation post. Drag to look around, tap to aim."></canvas>
         <div class="busy" id="busy">Building terrain…</div>
@@ -294,6 +309,16 @@ legend { padding: 0 4px; font-weight: 650; }
         <button class="btn bino" id="binoBtn" aria-pressed="false">Binoculars</button>
         <button class="btn" id="cmpBtn" aria-pressed="false">Compass</button>
         <button class="btn" id="measBtn" hidden>Measure</button>
+      </div>
+      </div>
+      <div id="paneMap" hidden>
+        <div class="mapbox">
+          <canvas id="map" aria-label="Map sheet. Drag to move, pinch or use + and − to zoom."></canvas>
+        </div>
+        <div class="prow">
+          <div class="mz"><button class="ibtn" id="zOut" aria-label="Zoom out">−</button><button class="ibtn" id="zIn" aria-label="Zoom in">+</button><button class="ibtn" id="zFit">Fit</button></div>
+          <div class="pro"><button class="btn" id="proOp" aria-pressed="false" aria-label="Protractor on the OP" title="Protractor on the OP">◎ OP</button><button class="btn" id="proX" aria-pressed="false" aria-label="Protractor on the plotted point" title="Protractor on the plotted point">✕ Plot</button></div>
+        </div>
       </div>
     </section>
   </div>
@@ -311,20 +336,13 @@ legend { padding: 0 4px; font-weight: 650; }
 
     <section class="card tools" id="tools">
       <div class="tabs" role="tablist" aria-label="Tools">
-        <button role="tab" data-tab="locate" aria-selected="true">Map &amp; sheet</button>
+        <button role="tab" data-tab="locate" aria-selected="true">Worksheet</button>
         <button role="tab" data-tab="radio" id="tabRadio" aria-selected="false">Radio<i class="dot" id="radioDot" hidden></i></button>
         <button role="tab" data-tab="score" aria-selected="false">Score</button>
       </div>
 
       <div class="panel" data-panel="locate">
-        <div class="mapbox">
-          <canvas id="map" aria-label="Map sheet. Drag to move, pinch or use + and − to zoom."></canvas>
-        </div>
-        <div class="prow">
-          <div class="mz"><button class="ibtn" id="zOut" aria-label="Zoom out">−</button><button class="ibtn" id="zIn" aria-label="Zoom in">+</button><button class="ibtn" id="zFit">Fit</button></div>
-          <div class="pro"><span class="lbl">Protractor</span><button class="btn" id="proOp" aria-pressed="false">◎ OP</button><button class="btn" id="proX" aria-pressed="false">✕ Plot</button></div>
-        </div>
-        <p class="mnote muted" id="mapNote"></p>
+        <div class="given" id="given"></div>
         <div class="ws" id="sheet" aria-label="Worksheet">
           <div class="wc" id="r1"><label for="s1"><b>1</b>OP grid</label><div class="fld"><span>GA</span><input id="s1" inputmode="numeric" maxlength="11" placeholder="8 digits" autocomplete="off"></div></div>
           <div class="wc" id="r2"><label for="s2n"><b>2</b>Target</label><div class="fld"><select id="s2n" aria-label="How many"><option value="">#</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><select id="s2t" aria-label="Vehicle type"><option value="">type</option><option value="BMP">BMP</option><option value="T72">T-72</option><option value="TRK">Truck</option></select></div></div>
@@ -335,6 +353,7 @@ legend { padding: 0 4px; font-weight: 650; }
           <div class="wc wide" id="r7"><label for="s7"><b>7</b>Target grid</label><div class="fld"><span>GA</span><input id="s7" inputmode="numeric" maxlength="11" placeholder="6 or 8 digits" autocomplete="off"><button class="btn" id="plotBtn">Plot</button></div></div>
         </div>
         <p class="wsnote" id="wsnote"></p>
+        <p class="mnote muted" id="mapNote"></p>
       </div>
 
       <div class="panel rp" data-panel="radio" id="radioPanel" hidden>
@@ -434,13 +453,13 @@ legend { padding: 0 4px; font-weight: 650; }
   <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="refT">
     <h2 id="refT">Cheat sheet · Call for fire (CFFT)</h2>
     <button class="btn x" data-close="mRef" aria-label="Close">✕</button>
-    <a class="vidlink" id="refVid" href="math/">▶ Watch: the math, step by step (video, 5:02)</a>
+    <a class="vidlink" id="refVid" href="math/">▶ Watch: the math, step by step (video, 5:05)</a>
     <h3>Phase 1 · Locate the target (worksheet)</h3>
     <ol>
       <li><b>Observer location:</b> put the protractor on the OP (button under the map) and read right, then up: where the square's left grid line crosses the bottom scale, then where the point sits on the side scale. 8 digits = 10 m.</li>
       <li><b>Target:</b> through the binoculars, count the vehicles and name them (BMP, T-72, truck).</li>
       <li><b>Apparent size M:</b> press Measure in the binoculars: one vehicle sits in the corner of the small scale at the left. Width on the bottom scale, height on the side scale (1 mil per tick).</li>
-      <li><b>Range (WORM):</b> W = R × M, so R = W ÷ M × 1000. W is given (width or height). Example: 7.4 m, M = 5 mils → 7.4 ÷ 5 × 1000 = 1,480 m.</li>
+      <li><b>Range (WORM):</b> W = R × M, so R = W ÷ M × 1000. <b>W is given to you by the cadre</b> before you start (width or height); you only measure M. Example: 7.4 m, M = 5 mils → 7.4 ÷ 5 × 1000 = 1,480 m.</li>
       <li><b>Compass direction:</b> press Compass, tap the middle of the group, read the dial under the line: degrees on the outer ring, mils on the red inner ring.</li>
       <li><b>Grid direction:</b> magnetic → grid: G-M angle <b>EAST: add</b>, <b>WEST: subtract</b>. Degrees × 17.78 = mils (6400 mils = 360°). Send direction in mils, to the nearest 10.</li>
       <li><b>Target location:</b> polar plot. From the OP, lay the grid direction and measure the range (the map's Plot tool does the protractor and ruler for you); read the grid at the mark. It must be within 250 m.</li>
@@ -795,7 +814,7 @@ legend { padding: 0 4px; font-weight: 650; }
     // phones: ~26% of the long screen side in portrait, ~62% of the short side in landscape; tablets ≤ 40%
     const sw = (window.screen && screen.width) || 800, sh = (window.screen && screen.height) || 800, longS = Math.max(sw, sh), shortS = Math.min(sw, sh);
     const hCss = innerWidth > innerHeight && innerHeight < 520 ? Math.min(css * 0.5, shortS * 0.62)
-      : css < 600 ? Math.min(css * 0.54, Math.max(150, longS * 0.26))
+      : css < 600 ? Math.min(css * 0.54, Math.max(140, longS * (longS < 720 ? 0.22 : 0.26)))
       : innerWidth < 1100 ? Math.min(css * 0.6, longS * 0.36) : css * 0.6;
     const w = clamp(Math.round(css * dpr), 300, 980), h = Math.round(w * hCss / css);
     if (w === V.W && h === V.H) return;
@@ -930,8 +949,9 @@ legend { padding: 0 4px; font-weight: 650; }
   }
   function kick() { if (!V.raf) V.raf = requestAnimationFrame(frame); }
   function frame(now) {
-    V.raf = 0; V.n = (V.n || 0) + 1;
-    if (!st.w || !V.W) return;
+    V.raf = 0;
+    if (!st.w || !V.W || $('paneView').hidden) return;
+    V.n = (V.n || 0) + 1;
     if (V.dirty) { renderTerrain(); V.dirty = false; }
     V.d32.set(V.b32); V.zb.set(V.bz);
     drawVehicles();
@@ -1385,7 +1405,7 @@ legend { padding: 0 4px; font-weight: 650; }
       if (a == null || a > 6400) { note('Plot uses line 6 (grid direction) and line 4 (range): fill them first.'); return; }
       st.plot = { az: a, r: r && r < 6000 ? r : 0 };
       if (st.plot.r) { const t = st.plot.az * MIL; MV.cx = st.w.op.x + Math.sin(t) * st.plot.r * 0.5; MV.cy = st.w.op.y + Math.cos(t) * st.plot.r * 0.5; MV.scale = Math.max(MV.scale, Math.min(MV.W, MV.H) / (st.plot.r * 1.5)); MV.scale = clamp(MV.scale, minScale(), maxScale()); }
-      if (st.plot.r) proOn('x', true);
+      if (st.plot.r) { setStage('map'); proOn('x', true); }
       drawMap(); refresh();
     });
     $('proOp').addEventListener('click', () => proOn(st.pro === 'op' ? null : 'op', true));
@@ -1605,7 +1625,7 @@ legend { padding: 0 4px; font-weight: 650; }
     F.busy = true;
     later(2200 * K(), () => ffe ? fireFFE() : fireAdj());
   }
-  function splashBinos() { if (!st.bino) { if (st.lastAim) setView(st.lastAim.az, st.lastAim.pitch); setBino(true); } }
+  function splashBinos() { if (st.stage !== 'view') setStage('view'); if (!st.bino) { if (st.lastAim) setView(st.lastAim.az, st.lastAim.pitch); setBino(true); } }
   function fireAdj() {
     F.busy = false; F.inFlight = true; F.phase = 'adjust';
     fdcSay('SHOT, OVER.'); setAck('SHOT', 'SHOT, OUT.');
@@ -1750,8 +1770,8 @@ legend { padding: 0 4px; font-weight: 650; }
       case 'op': { const r = proRead(w.op); return { title: 'Read your OP grid', tip: `Line 1 → <b>${r.sqE}${r.e} ${r.sqN}${r.n}</b>`, bullets: [`Protractor on the OP: right ${r.e[0]}.${r.e[1]} → ${r.sqE}${r.e}, up ${r.n[0]}.${r.n[1]} → ${r.sqN}${r.n}.`], why: 'Read right (where the square\'s left line crosses the bottom scale), then up (where the point sits on the side scale). Lines 1–6 can go in any order; the radio only needs line 7.' }; }
       case 'find': return { title: 'Find the target', tip: st.bino ? 'Tap the dark vehicles, or press <strong>◀ ▶</strong>' : 'Tap the <strong>yellow ring</strong>: the binoculars open on it', bullets: [] };
       case 'size': return { title: 'Count them', tip: `Line 2 → <b>${T.n}</b> · <b>${typeName}</b>`, bullets: ['Truck: tall box. BMP: low, small turret. T-72: long gun.'] };
-      case 'appsize': { const hi = st.sheet.s3k === 'H'; return { title: 'Measure one vehicle', tip: !st.bino ? 'Tap the vehicles to open the binoculars' : st.measured == null ? 'Press <strong>Measure</strong>' : `Line 3 → <b>${(hi ? tr.Mh : tr.M).toFixed(1)}</b> (${hi ? 'high' : 'wide'})`, bullets: ['Measure puts a vehicle in the corner of the small scale at the left.', 'Bottom scale = width, side scale = height (1 mil per tick). Pick wide or high next to line 3.'] }; }
-      case 'range': { const M = chk.M || chk.tM, Rr = r10(chk.W / M * 1000); return { title: 'Range = W ÷ M × 1000', tip: `Line 4 → <b>${Rr}</b> m`, bullets: [`R = W ÷ M × 1000 = ${chk.W} ÷ ${(+M).toFixed(1)} × 1000 = ${Rr} m (W = the given ${st.sheet.s3k === 'H' ? 'height' : 'width'}).`] }; }
+      case 'appsize': { const hi = st.sheet.s3k === 'H'; return { title: 'Measure one vehicle', tip: !st.bino ? 'Tap the vehicles to open the binoculars' : st.measured == null ? 'Press <strong>Measure</strong>' : `Line 3 → <b>${(hi ? tr.Mh : tr.M).toFixed(1)}</b> (${hi ? 'high' : 'wide'})`, bullets: ['You measure M here: how many mils the vehicle covers. Its real size W comes from the cadre.', 'Measure puts a vehicle in the corner of the small scale at the left: bottom scale = width, side scale = height. Pick wide or high on line 3.'] }; }
+      case 'range': { const M = chk.M || chk.tM, Rr = r10(chk.W / M * 1000), hi = st.sheet.s3k === 'H'; return { title: 'Range = W ÷ M × 1000', tip: `Line 4 → <b>${Rr}</b> m`, bullets: [`W = ${chk.W} m: the target ${hi ? 'height' : 'width'} the cadre gave you (box at the top). You do not measure W.`, `M = ${(+M).toFixed(1)} mils: what you measured on line 3.`, `R = ${chk.W} ÷ ${(+M).toFixed(1)} × 1000 = ${Rr} m`] }; }
       case 'mag': { const off = Math.abs(dm(tr.az, st.az)), dg = tr.mag * 0.05625; return { title: 'Read the compass', tip: !st.cmp ? 'Press <strong>Compass</strong>' : off > 3 ? 'Tap the vehicles to aim the compass' : `Line 5 → <b>${dg.toFixed(0)}</b> °`, bullets: ['Read the outer ring (degrees) under the yellow line. The red inner ring is mils, if you prefer mils.'] }; }
       case 'gm': { const m = chk.mag != null ? chk.mag : tr.mag, ga = w64(m + g), gd = w.gmAbs * 0.05625, d5 = chk.deg5 && chk.m5 != null ? chk.m5 : m * 0.05625, dg = d5 + (g > 0 ? gd : -gd);
         return { title: 'Grid direction (mils)', tip: `Line 6 → <b>${fmt4(r10(chk.deg5 ? w64(dg / 0.05625) : ga))}</b>`, bullets: g === 0 ? ['Compass reads grid: line 5 in mils, nearest 10.'] : chk.deg5 ? [`${d5.toFixed(1)}° ${g > 0 ? '+' : '−'} ${gd.toFixed(1)}° (G-M ${w.gmEast ? 'EAST: add' : 'WEST: subtract'}) = ${dg.toFixed(1)}°`, `${dg.toFixed(1)}° × 17.78 = ${fmt4(w64(dg / 0.05625))} → ${fmt4(r10(w64(dg / 0.05625)))} mils`] : [`${fmt4(m)} ${g > 0 ? '+' : '−'} ${w.gmAbs} (G-M ${w.gmEast ? 'EAST: add' : 'WEST: subtract'}) = ${fmt4(ga)} → ${fmt4(r10(ga))}`], why: 'The FDC works in grid mils. 1° = 17.78 mils (6400 mils = 360°).' }; }
@@ -1820,7 +1840,7 @@ legend { padding: 0 4px; font-weight: 650; }
     s1: () => `Your OP (magenta circle) reads about <b>${worldToGrid(st.w.op.x, st.w.op.y, 8)}</b>. Read right, then up.`,
     s2: () => `Count them in the binoculars: <b>${st.w.tgt.n} ${VEH[st.w.tgt.ty].many}</b>.`,
     s3: () => st.sheet.s3k === 'H' ? `Press Measure in the binoculars and read the side scale: about <b>${truth().Mh.toFixed(1)}</b> mils high.` : `Press Measure in the binoculars and read the bottom scale: about <b>${truth().M.toFixed(1)}</b> mils wide.`,
-    s4: () => { const c = sheetCheck(), M = c.M || c.tM; return `R = W ÷ M × 1000 = ${c.W} ÷ ${(+M).toFixed(1)} × 1000 ≈ <b>${Math.round(c.W / M * 1000)}</b> m.`; },
+    s4: () => { const c = sheetCheck(), M = c.M || c.tM; return `R = W ÷ M × 1000 = ${c.W} (from the cadre) ÷ ${(+M).toFixed(1)} (your line 3) × 1000 ≈ <b>${Math.round(c.W / M * 1000)}</b> m.`; },
     s5: () => `Press Compass, tap the vehicles, read the dial under the line: about <b>${(truth().mag * 0.05625).toFixed(0)}°</b> (${fmt4(truth().mag)} mils).`,
     s6: () => { const c = sheetCheck(), g = gm(), d = c.deg5 && c.m5 != null ? c.m5 : truth().mag * 0.05625, gd = st.w.gmAbs * 0.05625, gridD = d + (g > 0 ? gd : -gd); return g === 0 ? `No G-M step: line 5 in mils, nearest 10: about <b>${fmt4(r10(truth().az))}</b>.` : `${d.toFixed(1)}° ${g > 0 ? '+' : '−'} ${gd.toFixed(1)}° (G-M ${st.w.gmEast ? 'EAST: add' : 'WEST: subtract'}) = ${gridD.toFixed(1)}° × 17.78 ≈ <b>${fmt4(r10(gridD / 0.05625))}</b> mils.`; },
     s7: () => { const pp = plotPoint(), r = pp && proRead(pp); return r ? `Read the ✕ with the protractor: right ${r.e[0]}.${r.e[1]}, up ${r.n[0]}.${r.n[1]} → <b>${r.sqE}${r.e} ${r.sqN}${r.n}</b>.` : `Press Plot first: it marks ✕ from lines 6 and 4 and puts the protractor on it.`; }
@@ -1921,14 +1941,26 @@ legend { padding: 0 4px; font-weight: 650; }
   function renderMission() {
     const w = st.w, g = gm();
     const sp = VEH[w.tgt.ty];
-    $('mission').innerHTML = `<span>You <b>${w.fo}</b> → FDC <b>${w.fdcCs}</b></span><span>Target W <b>${sp.L} m wide · ${sp.H} m high</b></span><span>G-M <b>${g === 0 ? 'none' : `${(w.gmAbs * 0.05625).toFixed(1)}° (${w.gmAbs} mils) ${w.gmEast ? 'E' : 'W'}`}</b></span><a href="math/" id="mathLink">▶ Math video</a><button class="linkbtn" id="newCard">New card</button>`;
+    $('mission').innerHTML = `<span>You <b>${w.fo}</b> → FDC <b>${w.fdcCs}</b></span><span>Cadre gives W <b>${sp.L} m wide · ${sp.H} m high</b></span><span>G-M <b>${g === 0 ? 'none' : `${(w.gmAbs * 0.05625).toFixed(1)}° (${w.gmAbs} mils) ${w.gmEast ? 'E' : 'W'}`}</b></span><a href="math/" id="mathLink">▶ Math video</a><button class="linkbtn" id="newCard">New card</button>`;
     $('newCard').addEventListener('click', () => newCard());
     $('csLine').textContent = `${w.fo} → ${w.fdcCs} · fire net ${freqTxt(w.freq)} (set)`;
-    $('wsnote').textContent = `Given: the target is ${sp.L} m wide and ${sp.H} m high (W). Fill the lines in any order: the radio only needs line 7.`;
+    $('given').innerHTML = `<div class="gt">Given by the cadre before you start</div><span>Target size W</span><b>${sp.L} m wide · ${sp.H} m high</b><span>G-M angle</span><b>${g === 0 ? 'none' : `${(w.gmAbs * 0.05625).toFixed(1)}° (${w.gmAbs} mils) ${w.gmEast ? 'EAST' : 'WEST'}`}</b>`;
+    $('wsnote').textContent = 'You do not measure W: the cadre tells you. You measure M (line 3) in the binoculars, then R = W ÷ M × 1000. Fill the lines in any order: the radio only needs line 7.';
     $('magTxt').textContent = g === 0 ? 'compass (grid)' : 'compass';
     $('s6').placeholder = g === 0 ? 'same as 5' : `5 ${w.gmEast ? '+' : '−'} ${w.gmAbs}`;
     $('mapNote').textContent = `Grid squares 1,000 m · contours 10 m · G-M angle ${g === 0 ? 'none' : `${w.gmAbs} mils (${(w.gmAbs * 0.05625).toFixed(1)}°) ${w.gmEast ? 'EAST' : 'WEST'}`} · card #${st.seed}`;
   }
+  // the stage at the top shows what the step needs: the 3D view or the map
+  const STAGE = { op: 'map', tloc: 'map', find: 'view', size: 'view', appsize: 'view', mag: 'view', shot: 'view', wait: 'view', adj: 'view', ffe: 'view', eom: 'view' };
+  function setStage(m) {
+    st.stage = m;
+    $('paneView').hidden = m !== 'view'; $('paneMap').hidden = m !== 'map';
+    $('stView').setAttribute('aria-selected', String(m === 'view')); $('stMap').setAttribute('aria-selected', String(m === 'map'));
+    if (m === 'map') { sizeMap(); drawMap(); } else { sizeView(); V.dirty = true; kick(); }
+    requestAnimationFrame(() => document.documentElement.style.setProperty('--stick', ($('viewCard').offsetHeight + 51) + 'px'));
+  }
+  $('stView').addEventListener('click', () => setStage('view'));
+  $('stMap').addEventListener('click', () => setStage('map'));
   // tabs: Guided moves you to the tab where the next step is
   function setTab(t) {
     st.tab = t;
@@ -1957,6 +1989,7 @@ legend { padding: 0 4px; font-weight: 650; }
     placeTip(cd);
     document.querySelectorAll('#phases li').forEach((li, i) => { li.className = i < pi ? 'done' : i === pi ? 'now' : ''; });
     if (guidedOn()) { const cat = pi <= 0 ? 'locate' : 'radio'; if (cat !== st.lastCat) { st.lastCat = cat; setTab(cat); } }
+    if (guidedOn()) { const gs = gStep(); if (gs !== st.stageStep) { st.stageStep = gs; if (STAGE[gs] && STAGE[gs] !== st.stage) setStage(STAGE[gs]); } }
     renderPal(); hints(); renderScore(); renderAck();
     $('endBar').hidden = !(st.examOn && st.running);
     $('btnRef').disabled = st.examOn && st.running;
@@ -1972,7 +2005,7 @@ legend { padding: 0 4px; font-weight: 650; }
       const w = genWorld(st.seed); st.w = w; MV.img = null;
       st.bursts = []; st.draft = []; st.ack = null; st.seen = false; st.plot = null; st.ended = false; st.freq = w.freq; st.cmp = false;
       ['s1', 's2n', 's2t', 's3', 's4', 's5', 's6', 's7'].forEach(id => { $(id).value = ''; }); $('s3k').value = 'L'; $('s5u').value = 'D';
-      st.palKey = ''; st.lastCat = ''; st.tipStep = ''; st.measured = null; setTab('locate'); $('radioDot').hidden = true;
+      st.palKey = ''; st.lastCat = ''; st.tipStep = ''; st.stageStep = ''; st.measured = null; setTab('locate'); $('radioDot').hidden = true;
       $('log').innerHTML = ''; renderDraft();
       newFdc();
       const tr = truth();
@@ -1980,7 +2013,7 @@ legend { padding: 0 4px; font-weight: 650; }
       const off = (w.r() < 0.5 ? -1 : 1) * (150 + w.r() * 200);
       setView(tr.az + off, (groundAt(w, w.tgt.x, w.tgt.y) - w.eyeZ) / tr.d + 0.04);
       renderPal(); renderMission();
-      sizeMap(); fitMap();
+      setStage('map'); sizeMap(); fitMap();
       st.pro = null; proOn(guidedOn() ? 'op' : null, guidedOn());
       st.t0 = performance.now(); st.running = true;
       $('busy').hidden = true; $('measBtn').hidden = !st.bino;
@@ -1996,7 +2029,7 @@ legend { padding: 0 4px; font-weight: 650; }
   function renderIntro() {
     const items = [
       'The clock starts when you press Start. Run ends at END OF MISSION or at 10:00.',
-      'Phase 1: fill the worksheet in any order. The target size W is given on the mission line. OP grid (protractor), target count and type, apparent size M (Measure in the binoculars), range = W ÷ M × 1000, compass direction (Compass), grid direction (± G-M angle, then mils), target grid (Plot).',
+      'Phase 1: fill the worksheet in any order. The cadre gives you the target size W and the G-M angle (box at the top of the worksheet); you measure M. OP grid (protractor), target count and type, apparent size M (Measure in the binoculars), range = W ÷ M × 1000, compass direction (Compass), grid direction (± G-M angle, then mils), target grid (Plot).',
       `Phase 2: the radio is already on the fire net. Send three transmissions built from word chips, all within ${cfg.cffMin}:00.`,
       `Phase 3: bracket ADD/DROP 400 → 200 → 100 → 50 + FIRE FOR EFFECT. Each correction within ${cfg.corrSec} s of the impact; fire for effect after 6 adjusting rounds or fewer, within 50 m of the target.`,
       'Phase 4: END OF MISSION with the surveillance you actually see.',
