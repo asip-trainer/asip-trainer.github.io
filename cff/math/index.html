@@ -67,7 +67,7 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
         <p>The trainer lays the scale for you: "◎ OP" and "✕ Plot" under the map.</p></section>
       <section><h3>2 · Range from the mil relation</h3>
         <div class="eq">W = R × M  →  R = W ÷ M × 1000<br>7.4 m ÷ 5 mils × 1000 = 1,480 m</div>
-        <p><b>W is given to you by the cadre</b> before you start (width and height): you never measure it. You measure M: press Measure in the binoculars and read the small scale at the left (width on the bottom, height on the side), then use the matching W.</p></section>
+        <p><b>W is given to you by the cadre</b> before you start (width and height): you never measure it. You measure M: press Measure in the binoculars: the vehicle's left end sits on the vertical scale and its bottom on the horizontal scale (small tick 5 mils, number every 10). Read the width on the horizontal scale or the height on the vertical scale, then use the matching W.</p></section>
       <section><h3>3 · Magnetic → grid direction</h3>
         <div class="eq">G-M angle EAST: add · WEST: subtract<br>mils: 0300 + 120 = 0420 (to the nearest 10)<br>degrees: 16.9° + 6.8° = 23.6° × 17.78 = 420 mils</div>
         <p>Read the compass: press Compass in the trainer, tap the vehicles, read the dial under the line (degrees outside, mils inside).</p></section>
@@ -85,7 +85,7 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 </main>
 <script>
 (() => {
-  const CH = [['Introduction', 0], ['Read a grid with the protractor', 17.6], ['Range: W ÷ M', 50.4], ['Direction: magnetic → grid', 102.0], ['Target location: polar plot', 150.6], ['Deviation: the OT factor', 227.7], ['Range: bracketing', 258.4], ['Recap', 284.0]];
+  const CH = [['Introduction', 0], ['Read a grid with the protractor', 17.6], ['Range: W ÷ M', 50.4], ['Direction: magnetic → grid', 103.2], ['Target location: polar plot', 151.8], ['Deviation: the OT factor', 228.8], ['Range: bracketing', 259.5], ['Recap', 285.2]];
   const v = document.getElementById('vid'), box = document.getElementById('chaps');
   const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
   box.innerHTML = CH.map(([t, s], i) => `<button data-t="${s}"><b>${mmss(s)}</b><span>${i ? i + ' · ' : ''}${t}</span></button>`).join('');

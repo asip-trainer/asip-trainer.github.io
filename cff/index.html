@@ -115,20 +115,15 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .gtip::before { content: "DO"; display: inline-block; margin-right: 8px; padding: 0 6px; border-radius: 6px; background: #2a2208; color: var(--hint); font: 800 10.5px/1.7 var(--ui); letter-spacing: .08em; vertical-align: 1px; }
 .gtip b { font: 800 15px var(--mono); }
 .gtip strong { font-weight: 800; }
-.gtip .tk { display: inline-block; margin: 0 4px 2px 0; cursor: default; padding: 3px 8px; border-color: #c9b06a; background: #fff; color: #2a2208; font-size: 12px; line-height: 1.3; }
-.gtip .tk.dn { opacity: .38; text-decoration: line-through; }
 .gtip .tw { display: block; margin-top: 4px; font: 500 12.5px/1.4 var(--ui); color: #6b5a1e; }
 .gtip .tw em { margin-right: 4px; font-style: normal; font-weight: 800; }
-.gtip .tk.nx { border-color: #a87800; background: var(--hint); cursor: pointer; }
-.gtip .tx { display: inline-block; padding: 3px 9px; line-height: 1.3; border-radius: 8px; background: #2a2208; color: #fff; font: 700 12px var(--ui); opacity: .35; }
-.gtip .tx.nx { opacity: 1; box-shadow: 0 0 0 3px var(--hint); cursor: pointer; }
 @media (max-width: 1099px) and (min-height: 640px) { .gtip { scroll-margin-top: calc(var(--stick, 300px) + 10px); } body.kbd .gtip { scroll-margin-top: 70px; } }
 .coach .mission { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,.08); font: 650 12px/1.4 var(--mono); color: var(--muted); }
 .coach .mission b { color: var(--ink); }
 .coach .mission .linkbtn { margin-left: auto; font-family: var(--ui); }
 
 /* tool card with tabs */
-.tools { padding: 0; overflow: hidden; }
+.tools { padding: 0; overflow: clip; }
 .tabs { display: flex; border-bottom: 1px solid var(--line); background: var(--bg); }
 .tabs button { position: relative; flex: 1; padding: 11px 6px; border: 0; border-bottom: 2.5px solid transparent; background: none; font-size: 13.5px; font-weight: 650; color: var(--muted); cursor: pointer; }
 .tabs button[aria-selected="true"] { border-bottom-color: var(--accent); background: var(--surface); color: var(--ink); }
@@ -167,7 +162,7 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .wc.ok label b { border-color: var(--go); background: var(--go); color: var(--surface); }
 .fld { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
 .fld > span { font: 700 12px var(--mono); color: var(--muted); }
-.fld input, .fld select, .ed input, .ed select, .fq input { min-width: 0; width: 100%; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: 700 16px var(--mono); }
+.fld input, .fld select, .fq input { min-width: 0; width: 100%; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: 700 16px var(--mono); }
 .fld select { padding-inline: 4px; }
 #s3k, #s5u { flex: 0 0 auto; width: auto; }
 .fld .btn { flex: none; padding: 7px 14px; }
@@ -186,21 +181,15 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .log .fdc { align-self: flex-start; background: var(--accent-soft); }
 .log .sys { align-self: center; color: var(--muted); font: italic 500 12px var(--ui); }
 .log .who { display: block; font: 700 9.5px/1.2 var(--ui); letter-spacing: .08em; color: var(--muted); }
-.drow { display: flex; align-items: stretch; gap: 6px; margin-top: 8px; }
-.draft { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; min-height: 42px; padding: 6px; border: 1.5px dashed var(--line); border-radius: 10px; }
-.draft:empty::before { content: "Tap the words below · OVER is added for you"; padding-left: 4px; color: var(--muted); font-size: 13px; }
-.draft .tk { cursor: default; background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.drow .ibtn { height: auto; }
-.ed { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; padding: 10px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent-soft); }
-.ed .et { width: 100%; font: 700 11.5px var(--ui); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
-.ed input { width: 140px; }
-.ed select { width: auto; }
-.pal { display: grid; gap: 8px; margin-top: 10px; }
-.pg { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.pg .gl { width: 100%; font: 600 10.5px/1.2 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.tk { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); font: 700 12.5px/1.2 var(--mono); cursor: pointer; }
-.tk:active { transform: translateY(1px); }
-.txb { margin-top: 10px; }
+.rform { display: grid; gap: 6px; margin-top: 10px; }
+.fr { display: grid; grid-template-columns: 74px 1fr; align-items: center; gap: 8px; }
+.fl { font: 700 10.5px/1.2 var(--ui); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.fv { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font: 700 13.5px var(--mono); }
+.fv select, .fv input:not([type=checkbox]) { min-width: 0; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: 700 16px var(--mono); }
+#fGrid { width: 8.6em; } #fDir { width: 4.6em; } #fDm { width: 4.2em; }
+.ck { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; } .ck input { width: 22px; height: 22px; margin: 0; }
+.txb .btn.primary { flex: 1; }
+.txb { margin: 10px 0; }
 
 @media (pointer: coarse), (max-width: 640px) { .tk { padding: 11px 12px; } .ibtn { height: 40px; min-width: 40px; } .seg button { padding-block: 10px; } }
 
@@ -366,20 +355,15 @@ legend { padding: 0 4px; font-weight: 650; }
         <div class="rh" id="radioHead">
           <span class="cs" id="csLine"></span>
         </div>
+        <div class="rform" id="rform"></div>
+        <div class="txrow txb"><button class="btn primary" id="txBtn">Send</button></div>
         <div class="log" id="log" aria-live="polite"></div>
-        <div class="drow">
-          <div class="draft" id="draft"></div>
-          <button class="ibtn" id="bsp" aria-label="Remove the last word">⌫</button>
-        </div>
-        <div class="ed" id="ed" hidden></div>
-        <div class="pal" id="pal"></div>
-        <div class="txrow txb"><button class="btn" id="clr">Clear</button><button class="btn primary" id="txBtn">Transmit</button></div>
         <div class="readybar" id="endBar" hidden><button class="btn" id="endExam">End exam and grade now</button></div>
       </div>
 
       <div class="panel" data-panel="score" hidden>
         <ol class="score" id="score"></ol>
-        <p class="scnote muted">Built from the Adjust Indirect Fire task standards and the class steps. Your voice is replaced by word chips; the FDC answers in the radio log.</p>
+        <p class="scnote muted">Built from the Adjust Indirect Fire task standards and the class steps. Your voice is replaced by a short form; the FDC answers in the radio log.</p>
       </div>
     </section>
   </div>
@@ -463,12 +447,12 @@ legend { padding: 0 4px; font-weight: 650; }
   <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="refT">
     <h2 id="refT">Cheat sheet · Call for fire (CFFT)</h2>
     <button class="btn x" data-close="mRef" aria-label="Close">✕</button>
-    <a class="vidlink" id="refVid" href="math/">▶ Watch: the math, step by step (video, 5:05)</a>
+    <a class="vidlink" id="refVid" href="math/">▶ Watch: the math, step by step (video, 5:06)</a>
     <h3>Phase 1 · Locate the target (worksheet)</h3>
     <ol>
       <li><b>Observer location:</b> put the protractor on the OP (button under the map) and read right, then up: where the square's left grid line crosses the bottom scale, then where the point sits on the side scale. 8 digits = 10 m.</li>
       <li><b>Target:</b> through the binoculars, count the vehicles and name them (BMP, T-72, truck).</li>
-      <li><b>Apparent size M:</b> press Measure in the binoculars: one vehicle sits in the corner of the small scale at the left. Width on the bottom scale, height on the side scale (1 mil per tick).</li>
+      <li><b>Apparent size M:</b> press Measure in the binoculars: one vehicle's left end sits on the vertical scale, its bottom on the horizontal scale. Width on the horizontal scale, height on the vertical scale (1 mil per tick).</li>
       <li><b>Range (WORM):</b> W = R × M, so R = W ÷ M × 1000. <b>W is given to you by the cadre</b> before you start (width or height); you only measure M. Example: 7.4 m, M = 5 mils → 7.4 ÷ 5 × 1000 = 1,480 m.</li>
       <li><b>Compass direction:</b> press Compass, tap the middle of the group, read the dial under the line: degrees on the outer ring, mils on the red inner ring.</li>
       <li><b>Grid direction:</b> magnetic → grid: G-M angle <b>EAST: add</b>, <b>WEST: subtract</b>. Degrees × 17.78 = mils (6400 mils = 360°). Send direction in mils, to the nearest 10.</li>
@@ -478,7 +462,7 @@ legend { padding: 0 4px; font-weight: 650; }
     <p>The radio is already on the fire net. Check call signs: the FDC's first, then yours. The six elements: observer identification, warning order, target location, target description, method of engagement, method of fire and control.</p>
     <h3>Phase 3 · Call for fire: one transmission</h3>
     <p><code>Z57, THIS IS H44, ADJUST FIRE, GRID 4523 9671, 3 BMPs IN THE OPEN, ICM, WHEN READY, OVER</code></p>
-    <p>In order: observer ID, warning order, target location, target description, method of engagement, method of fire and control. OVER is added when you press Transmit. The FDC reads it back, then sends the MTO (unit, rounds, target number), SHOT and SPLASH (5 s before impact): nothing to answer, just watch the target.</p>
+    <p>In order: observer ID, warning order, target location, target description, method of engagement, method of fire and control. On the Radio tab it is a short form: pick who, the mission and the ammunition (grid and target come from your worksheet), then Send; OVER is added for you. The FDC reads it back, then sends the MTO (unit, rounds, target number), SHOT and SPLASH (5 s before impact): nothing to answer, just watch the target.</p>
     <div class="tbl"><table>
       <tr><th>Target</th><th>Ammunition (method of engagement)</th></tr>
       <tr><td>BMPs, T-72 tanks (armor)</td><td><code>ICM</code></td></tr>
@@ -809,7 +793,7 @@ legend { padding: 0 4px; font-weight: 650; }
   const HZN = 450, HZ = new Float32Array(HZN);
   for (let i = 0; i < HZN; i++) HZ[i] = 0.7 * (1 - Math.exp(-(i * 20) / 6000));
   const fov = () => st.bino ? 130 : 800;
-  const LS = { x: -44, y: 16 }; // corner of the fine scale, mils from the reticle centre (right, down)
+  const LS = { x: 0, y: 0 }; // Measure puts a vehicle's left end and bottom on the crossing of the two scales
   const camF = () => V.W / (fov() * MIL);
   // with the compass up, the aim point sits in the upper part of the view, above the dial
   const aimY = () => st.cmp ? Math.round((V.H - 112 * V.W / (V.cv.clientWidth || V.W)) * 0.5) : V.H / 2;
@@ -828,7 +812,6 @@ legend { padding: 0 4px; font-weight: 650; }
     V.img = V.ctx.createImageData(w, h); V.d32 = new Uint32Array(V.img.data.buffer);
     V.zb = new Float32Array(w * h); V.b32 = new Uint32Array(w * h); V.bz = new Float32Array(w * h);
     V.dirty = true; kick();
-    requestAnimationFrame(() => document.documentElement.style.setProperty('--stick', ($('viewCard').offsetHeight + 51) + 'px'));
   }
   function renderTerrain() {
     const w = st.w, Wd = V.W, Hd = V.H, f = camF(), hy = horizonY(), d = V.b32, zb = V.bz, SF = w.SF, col = w.col, tmax = w.tmax;
@@ -1009,37 +992,29 @@ legend { padding: 0 4px; font-weight: 650; }
         if (big) g.fillText(String(Math.abs(m)), x, cy - 15 * sc);
       }
       g.beginPath(); g.moveTo(cx, cy - 20 * pm); g.lineTo(cx, cy - 1.2 * pm); g.moveTo(cx, cy + 1.2 * pm); g.lineTo(cx, cy + 20 * pm); g.stroke();
-      // fine measuring scale at the left: put a vehicle in its corner, read length on the bottom, height on the side
-      const lx = cx + LS.x * pm, ly = cy + LS.y * pm;
-      g.beginPath(); g.moveTo(lx, ly); g.lineTo(lx + 10 * pm, ly); g.moveTo(lx, ly); g.lineTo(lx, ly - 10 * pm);
-      for (let m = 1; m <= 10; m++) { const l = (m % 5 ? 3.5 : 7) * sc; g.moveTo(lx + m * pm, ly); g.lineTo(lx + m * pm, ly + l); g.moveTo(lx, ly - m * pm); g.lineTo(lx - l, ly - m * pm); }
-      g.stroke();
-      g.save(); g.font = `700 ${Math.round(9.5 * sc)}px ui-monospace, Menlo, monospace`;
-      g.fillText('5', lx + 5 * pm, ly + 15 * sc); g.fillText('10', lx + 10 * pm, ly + 15 * sc); g.textAlign = 'right'; g.fillText('5', lx - 9 * sc, ly - 5 * pm); g.fillText('10', lx - 9 * sc, ly - 10 * pm);
-      g.restore();
       for (let m = -20; m <= 20; m += 5) { if (!m) continue; const y = cy - m * pm, big = m % 10 === 0; g.beginPath(); g.moveTo(cx - (big ? 6 : 3.5) * sc, y); g.lineTo(cx + (big ? 6 : 3.5) * sc, y); g.stroke(); if (big) { g.textAlign = 'left'; g.fillText(String(Math.abs(m)), cx + 9 * sc, y); g.textAlign = 'center'; } }
       if (guidedOn()) guideMarks(g, sc, pm);
       g.fillStyle = 'rgba(232,234,223,.85)'; g.font = `500 ${Math.round(11 * sc)}px system-ui, sans-serif`; g.textAlign = 'center';
       g.fillText('Tap the vehicles to center on them', cx, Hd - 9 * sc);
-      // close-up of the fine scale after Measure, so it can be read on a small screen
+      // close-up of the crossing after Measure, so it can be read on a small screen
       const ms = onScale();
       if (ms) {
-        const src = 14 * pm, D = Math.min(Hd * 0.74, Wd * 0.36), dx = cx + 8 * pm, dy = (Hd - D) / 2;
+        const src = 14 * pm, D = Math.min(Hd * 0.74, Wd * 0.36), dx = cx - 8 * pm - D, dy = (Hd - D) / 2;
         g.save(); g.imageSmoothingEnabled = true;
         g.drawImage(V.cv, ms.lx - 2 * pm, ms.ly - 12 * pm, src, src, dx, dy, D, D);
-        g.fillStyle = 'rgba(214,220,196,.62)'; g.fillRect(dx, dy, D, D);
-        // sharp redraw: the vehicle to scale and the scale with 1-mil ticks
+        g.fillStyle = 'rgba(214,220,196,.9)'; g.fillRect(dx, dy, D, D);
+        // sharp redraw: the vehicle to scale on the reticle's own scales (small tick 5 mils, number every 10)
         const k = D / 14, X0 = dx + 2 * k, Y0 = dy + 12 * k, L = ms.len / pm * k, Hh = ms.hgt / pm * k, sp = VEH[st.w.tgt.ty];
         g.fillStyle = '#3d4129';
         if (sp.armor) { const hh = Hh * sp.hull / sp.H; g.fillRect(X0, Y0 - hh, L, hh); g.fillRect(X0 + L * 0.28, Y0 - Hh, L * 0.4, Hh - hh + 1); }
         else { g.fillRect(X0, Y0 - Hh, L * 0.7, Hh); g.fillRect(X0 + L * 0.72, Y0 - Hh * 0.86, L * 0.28, Hh * 0.86); }
         g.strokeStyle = '#0a0c08'; g.fillStyle = '#0a0c08'; g.lineWidth = Math.max(1.2, 1.4 * sc);
-        g.beginPath(); g.moveTo(X0, Y0); g.lineTo(X0 + 10 * k, Y0); g.moveTo(X0, Y0); g.lineTo(X0, Y0 - 10 * k);
-        for (let m = 1; m <= 10; m++) { const l = (m % 5 ? 0.35 : 0.7) * k; g.moveTo(X0 + m * k, Y0); g.lineTo(X0 + m * k, Y0 + l); g.moveTo(X0, Y0 - m * k); g.lineTo(X0 - l, Y0 - m * k); }
+        g.beginPath(); g.moveTo(dx, Y0); g.lineTo(dx + D, Y0); g.moveTo(X0, dy); g.lineTo(X0, dy + D);
+        for (const m of [5, 10]) { const l = (m === 10 ? 0.7 : 0.4) * k; g.moveTo(X0 + m * k, Y0 - l); g.lineTo(X0 + m * k, Y0 + l); g.moveTo(X0 - l, Y0 - m * k); g.lineTo(X0 + l, Y0 - m * k); }
         g.stroke();
-        g.font = `700 ${Math.round(Math.max(10, 0.55 * k / sc) * sc)}px ui-monospace, Menlo, monospace`; g.textAlign = 'center'; g.textBaseline = 'top';
-        for (const m of [0, 5, 10]) g.fillText(String(m), X0 + m * k, Y0 + 0.85 * k);
-        g.textAlign = 'right'; g.textBaseline = 'middle'; for (const m of [5, 10]) g.fillText(String(m), X0 - 0.9 * k, Y0 - m * k);
+        g.font = `700 ${Math.round(Math.max(10, 0.55 * k / sc) * sc)}px ui-monospace, Menlo, monospace`; g.textAlign = 'center'; g.textBaseline = 'bottom';
+        g.fillText('10', X0 + 10 * k, Y0 - 0.9 * k);
+        g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText('10', X0 + 0.9 * k, Y0 - 10 * k);
         g.strokeStyle = '#ffc53d'; g.lineWidth = 2 * sc; g.strokeRect(dx, dy, D, D);
         g.restore();
         g.save(); g.fillStyle = '#2a2208'; g.font = `800 ${Math.round(11 * sc)}px system-ui, sans-serif`; g.textAlign = 'right'; g.textBaseline = 'top'; g.fillText(`CLOSE-UP ×${Math.round(D / src)}`, dx + D - 6 * sc, dy + 5 * sc); g.restore();
@@ -1047,7 +1022,7 @@ legend { padding: 0 4px; font-weight: 650; }
     }
     g.restore();
   }
-  // the measured vehicle, if it still sits in the corner of the fine scale (canvas px)
+  // the measured vehicle, if it still sits on the crossing of the scales (canvas px)
   function onScale() {
     if (st.measured == null || !st.bino) return null;
     const v = st.w.tgt.veh[st.measured], p = proj(v.x, v.y, v.z), sp = VEH[st.w.tgt.ty], rel = v.head - p.a, pm = camF() * MIL;
@@ -1090,9 +1065,9 @@ legend { padding: 0 4px; font-weight: 650; }
     if (s === 'size') T.veh.forEach((v, i) => { const p = proj(v.x, v.y, v.z + 3.2); hudTag(g, String(i + 1), p.sx, p.sy - 4 * sc, sc); });
     const ms = s === 'appsize' && onScale();
     if (ms) {
-      // mark where the vehicle's far end and top meet the fine scale
+      // mark where the vehicle's far end and top meet the scales
       g.beginPath(); g.moveTo(ms.lx + ms.len, ms.ly - 4 * sc); g.lineTo(ms.lx + ms.len, ms.ly + 10 * sc); g.moveTo(ms.lx + 4 * sc, ms.ly - ms.hgt); g.lineTo(ms.lx - 10 * sc, ms.ly - ms.hgt); g.stroke();
-      hudTag(g, `${(ms.len / pm).toFixed(1)} wide · ${(ms.hgt / pm).toFixed(1)} high`, ms.lx + 5 * pm, ms.ly + 34 * sc, sc);
+      hudTag(g, `about ${Math.round(ms.len / pm)} wide · ${Math.round(ms.hgt / pm)} high`, ms.lx + 24 * pm, ms.ly + 34 * sc, sc);
     }
     if ((s === 'adj' || s === 'eom') && F.lastBurst && s === 'adj') {
       const b = F.lastBurst, pb = proj(b.x, b.y, groundAt(w, b.x, b.y)), pt = proj(T.x, T.y, groundAt(w, T.x, T.y)), sp = spotOf(b);
@@ -1117,7 +1092,7 @@ legend { padding: 0 4px; font-weight: 650; }
     if (Math.abs(el - st.pitch) * camF() > V.H * 0.42) return;
     st.seen = true; refresh();
   }
-  // Measure swings the view so a vehicle sits in the corner of the small scale; the compass and spotting want the target back in the centre
+  // Measure swings the view so a vehicle sits on the crossing of the scales; the compass and spotting want the target back in the centre
   function unswing() { if (st.measured == null) return; const t = truth(); st.measured = null; st.lastAim = { az: t.az, pitch: (groundAt(st.w, st.w.tgt.x, st.w.tgt.y) + 1 - st.w.eyeZ) / t.d }; setView(st.lastAim.az, st.lastAim.pitch); }
   function setCmp(on) { if (on) unswing(); st.cmp = on; $('cmpBtn').setAttribute('aria-pressed', String(on)); if (on && st.bino) setBino(false); V.dirty = true; kick(); refresh(); }
   function setBino(on) { if (!on) st.lastAim = { az: st.az, pitch: st.pitch }; if (on && st.cmp) { st.cmp = false; $('cmpBtn').setAttribute('aria-pressed', 'false'); } st.bino = on; $('measBtn').hidden = !on; $('binoBtn').setAttribute('aria-pressed', String(on)); V.dirty = true; kick(); checkSeen(); refresh(); }
@@ -1155,7 +1130,7 @@ legend { padding: 0 4px; font-weight: 650; }
     rep('panR', () => setView(st.az + (st.bino ? 1 : 25), st.pitch, !st.bino));
     $('binoBtn').addEventListener('click', () => setBino(!st.bino));
     $('cmpBtn').addEventListener('click', () => setCmp(!st.cmp));
-    // Measure: swing the binoculars so the vehicle nearest the centre sits in the corner of the fine scale
+    // Measure: swing the binoculars so the vehicle nearest the centre has its left end on the vertical scale and its bottom on the horizontal one
     $('measBtn').addEventListener('click', () => {
       const w = st.w, op = w.op; let best = null;
       w.tgt.veh.forEach((v, i) => { const a = azOf(v.x - op.x, v.y - op.y), d = Math.abs(dm(a, st.az)); if (!best || d < best.d) best = { v, i, d }; });
@@ -1448,18 +1423,7 @@ legend { padding: 0 4px; font-weight: 650; }
     return { g, x, opd, td, M, Rg, mag, ga, W, tM, deg5, m5 };
   }
 
-  // ---------- radio: word chips
-  // the words on offer follow the mission phase (each set still has wrong choices in it)
-  function palSet() {
-    const ph = F.phase;
-    if (ph === 'cff') return [
-      ['Who · what you want', ['call', 'callr', 'af', 'ffe']],
-      ['Where', ['grid', 'dir']],
-      ['What · with what · when', ['tgt', 'am_heq', 'am_vt', 'am_icm', 'am_smk', 'wr']]];
-    if (ph === 'eom' || ph === 'done') return [['End of mission', ['eom', 'surv']]];
-    return [['Corrections', ['dir', 'L', 'R', 'A', 'D', 'ffe']], ['End of mission', ['eom', 'surv']]];
-  }
-  const VAL = { grid: 1, dir: 1, tgt: 1, L: 1, R: 1, A: 1, D: 1, surv: 1 };
+  // ---------- radio: one form per phase (fill in the blanks, pick from the lists); it goes out as one transmission
   function chipLabel(k) {
     const w = st.w;
     return ({ call: `${w.fdcCs}, THIS IS ${w.fo}`, callr: `${w.fo}, THIS IS ${w.fdcCs}`, af: 'ADJUST FIRE', ffe: 'FIRE FOR EFFECT', grid: 'GRID …', dir: 'DIRECTION …', tgt: 'TARGET …', wr: 'WHEN READY', L: 'LEFT …', R: 'RIGHT …', A: 'ADD …', D: 'DROP …', eom: 'END OF MISSION', surv: 'SURVEILLANCE …' })[k] || AMMO[k];
@@ -1475,13 +1439,87 @@ legend { padding: 0 4px; font-weight: 650; }
     }
   }
   const txText = toks => toks.map(tokLabel).join(', ');
-  function renderPal() {
-    const set = palSet(), key = JSON.stringify(set) + st.w.fo + st.w.fdcCs;
-    if (key === st.palKey) return;
-    st.palKey = key;
-    $('pal').innerHTML = set.map(([g, ks]) => `<div class="pg">${g ? `<span class="gl">${g}</span>` : ''}${ks.map(k => `<button class="tk" data-k="${k}">${esc(chipLabel(k))}</button>`).join('')}</div>`).join('');
+  const pick = (id, opts, v) => `<select id="${id}">${opts.map(o => `<option value="${esc(String(o[0]))}"${String(o[0]) === String(v) ? ' selected' : ''}>${esc(o[1])}</option>`).join('')}</select>`;
+  const frow = (lbl, html) => `<div class="fr"><span class="fl">${lbl}</span><div class="fv">${html}</div></div>`;
+  const NA = 'autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"';
+  const formKind = () => F.phase === 'cff' ? 'cff' : F.phase === 'eom' || F.phase === 'done' ? 'eom' : F.dir == null ? 'adjd' : 'adj';
+  function renderForm() {
+    const kind = formKind(), key = kind + st.w.fo + st.w.fdcCs;
+    if (key === st.formKey) return;
+    st.formKey = key;
+    const ch = [['', '— choose —']], RL = [50, 100, 200, 400, 800, 1600].map(m => [m, m]);
+    let h, send;
+    if (kind === 'cff') {
+      h = frow('Who', pick('fCs', [...ch, ['call', chipLabel('call')], ['callr', chipLabel('callr')]], ''))
+        + frow('Mission', pick('fWo', [...ch, ['af', 'ADJUST FIRE'], ['ffe', 'FIRE FOR EFFECT']], ''))
+        + frow('Where', `GRID <input id="fGrid" inputmode="numeric" maxlength="11" placeholder="line 7" ${NA} data-auto="1">`)
+        + frow('What', pick('fN', [1, 2, 3, 4, 5].map(n => [n, n]), 1) + pick('fTy', [['BMP', 'BMPs'], ['T72', 'T-72 TANKS'], ['TRK', 'TRUCKS']], 'BMP') + '<span>IN THE OPEN</span>')
+        + frow('Ammo', pick('fAm', [...ch, ...Object.entries(AMMO)], '') + '<span>WHEN READY</span>');
+      send = 'Send the call for fire';
+    } else if (kind === 'eom') {
+      h = frow('Result', '<span>END OF MISSION</span>' + pick('fRes', [['', '— what you saw —'], ...RESULTS.map(r => [r, r])], ''))
+        + frow('Casualties', pick('fCas', [[0, 'no estimate'], ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => [n, `${n} CASUALT${n === 1 ? 'Y' : 'IES'}`])], 0));
+      send = 'Send end of mission';
+    } else {
+      h = (kind === 'adjd' ? frow('Direction', `DIRECTION <input id="fDir" inputmode="numeric" maxlength="4" placeholder="line 6" ${NA} data-auto="1">`) : '')
+        + frow('Deviation', pick('fDv', [['', '— none —'], ['L', 'LEFT'], ['R', 'RIGHT']], '') + `<input id="fDm" inputmode="numeric" maxlength="4" placeholder="m" ${NA}>`)
+        + frow('Range', pick('fRk', [['', '— none —'], ['A', 'ADD'], ['D', 'DROP']], '') + pick('fRm', [['', 'm'], ...RL], ''))
+        + frow('', '<label class="ck"><input type="checkbox" id="fFfe"> FIRE FOR EFFECT</label>');
+      send = 'Send the correction';
+    }
+    $('rform').innerHTML = h; $('txBtn').textContent = send;
+    syncForm();
   }
-  function renderDraft() { $('draft').innerHTML = st.draft.map(t => `<span class="tk">${esc(tokLabel(t))}</span>`).join(''); }
+  // blanks that come from the worksheet follow it until you change them (DIRECTION only in Guided: in the exam, remembering it is part of the task)
+  function syncForm() {
+    const s = st.sheet, set = (id, v) => { const e = $(id); if (e && e.dataset.auto !== '0' && document.activeElement !== e) e.value = v; };
+    set('fGrid', digits(s.s7)); if (guidedOn()) set('fDir', digits(s.s6)); set('fN', s.s2n || 1); set('fTy', s.s2t || 'BMP');
+  }
+  // the form as words; null (with a note) while a blank is still empty
+  function formToks() {
+    const v = id => $(id) ? $(id).value.trim() : '', kind = formKind();
+    if (kind === 'cff') {
+      const miss = [['fCs', 'who is calling'], ['fWo', 'the mission'], ['fGrid', 'the grid'], ['fAm', 'the ammunition']].find(m => !v(m[0]));
+      if (miss) { note(`Fill in ${miss[1]} first.`); want($(miss[0])); return null; }
+      const d = digits(v('fGrid')); if (![6, 8].includes(d.length)) { note('A grid is 6 or 8 digits.'); want($('fGrid')); return null; }
+      return [{ k: v('fCs') }, { k: v('fWo') }, { k: 'grid', v: d }, { k: 'tgt', n: +v('fN'), ty: v('fTy'), act: 'IN THE OPEN' }, { k: v('fAm') }, { k: 'wr' }];
+    }
+    if (kind === 'eom') {
+      if (!v('fRes')) { note('Choose what you saw.'); want($('fRes')); return null; }
+      return [{ k: 'eom' }, { k: 'surv', res: v('fRes'), cas: +v('fCas') }];
+    }
+    const t = [];
+    if (v('fDir')) { const d = num(v('fDir')); if (d == null || d > 6400) { note('Direction is 0–6400 mils.'); want($('fDir')); return null; } t.push({ k: 'dir', v: Math.round(d) }); }
+    if (v('fDv') || v('fDm')) { const m = num(v('fDm')); if (!v('fDv') || !m || m > 3000) { note('Deviation: LEFT or RIGHT, and how many meters.'); want($(v('fDv') ? 'fDm' : 'fDv')); return null; } t.push({ k: v('fDv'), v: Math.round(m) }); }
+    if (v('fRk') || v('fRm')) { if (!v('fRk') || !v('fRm')) { note('Range: ADD or DROP, and how much.'); want($(v('fRk') ? 'fRm' : 'fRk')); return null; } t.push({ k: v('fRk'), v: +v('fRm') }); }
+    if ($('fFfe').checked) t.push({ k: 'ffe' });
+    if (!t.length || (t.length === 1 && t[0].k === 'dir')) { note('Fill in the correction first.'); want($('fDv')); return null; }
+    return t;
+  }
+  // Guided: what each blank should hold now, and why
+  function formWant() {
+    const s = guidedOn() ? gStep() : '', T = st.w.tgt;
+    if (s === 'call') return { want: { fCs: 'call', fWo: 'af', fAm: ammoBest(T.ty) }, why: { fCs: 'Who: the FDC\'s call sign first, then yours.', fWo: 'Mission: ADJUST FIRE. A map grid gets adjusting rounds first.', fAm: VEH[T.ty].armor ? 'Ammo: armor → ICM.' : 'Ammo: trucks → HE QUICK.' } };
+    if (s === 'adj') {
+      const x = expCorr(), dv = `Deviation: ${Math.abs(x.sp.devM).toFixed(0)} mils × OT factor ${x.t.otf} = ${x.dv} m → ${x.dev ? `${x.dev.k === 'L' ? 'LEFT' : 'RIGHT'} ${x.dev.m}` : 'under 30, leave it out'}.`, rg = `Range: ${x.why}`;
+      return { want: { fDv: x.dev ? x.dev.k : '', fDm: x.dev ? x.dev.m : '', fRk: x.rng ? x.rng.k : '', fRm: x.rng ? x.rng.m : '', fFfe: !!x.ffe }, why: { fDv: dv, fDm: dv, fRk: rg, fRm: rg, fFfe: rg } };
+    }
+    if (s === 'eom') return { want: { fRes: F.result }, why: { fRes: `Report what you see: ${F.result}${F.killed ? ` (${F.killed} of ${T.n} burning)` : ''}.` } };
+    return null;
+  }
+  function fieldBad(id, want) {
+    const e = $(id); if (!e) return false;
+    if (e.type === 'checkbox') return e.checked !== want;
+    if (id === 'fDm' && want !== '') { const v = num(e.value); return v == null || Math.abs(v - want) > (expCorr().t.otf >= 3 ? 20 : 10); }
+    return String(e.value).trim() !== String(want);
+  }
+  // Guided: the first blank that is wrong, with the reason; the worksheet values are checked too
+  function gFormCheck(toks) {
+    const f = formWant(); if (!f) return null;
+    const id = Object.keys(f.want).find(k => fieldBad(k, f.want[k])); if (id) return [f.why[id], id];
+    for (const t of toks) if (['grid', 'tgt', 'dir'].includes(t.k)) { const m = gCheckValue(t); if (m) return [m, { grid: 'fGrid', tgt: 'fN', dir: 'fDir' }[t.k]]; }
+    return null;
+  }
   function logLine(who, text) {
     const el = document.createElement('div'); el.className = 'ln ' + who;
     el.innerHTML = who === 'sys' ? esc(text) : `<span class="who">${who === 'fo' ? st.w.fo + ' (you)' : st.w.fdcCs + ' (FDC)'}</span>${esc(text)}`;
@@ -1489,67 +1527,14 @@ legend { padding: 0 4px; font-weight: 650; }
     if (who !== 'fo' && $('radioPanel').hidden) $('radioDot').hidden = false;
   }
 
-  function openEditor(k) {
-    const w = st.w, s = st.sheet; st.ed = k;
-    const sel = (id, opts, v) => `<select id="${id}">${opts.map(o => `<option value="${esc(o[0])}"${String(o[0]) === String(v) ? ' selected' : ''}>${esc(o[1])}</option>`).join('')}</select>`;
-    let h = `<span class="et">${esc(chipLabel(k).replace(' …', ''))}</span>`;
-    const na = 'autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"';
-    if (k === 'grid') h += `<input id="edv" inputmode="numeric" maxlength="11" placeholder="6 or 8 digits" ${na} value="${esc(digits(s.s7))}">`;
-    else if (k === 'dir') h += `<input id="edv" inputmode="numeric" maxlength="4" placeholder="grid mils" ${na} value="${esc(digits(s.s6))}">`;
-    else if (k === 'L' || k === 'R' || k === 'A' || k === 'D') h += `<input id="edv" inputmode="numeric" maxlength="4" placeholder="meters" ${na}>`;
-    else if (k === 'tgt') h += sel('edn', [1, 2, 3, 4, 5].map(n => [n, n]), s.s2n || 1) + sel('edt', [['BMP', 'BMPs'], ['T72', 'T-72 TANKS'], ['TRK', 'TRUCKS']], s.s2t || 'BMP') + sel('eda', [['IN THE OPEN', 'IN THE OPEN'], ['DUG IN', 'DUG IN'], ['MOVING', 'MOVING']], 'IN THE OPEN');
-    else if (k === 'surv') h += sel('edr', RESULTS.map(r => [r, r]), RESULTS[0]) + sel('edc', [[0, 'no casualty estimate'], ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => [n, `${n} CASUALT${n === 1 ? 'Y' : 'IES'}`])], 0);
-    h += `<button class="btn primary" id="edOk">Add</button><button class="btn" id="edNo">Cancel</button>`;
-    const ed = $('ed'); ed.innerHTML = h; ed.hidden = false;
-    const inp = $('edv'); if (inp) { inp.focus(); inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); edOk(); } }); }
-    $('edOk').addEventListener('click', edOk);
-    $('edNo').addEventListener('click', closeEditor);
-    refresh();
-  }
-  // Guided: GRID, DIRECTION and TARGET come from the worksheet, the surveillance from what you saw
-  function preTok(k) {
-    const s = st.sheet;
-    if (k === 'grid') { const d = digits(s.s7); return [6, 8].includes(d.length) && { k, v: d }; }
-    if (k === 'dir') { const v = num(s.s6); return v != null && v <= 6400 && { k, v: Math.round(v) }; }
-    if (k === 'tgt') return !!(s.s2n && s.s2t) && { k, n: +s.s2n, ty: s.s2t, act: 'IN THE OPEN' };
-    if (k === 'surv') return { k, res: F.result, cas: F.killed ? st.w.cas : 0 };
-    return null;
-  }
-  function closeEditor() { st.ed = null; $('ed').hidden = true; $('ed').innerHTML = ''; refresh(); }
-  function edOk() {
-    const k = st.ed; let t = { k };
-    if (k === 'grid') { const d = digits($('edv').value); if (![6, 8].includes(d.length)) { note('A grid is 6 or 8 digits.'); return; } t.v = d; }
-    else if (k === 'dir') { const v = num($('edv').value); if (v == null || v > 6400) { note('Direction is 0–6400 mils.'); return; } t.v = Math.round(v); }
-    else if (k === 'L' || k === 'R' || k === 'A' || k === 'D') { const v = num($('edv').value); if (!v || v > 3000) { note('Corrections are in meters, e.g. 400.'); return; } t.v = Math.round(v); }
-    else if (k === 'tgt') { t.n = +$('edn').value; t.ty = $('edt').value; t.act = $('eda').value; }
-    else if (k === 'surv') { t.res = $('edr').value; t.cas = +$('edc').value; }
-    if (guidedOn()) { const bad = gCheckValue(t); if (bad) { note(bad); shake($('edOk')); return; } }
-    st.draft.push(t); closeEditor(); renderDraft(); refresh();
-  }
-  $('pal').addEventListener('click', e => {
-    const b = e.target.closest('.tk'); if (!b || !st.w) return;
-    const k = b.dataset.k;
-    if (guidedOn()) {
-      const ex = gExpect();
-      if (ex.block) { note(ex.block); shake(b); want(ex.el && $(ex.el)); return; }
-      const need = ex.seq[st.draft.length];
-      if (need == null) { note('That transmission is complete. Press Transmit.'); shake(b); want($('txBtn')); return; }
-      if (k !== need) { note(`Next comes <b>${esc(chipLabel(need))}</b>. ${gWhy(need)}`); shake(b); want(document.querySelector(`#pal .tk[data-k="${need}"]`)); return; }
-    }
-    const pre = guidedOn() && preTok(k);
-    if (pre && !gCheckValue(pre)) { st.draft.push(pre); renderDraft(); refresh(); }
-    else if (VAL[k]) openEditor(k); else { st.draft.push({ k }); renderDraft(); refresh(); }
+  $('rform').addEventListener('input', e => { e.target.dataset.auto = '0'; hints(); });
+  $('rform').addEventListener('change', e => {
+    e.target.dataset.auto = '0'; hints();
+    // Guided: bring the next blank to fill (or Send) into view
+    const nx = guidedOn() && (document.querySelector('#rform .hint') || ($('txBtn').classList.contains('hint') ? $('txBtn') : null));
+    if (nx) setTimeout(() => nx.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 80);
   });
-  $('bsp').addEventListener('click', () => { st.draft.pop(); renderDraft(); refresh(); });
-  $('clr').addEventListener('click', () => { st.draft = []; renderDraft(); refresh(); });
   $('txBtn').addEventListener('click', transmit);
-  // Guided: tap the next word in the yellow box (same as finding it in the palette), or its Transmit
-  $('gtip').addEventListener('click', e => {
-    const c = e.target.closest('.nx'); if (!c || !guidedOn()) return;
-    if (c.classList.contains('tx')) { transmit(); return; }
-    const ex = gExpect(), b = ex.seq && document.querySelector(`#pal .tk[data-k="${ex.seq[st.draft.length]}"]`); if (b) b.click();
-    setTimeout(() => { if (!$('gtip').hidden) $('gtip').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60);
-  });
 
   // ---------- FDC
   function newFdc() {
@@ -1563,15 +1548,11 @@ legend { padding: 0 4px; font-weight: 650; }
   function sayAgain(why, cff) { fdcSay('SAY AGAIN.'); R.sayAgain.push({ why, cff: !!cff, phase: F.phase }); if (st.examOn) logLine('sys', '(the FDC could not copy that transmission)'); refresh(); }
   function transmit() {
     if (!st.w || st.ended) return;
-    if (st.ed) { note('Finish the word you are editing first (Add or Cancel).'); return; }
-    const toks = st.draft.slice(); if (!toks.length) { note('Build a transmission first: tap the words below.'); return; }
-    if (guidedOn()) {
-      const ex = gExpect();
-      if (ex.block) { note(ex.block); return; }
-      if (toks.length < ex.seq.length) { const need = ex.seq[toks.length]; note(`Not yet: <b>${esc(chipLabel(need))}</b> still has to go in.`); want(document.querySelector(`#pal .tk[data-k="${need}"]`)); return; }
-    }
+    if (guidedOn() && gExpect().block) { note(gExpect().block); return; }
+    const toks = formToks(); if (!toks) return;
+    if (guidedOn()) { const bad = gFormCheck(toks); if (bad) { note(bad[0]); if ($(bad[1])) { shake($(bad[1])); want($(bad[1])); } return; } }
     logLine('fo', txText(toks) + ', OVER');
-    st.draft = []; renderDraft();
+    st.formKey = ''; renderForm();
     if (st.freq !== st.w.freq) { R.noAnswer++; later(1600, () => logLine('sys', '(no answer: nobody on this frequency)')); refresh(); return; }
     R.answered = true;
     const tx = performance.now();
@@ -1731,15 +1712,10 @@ legend { padding: 0 4px; font-weight: 650; }
   }
   function gExpect() {
     const s = gStep(), T = st.w.tgt;
-    if (s === 'call') return { seq: ['call', 'af', 'grid', 'tgt', ammoBest(T.ty), 'wr'] };
-    if (s === 'adj') { const e = expCorr(); return { seq: [...(e.needDir ? ['dir'] : []), ...(e.dev ? [e.dev.k] : []), ...(e.rng ? [e.rng.k] : []), ...(e.ffe ? ['ffe'] : [])] }; }
-    if (s === 'eom') return { seq: ['eom', 'surv'] };
+    if (s === 'call' || s === 'adj' || s === 'eom') return {};
     const p1 = ['First get the target grid on line 7. Lines 1–6 help you work it out, in any order.', 's7'];
     const where = { op: p1, find: p1, size: p1, appsize: p1, range: p1, mag: p1, gm: p1, tloc: p1, rx: ['Wait for the FDC to read it back.', null], shot: ['The round is on the way. Watch the target.', null], wait: ['Wait for the splash, then spot the round.', null], ffe: ['Fire for effect is on the way. Watch the target.', null], done: ['The mission is over.', null] }[s];
     return { block: where[0], el: where[1] };
-  }
-  function gWhy(k) {
-    return ({ call: 'Observer identification: the FDC\'s call sign, THIS IS, then yours.', af: 'Warning order: you want an adjusting round first.', grid: 'Target location: your worksheet line 7.', tgt: 'Target description: what, how many, what it is doing.', am_icm: 'Method of engagement: ICM against armor.', am_heq: 'Method of engagement: HE QUICK against trucks.', wr: 'Method of fire and control: fire when ready.', dir: 'Grid mission: send the direction once, with the first correction.', L: 'Deviation first.', R: 'Deviation first.', A: 'Range after deviation.', D: 'Range after deviation.', ffe: 'Last word before OVER.', eom: 'End of mission.', surv: 'Surveillance: what you saw happen.' })[k] || '';
   }
   function gCheckValue(t) {
     const w = st.w, T = w.tgt, tr = truth();
@@ -1757,18 +1733,6 @@ legend { padding: 0 4px; font-weight: 650; }
   // Guided: one step at a time. title = what, tip = the exact action (shown beside the control), bullets = how, why = background
   const GN = { op: 1, find: 2, size: 3, appsize: 4, range: 5, mag: 6, gm: 7, tloc: 8, call: 9, shot: 10, wait: 11, adj: 11, ffe: 12, eom: 13, done: 13 };
   const PHN = ['Locate', 'Call', 'Adjust', 'End', 'Done'];
-  const chipsHtml = (labels, done) => labels.map((l, i) => `<span class="tk${i < done ? ' dn' : i === done ? ' nx' : ''}">${esc(l)}</span>`).join('') + `<span class="tx${done >= labels.length ? ' nx' : ''}">Transmit</span>`;
-  function seqLabels(seq) {
-    const w = st.w, T = w.tgt, s = st.sheet, tr = truth(), RL = { L: 'LEFT', R: 'RIGHT', A: 'ADD', D: 'DROP' };
-    return seq.map(k => {
-      if (k === 'grid') return `GRID ${digits(s.s7) ? gridTxt(digits(s.s7)) : '…'}`;
-      if (k === 'dir') return `DIRECTION ${fmt4(num(s.s6) != null ? +s.s6 : r10(tr.az))}`;
-      if (k === 'tgt') return descTxt(T.n, T.ty, 'IN THE OPEN');
-      if (RL[k]) { const e = expCorr(); return `${RL[k]} ${k === 'L' || k === 'R' ? e.dev.m : e.rng.m}`; }
-      if (k === 'surv') return `${F.result}${F.killed ? `, ${w.cas} CASUALTIES` : ''}`;
-      return chipLabel(k);
-    });
-  }
   function coachData() {
     const w = st.w, T = w.tgt, tr = truth(), chk = sheetCheck(), g = gm(), unit = VEH[T.ty];
     if (st.examOn) return { lbl: st.ended ? 'Exam over' : 'Exam', title: st.ended ? 'See your result' : 'No coach in the exam', bullets: ['Locate → one call for fire → bracket → fire for effect → end of mission.', `Call for fire within ${cfg.cffMin}:00 · each correction within ${cfg.corrSec} s of the impact.`] };
@@ -1779,7 +1743,7 @@ legend { padding: 0 4px; font-weight: 650; }
       case 'op': { const r = proRead(w.op); return { title: 'Read your OP grid', tip: `Line 1 → <b>${r.sqE}${r.e} ${r.sqN}${r.n}</b>`, bullets: [`Protractor on the OP: right ${r.e[0]}.${r.e[1]} → ${r.sqE}${r.e}, up ${r.n[0]}.${r.n[1]} → ${r.sqN}${r.n}.`, 'Right: where the square\'s left line crosses the bottom scale. Up: where the OP sits on the side scale.'] }; }
       case 'find': return { title: 'Find the target', tip: st.bino ? 'Tap the dark vehicles, or press <strong>◀ ▶</strong>' : 'Tap the <strong>yellow ring</strong>: the binoculars open on it', bullets: [] };
       case 'size': return { title: 'Count them', tip: `Line 2 → <b>${T.n}</b> · <b>${typeName}</b>`, bullets: ['Truck: tall box. BMP: low, small turret. T-72: long gun.'] };
-      case 'appsize': { const hi = st.sheet.s3k === 'H'; return { title: 'Measure one vehicle', tip: !st.bino ? 'Tap the vehicles to open the binoculars' : st.measured == null ? 'Press <strong>Measure</strong>' : `Line 3 → <b>${(hi ? tr.Mh : tr.M).toFixed(1)}</b> (${hi ? 'high' : 'wide'})`, bullets: ['You measure M here: how many mils the vehicle covers. Its real size W comes from the cadre.', 'Measure puts a vehicle in the corner of the small scale at the left: bottom scale = width, side scale = height. Pick wide or high on line 3.'] }; }
+      case 'appsize': { const hi = st.sheet.s3k === 'H'; return { title: 'Measure one vehicle', tip: !st.bino ? 'Tap the vehicles to open the binoculars' : st.measured == null ? 'Press <strong>Measure</strong>' : `Line 3 → about <b>${Math.round(hi ? tr.Mh : tr.M)}</b> (${hi ? 'high' : 'wide'})`, bullets: ['You measure M here: how many mils the vehicle covers. Its real size W comes from the cadre.', 'Measure puts the vehicle\'s left end on the vertical scale and its bottom on the horizontal scale. Width: read the horizontal scale; height: the vertical scale (small tick 5 mils, number 10). Pick wide or high on line 3.'] }; }
       case 'range': { const M = chk.M || chk.tM, Rr = r10(chk.W / M * 1000), hi = st.sheet.s3k === 'H'; return { title: 'Range = W ÷ M × 1000', tip: `Line 4 → <b>${Rr}</b> m`, bullets: [`W = ${chk.W} m: the target ${hi ? 'height' : 'width'} the cadre gave you (box at the top). You do not measure W.`, `M = ${(+M).toFixed(1)} mils: what you measured on line 3.`, `R = W ÷ M × 1000 = ${chk.W} ÷ ${(+M).toFixed(1)} × 1000 = ${Rr} m`] }; }
       case 'mag': { const off = Math.abs(dm(tr.az, st.az)), dg = tr.mag * 0.05625; return { title: 'Read the compass', tip: !st.cmp ? 'Press <strong>Compass</strong>' : off > 3 ? 'Tap the vehicles to aim the compass' : `Line 5 → <b>${dg.toFixed(0)}</b> °`, bullets: ['Read the outer ring (degrees) under the yellow line. The red inner ring is mils, if you prefer mils.'] }; }
       case 'gm': { const m = chk.mag != null ? chk.mag : tr.mag, ga = w64(m + g), gd = w.gmAbs * 0.05625, d5 = chk.deg5 && chk.m5 != null ? chk.m5 : m * 0.05625, dg = d5 + (g > 0 ? gd : -gd);
@@ -1789,11 +1753,11 @@ legend { padding: 0 4px; font-weight: 650; }
       case 'shot': return { title: 'Round on the way', tip: 'Watch the target: SPLASH = 5 s to impact', bullets: ['The FDC reads back your call, then MTO, SHOT and SPLASH. Nothing to answer.', 'At SPLASH the binoculars open on the target.'] };
       case 'wait': return { title: 'Round on the way', tip: 'Watch the target', bullets: ['The burst shows 5 s after SPLASH.', st.bino ? 'Keep the binoculars on the target.' : 'Turn the binoculars on to spot it.'] };
       case 'ffe': return { title: 'Fire for effect', tip: 'Watch the vehicles', bullets: ['Burning = destroyed. Count them for your report.'] };
-      case 'call': case 'adj': case 'eom': {
-        const tip = chipsHtml(seqLabels(gExpect().seq), st.draft.length);
-        if (step === 'call') return { title: 'Call for fire · one transmission', tip, bullets: ['Who (the FDC\'s call sign first), ADJUST FIRE, where (GRID = line 7), what (line 2), ammunition, WHEN READY.', unit.armor ? 'Armor → ICM.' : 'Trucks → HE QUICK.', 'Tap the words in the yellow box in order, or find them in the word list below. GRID and TARGET come from your worksheet; OVER is added for you.'] };
-        if (step === 'eom') return { title: 'End the mission', tip, bullets: [`Report what you see: ${F.result}${F.killed ? ` (${F.killed} of ${T.n} burning)` : ''}.`, 'Casualties are your estimate.'] };
-        const e = expCorr(), sp = e.sp;
+      case 'call': return { title: 'Call for fire · one transmission', tip: `Who <b>${esc(chipLabel('call'))}</b> · <b>ADJUST FIRE</b> · ammo <b>${AMMO[ammoBest(T.ty)]}</b> → <strong>Send</strong>`, bullets: ['GRID and the target are already filled in from lines 7 and 2.', unit.armor ? 'Armor → ICM.' : 'Trucks → HE QUICK.', 'Who: the FDC\'s call sign first, then yours. OVER is added when you send.'] };
+      case 'eom': return { title: 'End the mission', tip: `<b>${F.result}</b>${F.killed ? ` · <b>${w.cas} CASUALTIES</b>` : ''} → <strong>Send</strong>`, bullets: [`Report what you see: ${F.result}${F.killed ? ` (${F.killed} of ${T.n} burning)` : ''}.`, 'Casualties are your estimate.'] };
+      case 'adj': {
+        const e = expCorr(), sp = e.sp, RL = { L: 'LEFT', R: 'RIGHT', A: 'ADD', D: 'DROP' };
+        const tip = [...(e.needDir ? [`DIRECTION <b>${fmt4(num(st.sheet.s6) != null ? +st.sheet.s6 : r10(tr.az))}</b>`] : []), e.dev ? `<b>${RL[e.dev.k]} ${e.dev.m}</b>` : 'no deviation', ...(e.rng ? [`<b>${RL[e.rng.k]} ${e.rng.m}</b>`] : []), ...(e.ffe ? ['<b>FIRE FOR EFFECT</b>'] : [])].join(' · ') + ' → <strong>Send</strong>';
         const b = [`Spot: ${Math.abs(sp.devM).toFixed(0)} mils ${sp.devM > 0 ? 'RIGHT' : 'LEFT'} · ${sp.range === 'RC' ? 'on the target\'s range' : sp.range === 'SHORT' ? 'SHORT (in front, lower)' : 'OVER (behind, higher)'}.`,
           `Deviation: ${Math.abs(sp.devM).toFixed(0)} × OT factor ${e.t.otf} = ${e.dv} m → ${e.dev ? `${e.dev.k === 'L' ? 'LEFT' : 'RIGHT'} ${e.dev.m}` : 'under 30, leave it out'}.`,
           `Range: ${e.why}`];
@@ -1803,7 +1767,7 @@ legend { padding: 0 4px; font-weight: 650; }
       default: return { title: 'Mission complete', bullets: [] };
     }
   }
-  const TIPAT = { op: ['r1', 'after'], size: ['r2', 'after'], appsize: ['r3', 'after'], range: ['r4', 'after'], mag: ['r5', 'after'], gm: ['r6', 'after'], tloc: ['r7', 'after'], find: ['viewCard', 'in'], call: ['pal', 'before'], adj: ['pal', 'before'], eom: ['pal', 'before'], shot: ['viewCard', 'in'], wait: ['viewCard', 'in'], ffe: ['viewCard', 'in'], rx: ['log', 'after'] };
+  const TIPAT = { op: ['r1', 'after'], size: ['r2', 'after'], appsize: ['r3', 'after'], range: ['r4', 'after'], mag: ['r5', 'after'], gm: ['r6', 'after'], tloc: ['r7', 'after'], find: ['viewCard', 'in'], call: ['rform', 'before'], adj: ['rform', 'before'], eom: ['rform', 'before'], shot: ['viewCard', 'in'], wait: ['viewCard', 'in'], ffe: ['viewCard', 'in'], rx: ['log', 'after'] };
   // why each step matters, in one line under the action
   const WHY = { op: 'Every direction and distance starts from your own position.', find: 'You can only adjust fire on a target you can see.', size: 'What it is picks the ammunition; how many goes in the call.', appsize: 'M (the mils it covers) and its real size W give the range.', range: 'Range and direction from your OP put the target on the map.', mag: 'The compass gives the direction from you to the target.', gm: 'The map and the FDC use grid north, not magnetic north.', tloc: 'This grid is where the FDC will aim.', call: 'One call tells the FDC who you are, what you want, where, what and how.', shot: 'You have to see where it lands to correct it.', wait: 'You have to see where it lands to correct it.', adj: 'Each correction walks the next round onto the target.', ffe: 'What you see now is your report at the end.', eom: 'Tells the FDC the mission is over and what the rounds did.' };
   function placeTip(cd) {
@@ -1816,7 +1780,7 @@ legend { padding: 0 4px; font-weight: 650; }
     if (at[1] === 'in') { if (tip.parentNode !== el) el.appendChild(tip); }
     else if (at[1] === 'before') { if (tip.nextElementSibling !== el) el.before(tip); }
     else if (tip.previousElementSibling !== el) el.after(tip);
-    if (step !== st.tipStep) { const first = !st.tipStep; st.tipStep = step; if (!first) setTimeout(() => { if (!tip.hidden) tip.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60); }
+    if (step !== st.tipStep) { const first = !st.tipStep; st.tipStep = step; if (!first) setTimeout(() => { if (!tip.hidden) tip.scrollIntoView({ block: at[1] === 'before' ? 'start' : 'nearest', behavior: 'smooth' }); }, 120); }
   }
   function hints() {
     document.querySelectorAll('.hint').forEach(e => e.classList.remove('hint'));
@@ -1829,12 +1793,11 @@ legend { padding: 0 4px; font-weight: 650; }
     if (s === 'mag' && !st.cmp) add($('cmpBtn'));
     if (s === 'appsize' && st.bino && st.measured == null) add($('measBtn'));
     if (s === 'tloc') add($(st.plot && st.plot.r ? 's7' : 'plotBtn'));
-    const ex = gExpect();
-    if (ex.seq && !st.ed) { const need = ex.seq[st.draft.length]; add(need ? document.querySelector(`#pal .tk[data-k="${need}"]`) : $('txBtn')); }
-    if (st.ed) add($('edOk'));
+    const f = formWant();
+    if (f) { const ids = Object.keys(f.want).filter(id => fieldBad(id, f.want[id])); ids.forEach(id => add($(id))); if (!ids.length) add($('txBtn')); }
   }
   function note(html) {
-    const t = $('toast'); t.innerHTML = (guidedOn() && !/^(Plot|A grid|Direction is|Corrections are|Finish|Build)/.test(html) ? '<b>Not that one.</b> ' : '') + html + '<small>Tap to close</small>';
+    const t = $('toast'); t.innerHTML = (guidedOn() && !/^(Plot|A grid|Direction is|Fill in|Choose|Deviation: LEFT or|Range: ADD or|Wait|The round|Fire for effect is)/.test(html) ? '<b>Not that one.</b> ' : '') + html + '<small>Tap to close</small>';
     t.hidden = false; t.classList.remove('pop'); void t.offsetWidth; t.classList.add('pop');
     clearTimeout(note.t); note.t = setTimeout(() => { t.hidden = true; }, 6000);
     $('coach').classList.remove('shake'); void $('coach').offsetWidth; $('coach').classList.add('shake');
@@ -1893,7 +1856,7 @@ legend { padding: 0 4px; font-weight: 650; }
       { t: 'Send the call for fire', subs: [
         { txt: 'Call signs + ADJUST FIRE', ok: R.t1 && R.mission === 'af' },
         { txt: 'GRID within 250 m', ok: R.t2 && gridOk },
-        { txt: 'Target, ammunition, WHEN READY (in order)', ok: R.t3 && descOk && ammoOk && R.wr && R.t3order },
+        { txt: 'Target description and ammunition', ok: R.t3 && descOk && ammoOk },
         { txt: 'No SAY AGAIN on the call for fire', ok: R.t3 && cffSA === 0 },
         { txt: `Call for fire sent within ${cfg.cffMin}:00`, ok: R.tCFF != null && R.tCFF <= cfg.cffMin * 60 }] },
       { t: 'Adjust fire (bracketing)', subs: [
@@ -1919,8 +1882,6 @@ legend { padding: 0 4px; font-weight: 650; }
     if (R.t3) {
       if (!(R.desc.n === T.n && R.desc.ty === T.ty && R.desc.act === 'IN THE OPEN')) bad(`Description: you sent ${tokLabel(R.desc)}; it was ${descTxt(T.n, T.ty, 'IN THE OPEN')}.`);
       if (!R.ammo) bad('The call for fire had no ammunition.'); else if (!ammoFits(T.ty, R.ammo)) bad(`Ammunition ${R.ammo} does not fit ${VEH[T.ty].many}: use ${AMMO[ammoBest(T.ty)]}.`);
-      if (!R.wr) bad('The call for fire had no WHEN READY.');
-      if (!R.t3order) bad('Wrong order after the grid: target, ammunition, WHEN READY.');
       if (R.tCFF > cfg.cffMin * 60) bad(`Call for fire took ${mmss(R.tCFF)} (limit ${cfg.cffMin}:00).`); else ok(`Call for fire on the net at ${mmss(R.tCFF)}.`);
     } else bad('The call for fire was never completed.');
     R.corr.forEach((d, i) => { if (d > cfg.corrSec) bad(`Correction ${i + 1} went out ${Math.round(d)} s after the impact (limit ${cfg.corrSec} s).`); });
@@ -1975,12 +1936,15 @@ legend { padding: 0 4px; font-weight: 650; }
     $('paneView').hidden = m !== 'view'; $('paneMap').hidden = m !== 'map';
     $('stView').setAttribute('aria-selected', String(m === 'view')); $('stMap').setAttribute('aria-selected', String(m === 'map'));
     if (m === 'map') { sizeMap(); drawMap(); } else { sizeView(); V.dirty = true; kick(); }
-    requestAnimationFrame(() => document.documentElement.style.setProperty('--stick', ($('viewCard').offsetHeight + 51) + 'px'));
   }
+  // the pinned stage changes height (map, binoculars, Measure row): keep the scroll offset below it in step
+  new ResizeObserver(() => document.documentElement.style.setProperty('--stick', ($('viewCard').offsetHeight + 51) + 'px')).observe($('viewCard'));
   $('stView').addEventListener('click', () => setStage('view'));
   $('stMap').addEventListener('click', () => setStage('map'));
   // tabs: Guided moves you to the tab where the next step is
   function setTab(t) {
+    // a field on the panel that goes away loses the keyboard now, so the stage pins again before anything scrolls
+    const ae = document.activeElement; if (ae && ae.matches('#tools input, #tools select') && !ae.closest(`[data-panel="${t}"]`)) { ae.blur(); document.body.classList.remove('kbd'); }
     st.tab = t;
     document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
     document.querySelectorAll('.panel').forEach(p => { p.hidden = p.dataset.panel !== t; });
@@ -2010,7 +1974,7 @@ legend { padding: 0 4px; font-weight: 650; }
     document.querySelectorAll('#phases li').forEach((li, i) => { li.className = i < pi ? 'done' : i === pi ? 'now' : ''; });
     if (guidedOn()) { const cat = pi <= 0 ? 'locate' : 'radio'; if (cat !== st.lastCat) { st.lastCat = cat; setTab(cat); } }
     if (guidedOn()) { const gs = gStep(); if (gs !== st.stageStep) { st.stageStep = gs; if (STAGE[gs] && STAGE[gs] !== st.stage) setStage(STAGE[gs]); if (gs === 'call' && st.cmp) setBino(true); } }
-    renderPal(); hints(); renderScore();
+    renderForm(); syncForm(); hints(); renderScore();
     $('endBar').hidden = !(st.examOn && st.running);
     $('btnRef').disabled = st.examOn && st.running;
     drawMap(); kick();
@@ -2018,21 +1982,21 @@ legend { padding: 0 4px; font-weight: 650; }
 
   // ---------- cards, modes, clock
   function newCard(seed) {
-    clearTimers(); closeEditor(); closeAll();
+    clearTimers(); closeAll();
     st.seed = seed != null ? seed : Math.floor(Math.random() * 90000) + 10000;
     $('busy').hidden = false;
     setTimeout(() => {
       const w = genWorld(st.seed); st.w = w; MV.img = null;
-      st.bursts = []; st.draft = []; st.seen = false; st.plot = null; st.ended = false; st.freq = w.freq; st.cmp = false;
+      st.bursts = []; st.seen = false; st.plot = null; st.ended = false; st.freq = w.freq; st.cmp = false;
       ['s1', 's2n', 's2t', 's3', 's4', 's5', 's6', 's7'].forEach(id => { $(id).value = ''; }); $('s3k').value = 'L'; $('s5u').value = 'D';
-      st.palKey = ''; st.lastCat = ''; st.tipStep = ''; st.stageStep = ''; st.measured = null; setTab('locate'); $('radioDot').hidden = true;
-      $('log').innerHTML = ''; renderDraft();
+      st.formKey = ''; st.lastCat = ''; st.tipStep = ''; st.stageStep = ''; st.measured = null; setTab('locate'); $('radioDot').hidden = true;
+      $('log').innerHTML = '';
       newFdc();
       const tr = truth();
       st.bino = false; $('binoBtn').setAttribute('aria-pressed', 'false');
       const off = (w.r() < 0.5 ? -1 : 1) * (150 + w.r() * 200);
       setView(tr.az + off, (groundAt(w, w.tgt.x, w.tgt.y) - w.eyeZ) / tr.d + 0.04);
-      renderPal(); renderMission();
+      renderForm(); renderMission();
       setStage('map'); sizeMap(); fitMap();
       st.pro = null; proOn(guidedOn() ? 'op' : null, guidedOn());
       st.t0 = performance.now(); st.running = true;
@@ -2050,7 +2014,7 @@ legend { padding: 0 4px; font-weight: 650; }
     const items = [
       'The clock starts when you press Start. Run ends at END OF MISSION or at 10:00.',
       'Phase 1: fill the worksheet in any order. The cadre gives you the target size W and the G-M angle (box at the top of the worksheet); you measure M. OP grid (protractor), target count and type, apparent size M (Measure in the binoculars), range = W ÷ M × 1000, compass direction (Compass), grid direction (± G-M angle, then mils), target grid (Plot).',
-      `Phase 2: the radio is already on the fire net. Send one call for fire built from word chips (call signs, ADJUST FIRE, GRID, target, ammunition, WHEN READY) within ${cfg.cffMin}:00. OVER is added when you transmit.`,
+      `Phase 2: the radio is already on the fire net. Fill in the call-for-fire form (who, mission, grid, target, ammunition) and send it within ${cfg.cffMin}:00. OVER is added for you.`,
       `Phase 3: bracket ADD/DROP 400 → 200 → 100 → 50 + FIRE FOR EFFECT. Each correction within ${cfg.corrSec} s of the impact; fire for effect after 6 adjusting rounds or fewer, within 50 m of the target.`,
       'Phase 4: END OF MISSION with the surveillance you actually see.',
       'No coach, no highlights, no ✓ marks, no Ref until the end. Any NO-GO sends you to Charlie Company.'
@@ -2114,7 +2078,7 @@ legend { padding: 0 4px; font-weight: 650; }
   document.addEventListener('focusin', e => { if (e.target.matches('#tools input, #tools select')) { document.body.classList.add('kbd'); st.typeStep = st.w && guidedOn() ? gStep() : ''; } });
   document.addEventListener('focusout', () => setTimeout(() => { if (!document.activeElement || !document.activeElement.matches('#tools input, #tools select')) document.body.classList.remove('kbd'); }, 50));
   renderIntro();
-  window.__cff = { st, cfg, get F() { return F; }, get R() { return R; }, truth, expCorr, spotOf, worldToGrid, gStep, gExpect, newCard, setMode, evalAll, finish, timing: () => { const t = performance.now(); renderTerrain(); return performance.now() - t; }, mapScale: () => ({ ratio: MV.scale / (MV.W / S), cx: MV.cx, cy: MV.cy, lab: MV.lab, u: MV.W / MV.cv.clientWidth, pro: st.pro && MV.pro, box: st.pro && MV.proBox, W: MV.W, H: MV.H, plot: plotPoint() }), frames: () => V.n, mapOff: () => MV.off, dbg: { onScale, LS, compassReading, setCmp, buildTerrain, placeTarget, genWorld, visibleSet, openAround, nearestLm, los, groundAt, addBurst, setView, proj, camF, gridToWorld, sheetCheck } };
+  window.__cff = { st, cfg, get F() { return F; }, get R() { return R; }, truth, expCorr, spotOf, worldToGrid, gStep, gExpect, formWant, newCard, setMode, evalAll, finish, timing: () => { const t = performance.now(); renderTerrain(); return performance.now() - t; }, mapScale: () => ({ ratio: MV.scale / (MV.W / S), cx: MV.cx, cy: MV.cy, lab: MV.lab, u: MV.W / MV.cv.clientWidth, pro: st.pro && MV.pro, box: st.pro && MV.proBox, W: MV.W, H: MV.H, plot: plotPoint() }), frames: () => V.n, mapOff: () => MV.off, dbg: { onScale, LS, V, compassReading, setCmp, buildTerrain, placeTarget, genWorld, visibleSet, openAround, nearestLm, los, groundAt, addBurst, setView, proj, camF, gridToWorld, sheetCheck } };
   newCard(QS.get('seed') ? +QS.get('seed') : undefined);
 })();
 </script>
