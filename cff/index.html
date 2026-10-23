@@ -85,6 +85,8 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 
 /* observer view */
 .vcard { padding: 8px; }
+.bcap { margin: 6px 0 0; padding: 5px 10px; border-radius: 8px; background: #1b2016; color: #eef0e4; font: 600 12.5px/1.35 var(--ui); text-align: center; }
+.bcap:empty { display: none; }
 .vwrap { position: relative; overflow: hidden; border-radius: 10px; background: #0b0d09; }
 #view { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
 .busy { position: absolute; inset: 0; display: grid; place-items: center; color: #e9ebdf; font: 650 14px var(--ui); background: rgba(10,12,8,.7); }
@@ -298,12 +300,13 @@ legend { padding: 0 4px; font-weight: 650; }
         <canvas id="view" aria-label="View from the observation post. Drag to look around, tap to aim."></canvas>
         <div class="busy" id="busy">Building terrain…</div>
       </div>
+      <p class="bcap" id="bcap" aria-live="polite"></p>
       <div class="vctl">
         <button class="ibtn" id="panL" aria-label="Turn left">◀</button>
         <button class="ibtn" id="panR" aria-label="Turn right">▶</button>
         <button class="btn bino" id="binoBtn" aria-pressed="false">Binoculars</button>
         <button class="btn" id="cmpBtn" aria-pressed="false">Compass</button>
-        <button class="btn" id="measBtn" hidden>Measure</button>
+        <button class="btn" id="measBtn" hidden title="Put a vehicle's left end on the vertical line">Line up</button>
       </div>
       </div>
       <div id="paneMap" hidden>
@@ -447,12 +450,12 @@ legend { padding: 0 4px; font-weight: 650; }
   <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="refT">
     <h2 id="refT">Cheat sheet · Call for fire (CFFT)</h2>
     <button class="btn x" data-close="mRef" aria-label="Close">✕</button>
-    <a class="vidlink" id="refVid" href="math/">▶ Watch: the math, step by step (video, 5:06)</a>
+    <a class="vidlink" id="refVid" href="math/">▶ Watch: the math, step by step (video, 5:05)</a>
     <h3>Phase 1 · Locate the target (worksheet)</h3>
     <ol>
       <li><b>Observer location:</b> put the protractor on the OP (button under the map) and read right, then up: where the square's left grid line crosses the bottom scale, then where the point sits on the side scale. 8 digits = 10 m.</li>
       <li><b>Target:</b> through the binoculars, count the vehicles and name them (BMP, T-72, truck).</li>
-      <li><b>Apparent size M:</b> press Measure in the binoculars: one vehicle's left end sits on the vertical scale, its bottom on the horizontal scale. Width on the horizontal scale, height on the vertical scale (1 mil per tick).</li>
+      <li><b>Apparent size M:</b> in the binoculars, put one vehicle's left end on the vertical scale and its bottom on the horizontal scale (Line up does the aiming). Width on the horizontal scale, height on the vertical scale (1 mil per tick).</li>
       <li><b>Range (WORM):</b> W = R × M, so R = W ÷ M × 1000. <b>W is given to you by the cadre</b> before you start (width or height); you only measure M. Example: 7.4 m, M = 5 mils → 7.4 ÷ 5 × 1000 = 1,480 m.</li>
       <li><b>Compass direction:</b> press Compass, tap the middle of the group, read the dial under the line: degrees on the outer ring, mils on the red inner ring.</li>
       <li><b>Grid direction:</b> magnetic → grid: G-M angle <b>EAST: add</b>, <b>WEST: subtract</b>. Degrees × 17.78 = mils (6400 mils = 360°). Send direction in mils, to the nearest 10.</li>
@@ -793,7 +796,7 @@ legend { padding: 0 4px; font-weight: 650; }
   const HZN = 450, HZ = new Float32Array(HZN);
   for (let i = 0; i < HZN; i++) HZ[i] = 0.7 * (1 - Math.exp(-(i * 20) / 6000));
   const fov = () => st.bino ? 130 : 800;
-  const LS = { x: 0, y: 0 }; // Measure puts a vehicle's left end and bottom on the crossing of the two scales
+  const LS = { x: 0, y: 0 }; // Line up puts a vehicle's left end and bottom on the crossing of the two scales
   const camF = () => V.W / (fov() * MIL);
   // with the compass up, the aim point sits in the upper part of the view, above the dial
   const aimY = () => st.cmp ? Math.round((V.H - 112 * V.W / (V.cv.clientWidth || V.W)) * 0.5) : V.H / 2;
@@ -993,32 +996,6 @@ legend { padding: 0 4px; font-weight: 650; }
       }
       g.beginPath(); g.moveTo(cx, cy - 20 * pm); g.lineTo(cx, cy - 1.2 * pm); g.moveTo(cx, cy + 1.2 * pm); g.lineTo(cx, cy + 20 * pm); g.stroke();
       for (let m = -20; m <= 20; m += 5) { if (!m) continue; const y = cy - m * pm, big = m % 10 === 0; g.beginPath(); g.moveTo(cx - (big ? 6 : 3.5) * sc, y); g.lineTo(cx + (big ? 6 : 3.5) * sc, y); g.stroke(); if (big) { g.textAlign = 'left'; g.fillText(String(Math.abs(m)), cx + 9 * sc, y); g.textAlign = 'center'; } }
-      if (guidedOn()) guideMarks(g, sc, pm);
-      g.fillStyle = 'rgba(232,234,223,.85)'; g.font = `500 ${Math.round(11 * sc)}px system-ui, sans-serif`; g.textAlign = 'center';
-      g.fillText('Tap the vehicles to center on them', cx, Hd - 9 * sc);
-      // close-up of the crossing after Measure, so it can be read on a small screen
-      const ms = onScale();
-      if (ms) {
-        const src = 14 * pm, D = Math.min(Hd * 0.74, Wd * 0.36), dx = cx - 8 * pm - D, dy = (Hd - D) / 2;
-        g.save(); g.imageSmoothingEnabled = true;
-        g.drawImage(V.cv, ms.lx - 2 * pm, ms.ly - 12 * pm, src, src, dx, dy, D, D);
-        g.fillStyle = 'rgba(214,220,196,.9)'; g.fillRect(dx, dy, D, D);
-        // sharp redraw: the vehicle to scale on the reticle's own scales (small tick 5 mils, number every 10)
-        const k = D / 14, X0 = dx + 2 * k, Y0 = dy + 12 * k, L = ms.len / pm * k, Hh = ms.hgt / pm * k, sp = VEH[st.w.tgt.ty];
-        g.fillStyle = '#3d4129';
-        if (sp.armor) { const hh = Hh * sp.hull / sp.H; g.fillRect(X0, Y0 - hh, L, hh); g.fillRect(X0 + L * 0.28, Y0 - Hh, L * 0.4, Hh - hh + 1); }
-        else { g.fillRect(X0, Y0 - Hh, L * 0.7, Hh); g.fillRect(X0 + L * 0.72, Y0 - Hh * 0.86, L * 0.28, Hh * 0.86); }
-        g.strokeStyle = '#0a0c08'; g.fillStyle = '#0a0c08'; g.lineWidth = Math.max(1.2, 1.4 * sc);
-        g.beginPath(); g.moveTo(dx, Y0); g.lineTo(dx + D, Y0); g.moveTo(X0, dy); g.lineTo(X0, dy + D);
-        for (const m of [5, 10]) { const l = (m === 10 ? 0.7 : 0.4) * k; g.moveTo(X0 + m * k, Y0 - l); g.lineTo(X0 + m * k, Y0 + l); g.moveTo(X0 - l, Y0 - m * k); g.lineTo(X0 + l, Y0 - m * k); }
-        g.stroke();
-        g.font = `700 ${Math.round(Math.max(10, 0.55 * k / sc) * sc)}px ui-monospace, Menlo, monospace`; g.textAlign = 'center'; g.textBaseline = 'bottom';
-        g.fillText('10', X0 + 10 * k, Y0 - 0.9 * k);
-        g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText('10', X0 + 0.9 * k, Y0 - 10 * k);
-        g.strokeStyle = '#ffc53d'; g.lineWidth = 2 * sc; g.strokeRect(dx, dy, D, D);
-        g.restore();
-        g.save(); g.fillStyle = '#2a2208'; g.font = `800 ${Math.round(11 * sc)}px system-ui, sans-serif`; g.textAlign = 'right'; g.textBaseline = 'top'; g.fillText(`CLOSE-UP ×${Math.round(D / src)}`, dx + D - 6 * sc, dy + 5 * sc); g.restore();
-      }
     }
     g.restore();
   }
@@ -1049,7 +1026,6 @@ legend { padding: 0 4px; font-weight: 650; }
     // the fixed reading line
     g.strokeStyle = '#ffc53d'; g.lineWidth = 3 * sc; g.beginPath(); g.moveTo(cx, cy - R - 10 * sc); g.lineTo(cx, cy - ri + 24 * sc); g.stroke();
     g.fillStyle = 'rgba(232,234,223,.75)'; g.font = `700 ${Math.round(9.5 * sc)}px system-ui, sans-serif`; g.fillText(cfg.compass === 'grid' ? 'COMPASS · GRID' : 'COMPASS · MAGNETIC', cx, Hd - 9 * sc);
-    if (guidedOn() && gStep() === 'mag' && Math.abs(dm(truth().az, st.az)) < 3) hudTag(g, `≈ ${deg.toFixed(0)}° · ${fmt4(magM)} mils`, cx + 80 * sc, top - 8 * sc, sc);
     g.restore();
   }
   function hudTag(g, txt, x, y, sc) {
@@ -1058,31 +1034,21 @@ legend { padding: 0 4px; font-weight: 650; }
     g.fillStyle = 'rgba(0,0,0,.75)'; g.fillRect(x - m / 2, y - h, m, h); g.fillStyle = '#ffc53d'; g.fillText(txt, x, y - h / 2);
     g.restore();
   }
-  // Guided marks inside the binoculars: count tags, the two ends of vehicle 1, the burst's offset from the target
-  function guideMarks(g, sc, pm) {
-    const s = gStep(), w = st.w, T = w.tgt, Y = '#ffc53d';
-    g.save(); g.strokeStyle = Y; g.lineWidth = 2 * sc;
-    if (s === 'size') T.veh.forEach((v, i) => { const p = proj(v.x, v.y, v.z + 3.2); hudTag(g, String(i + 1), p.sx, p.sy - 4 * sc, sc); });
-    const ms = s === 'appsize' && onScale();
-    if (ms) {
-      // mark where the vehicle's far end and top meet the scales
-      g.beginPath(); g.moveTo(ms.lx + ms.len, ms.ly - 4 * sc); g.lineTo(ms.lx + ms.len, ms.ly + 10 * sc); g.moveTo(ms.lx + 4 * sc, ms.ly - ms.hgt); g.lineTo(ms.lx - 10 * sc, ms.ly - ms.hgt); g.stroke();
-      hudTag(g, `about ${Math.round(ms.len / pm)} wide · ${Math.round(ms.hgt / pm)} high`, ms.lx + 24 * pm, ms.ly + 34 * sc, sc);
-    }
-    if ((s === 'adj' || s === 'eom') && F.lastBurst && s === 'adj') {
-      const b = F.lastBurst, pb = proj(b.x, b.y, groundAt(w, b.x, b.y)), pt = proj(T.x, T.y, groundAt(w, T.x, T.y)), sp = spotOf(b);
-      g.setLineDash([5 * sc, 4 * sc]); g.beginPath(); g.moveTo(pt.sx, pb.sy); g.lineTo(pb.sx, pb.sy); g.stroke(); g.setLineDash([]);
-      g.beginPath(); g.moveTo(pt.sx, pt.sy + 4 * sc); g.lineTo(pt.sx, pb.sy + 6 * sc); g.moveTo(pt.sx, Math.min(pt.sy, pb.sy) - 8 * sc); g.lineTo(pt.sx, Math.min(pt.sy, pb.sy) - 2 * sc); g.stroke();
-      g.beginPath(); g.arc(pb.sx, pb.sy, 7 * sc, 0, Math.PI * 2); g.stroke();
-      hudTag(g, `${Math.abs(sp.devM).toFixed(0)} mils ${sp.devM > 0 ? 'RIGHT' : 'LEFT'} · ${sp.range === 'RC' ? 'ON RANGE' : sp.range}`, (pt.sx + pb.sx) / 2, pb.sy + 30 * sc, sc);
-    }
-    g.restore();
+  // under the binoculars, in words: how to read the reticle for this step (real binoculars have no marks for it)
+  function binoCaption() {
+    const s = guidedOn() ? gStep() : '', hi = st.sheet.s3k === 'H';
+    if (s === 'size') return 'Count the vehicles you see.';
+    if (s === 'appsize') return onScale() ? (hi ? 'Read where its top reaches on the vertical scale' : 'Read where its right end falls on the horizontal scale') + ' (small tick 5 mils, number 10).' : 'Press Line up: a vehicle\'s left end goes onto the vertical line.';
+    if (s === 'adj') return 'Read the burst from the vertical line: mils left or right (each number = 10). Higher than the target = OVER, lower = SHORT.';
+    if (s === 'shot' || s === 'wait') return 'Keep the vertical line on the target.';
+    return 'Tap the vehicles to center on them.';
   }
+  function renderCap() { const t = st.bino ? binoCaption() : ''; if ($('bcap').textContent !== t) $('bcap').textContent = t; }
   function setView(az, pitch, fast) {
     st.az = w64(az); st.pitch = clamp(pitch, -0.3, 0.15);
     V.dirty = true; V.fast = !!fast; kick();
     if (fast) { clearTimeout(V.fT); V.fT = setTimeout(() => { V.fast = false; V.dirty = true; kick(); }, 150); }
-    checkSeen();
+    checkSeen(); renderCap();
   }
   function checkSeen() {
     if (!st.w || !st.bino || st.seen) return;
@@ -1092,8 +1058,9 @@ legend { padding: 0 4px; font-weight: 650; }
     if (Math.abs(el - st.pitch) * camF() > V.H * 0.42) return;
     st.seen = true; refresh();
   }
-  // Measure swings the view so a vehicle sits on the crossing of the scales; the compass and spotting want the target back in the centre
-  function unswing() { if (st.measured == null) return; const t = truth(); st.measured = null; st.lastAim = { az: t.az, pitch: (groundAt(st.w, st.w.tgt.x, st.w.tgt.y) + 1 - st.w.eyeZ) / t.d }; setView(st.lastAim.az, st.lastAim.pitch); }
+  // Line up swings the view so a vehicle sits on the crossing of the scales; the compass and spotting want the target back in the centre
+  const tgtAim = () => { const t = truth(); return { az: t.az, pitch: (groundAt(st.w, st.w.tgt.x, st.w.tgt.y) + 1 - st.w.eyeZ) / t.d }; };
+  function unswing() { if (st.measured == null) return; st.measured = null; st.lastAim = tgtAim(); setView(st.lastAim.az, st.lastAim.pitch); }
   function setCmp(on) { if (on) unswing(); st.cmp = on; $('cmpBtn').setAttribute('aria-pressed', String(on)); if (on && st.bino) setBino(false); V.dirty = true; kick(); refresh(); }
   function setBino(on) { if (!on) st.lastAim = { az: st.az, pitch: st.pitch }; if (on && st.cmp) { st.cmp = false; $('cmpBtn').setAttribute('aria-pressed', 'false'); } st.bino = on; $('measBtn').hidden = !on; $('binoBtn').setAttribute('aria-pressed', String(on)); V.dirty = true; kick(); checkSeen(); refresh(); }
   (function viewInput() {
@@ -1130,7 +1097,7 @@ legend { padding: 0 4px; font-weight: 650; }
     rep('panR', () => setView(st.az + (st.bino ? 1 : 25), st.pitch, !st.bino));
     $('binoBtn').addEventListener('click', () => setBino(!st.bino));
     $('cmpBtn').addEventListener('click', () => setCmp(!st.cmp));
-    // Measure: swing the binoculars so the vehicle nearest the centre has its left end on the vertical scale and its bottom on the horizontal one
+    // Line up: swing the binoculars (as your hands would) so the vehicle nearest the centre has its left end on the vertical scale and its bottom on the horizontal one
     $('measBtn').addEventListener('click', () => {
       const w = st.w, op = w.op; let best = null;
       w.tgt.veh.forEach((v, i) => { const a = azOf(v.x - op.x, v.y - op.y), d = Math.abs(dm(a, st.az)); if (!best || d < best.d) best = { v, i, d }; });
@@ -1619,6 +1586,8 @@ legend { padding: 0 4px; font-weight: 650; }
   function splashBinos() {
     if (st.stage !== 'view') setStage('view');
     unswing();
+    // Guided: the vertical line goes on the target, so the burst can be read from it
+    if (guidedOn()) { st.lastAim = tgtAim(); if (st.bino) setView(st.lastAim.az, st.lastAim.pitch); }
     if (!st.bino) { if (st.lastAim) setView(st.lastAim.az, st.lastAim.pitch); setBino(true); } }
   function fireAdj() {
     F.busy = false; F.inFlight = true; F.phase = 'adjust';
@@ -1677,7 +1646,7 @@ legend { padding: 0 4px; font-weight: 650; }
       const k = sp.range === 'SHORT' ? 'A' : 'D', kw = k === 'A' ? 'ADD' : 'DROP'; let c;
       if (!F.bracketed) {
         c = F.lastMag || 400; while (c <= Math.abs(sp.er)) c *= 2;
-        why = F.lastMag ? `still ${sp.range}, no bracket yet → ${kw} ${c} again.` : `${sp.range} → ${kw} ${c} (first jump${c > 400 ? ', doubled: the burst is far off' : ''}).`;
+        why = F.lastMag ? `still ${sp.range}, no bracket yet → ${kw} ${c} again.` : `${sp.range} → ${kw} ${c}. You can't read meters in the binoculars, so the first jump is a fixed ${c} to put the next round on the other side of the target (a bracket)${c > 400 ? '; doubled because the burst is far off' : ''}. Then halve it each round.`;
       } else { c = Math.max(50, F.lastMag / 2); why = `${sp.range}, bracketed → half of ${F.lastMag} = ${kw} ${c}.`; }
       rng = { k, m: c };
       if (F.bracketed && c === 50) { ffe = true; why += ' That splits the 100 m bracket → FIRE FOR EFFECT.'; }
@@ -1742,8 +1711,8 @@ legend { padding: 0 4px; font-weight: 650; }
     switch (step) {
       case 'op': { const r = proRead(w.op); return { title: 'Read your OP grid', tip: `Line 1 → <b>${r.sqE}${r.e} ${r.sqN}${r.n}</b>`, bullets: [`Protractor on the OP: right ${r.e[0]}.${r.e[1]} → ${r.sqE}${r.e}, up ${r.n[0]}.${r.n[1]} → ${r.sqN}${r.n}.`, 'Right: where the square\'s left line crosses the bottom scale. Up: where the OP sits on the side scale.'] }; }
       case 'find': return { title: 'Find the target', tip: st.bino ? 'Tap the dark vehicles, or press <strong>◀ ▶</strong>' : 'Tap the <strong>yellow ring</strong>: the binoculars open on it', bullets: [] };
-      case 'size': return { title: 'Count them', tip: `Line 2 → <b>${T.n}</b> · <b>${typeName}</b>`, bullets: ['Truck: tall box. BMP: low, small turret. T-72: long gun.'] };
-      case 'appsize': { const hi = st.sheet.s3k === 'H'; return { title: 'Measure one vehicle', tip: !st.bino ? 'Tap the vehicles to open the binoculars' : st.measured == null ? 'Press <strong>Measure</strong>' : `Line 3 → about <b>${Math.round(hi ? tr.Mh : tr.M)}</b> (${hi ? 'high' : 'wide'})`, bullets: ['You measure M here: how many mils the vehicle covers. Its real size W comes from the cadre.', 'Measure puts the vehicle\'s left end on the vertical scale and its bottom on the horizontal scale. Width: read the horizontal scale; height: the vertical scale (small tick 5 mils, number 10). Pick wide or high on line 3.'] }; }
+      case 'size': return { title: 'Count them', tip: `Line 2 → <b>${T.n}</b> · <b>${typeName}</b>`, bullets: ['Count the vehicles in the binoculars.', 'Truck: tall box. BMP: low, small turret. T-72: long gun.'] };
+      case 'appsize': { const hi = st.sheet.s3k === 'H'; return { title: 'Measure one vehicle', tip: !st.bino ? 'Tap the vehicles to open the binoculars' : st.measured == null ? 'Press <strong>Line up</strong>' : `Read it: about <b>${Math.round(hi ? tr.Mh : tr.M)}</b> mils ${hi ? 'high' : 'wide'} → Line 3`, bullets: ['Line up puts a vehicle\'s left end on the vertical line and its bottom on the horizontal line, as you would by moving the binoculars.', hi ? 'Height: go up the vertical scale to its top.' : 'Width: go along the horizontal scale to its right end.', 'Small tick = 5 mils, number = 10. Estimate between the ticks (a bit past 5 = about 6).', 'You only measure M; the real size W comes from the cadre. Pick wide or high on line 3.'] }; }
       case 'range': { const M = chk.M || chk.tM, Rr = r10(chk.W / M * 1000), hi = st.sheet.s3k === 'H'; return { title: 'Range = W ÷ M × 1000', tip: `Line 4 → <b>${Rr}</b> m`, bullets: [`W = ${chk.W} m: the target ${hi ? 'height' : 'width'} the cadre gave you (box at the top). You do not measure W.`, `M = ${(+M).toFixed(1)} mils: what you measured on line 3.`, `R = W ÷ M × 1000 = ${chk.W} ÷ ${(+M).toFixed(1)} × 1000 = ${Rr} m`] }; }
       case 'mag': { const off = Math.abs(dm(tr.az, st.az)), dg = tr.mag * 0.05625; return { title: 'Read the compass', tip: !st.cmp ? 'Press <strong>Compass</strong>' : off > 3 ? 'Tap the vehicles to aim the compass' : `Line 5 → <b>${dg.toFixed(0)}</b> °`, bullets: ['Read the outer ring (degrees) under the yellow line. The red inner ring is mils, if you prefer mils.'] }; }
       case 'gm': { const m = chk.mag != null ? chk.mag : tr.mag, ga = w64(m + g), gd = w.gmAbs * 0.05625, d5 = chk.deg5 && chk.m5 != null ? chk.m5 : m * 0.05625, dg = d5 + (g > 0 ? gd : -gd);
@@ -1758,7 +1727,7 @@ legend { padding: 0 4px; font-weight: 650; }
       case 'adj': {
         const e = expCorr(), sp = e.sp, RL = { L: 'LEFT', R: 'RIGHT', A: 'ADD', D: 'DROP' };
         const tip = [...(e.needDir ? [`DIRECTION <b>${fmt4(num(st.sheet.s6) != null ? +st.sheet.s6 : r10(tr.az))}</b>`] : []), e.dev ? `<b>${RL[e.dev.k]} ${e.dev.m}</b>` : 'no deviation', ...(e.rng ? [`<b>${RL[e.rng.k]} ${e.rng.m}</b>`] : []), ...(e.ffe ? ['<b>FIRE FOR EFFECT</b>'] : [])].join(' · ') + ' → <strong>Send</strong>';
-        const b = [`Spot: ${Math.abs(sp.devM).toFixed(0)} mils ${sp.devM > 0 ? 'RIGHT' : 'LEFT'} · ${sp.range === 'RC' ? 'on the target\'s range' : sp.range === 'SHORT' ? 'SHORT (in front, lower)' : 'OVER (behind, higher)'}.`,
+        const b = [`Read the burst: about ${Math.round(Math.abs(sp.devM))} mils ${sp.devM > 0 ? 'RIGHT' : 'LEFT'} of the vertical line (count the numbers: each is 10), ${sp.range === 'RC' ? 'level with the target → on range' : sp.range === 'SHORT' ? 'lower than the target → SHORT (in front)' : 'higher than the target → OVER (behind)'}.`,
           `Deviation: ${Math.abs(sp.devM).toFixed(0)} × OT factor ${e.t.otf} = ${e.dv} m → ${e.dev ? `${e.dev.k === 'L' ? 'LEFT' : 'RIGHT'} ${e.dev.m}` : 'under 30, leave it out'}.`,
           `Range: ${e.why}`];
         if (e.needDir) b.push('Grid mission: DIRECTION goes in front, once.');
@@ -1810,7 +1779,7 @@ legend { padding: 0 4px; font-weight: 650; }
   const SHEETMSG = {
     s1: () => `Your OP (magenta circle) reads about <b>${worldToGrid(st.w.op.x, st.w.op.y, 8)}</b>. Read right, then up.`,
     s2: () => `Count them in the binoculars: <b>${st.w.tgt.n} ${VEH[st.w.tgt.ty].many}</b>.`,
-    s3: () => st.sheet.s3k === 'H' ? `Press Measure in the binoculars and read the side scale: about <b>${truth().Mh.toFixed(1)}</b> mils high.` : `Press Measure in the binoculars and read the bottom scale: about <b>${truth().M.toFixed(1)}</b> mils wide.`,
+    s3: () => st.sheet.s3k === 'H' ? `Press Line up in the binoculars and read the vertical scale at its top: about <b>${Math.round(truth().Mh)}</b> mils high.` : `Press Line up in the binoculars and read the horizontal scale at its right end: about <b>${Math.round(truth().M)}</b> mils wide.`,
     s4: () => { const c = sheetCheck(), M = c.M || c.tM; return `R = W ÷ M × 1000 = ${c.W} (from the cadre) ÷ ${(+M).toFixed(1)} (your line 3) × 1000 ≈ <b>${Math.round(c.W / M * 1000)}</b> m.`; },
     s5: () => `Press Compass, tap the vehicles, read the dial under the line: about <b>${(truth().mag * 0.05625).toFixed(0)}°</b> (${fmt4(truth().mag)} mils).`,
     s6: () => { const c = sheetCheck(), g = gm(), d = c.deg5 && c.m5 != null ? c.m5 : truth().mag * 0.05625, gd = st.w.gmAbs * 0.05625, gridD = d + (g > 0 ? gd : -gd); return g === 0 ? `No G-M step: line 5 in mils, nearest 10: about <b>${fmt4(r10(truth().az))}</b>.` : `${d.toFixed(1)}° ${g > 0 ? '+' : '−'} ${gd.toFixed(1)}° (G-M ${st.w.gmEast ? 'EAST: add' : 'WEST: subtract'}) = ${gridD.toFixed(1)}° × 17.78 ≈ <b>${fmt4(r10(gridD / 0.05625))}</b> mils.`; },
@@ -1937,7 +1906,7 @@ legend { padding: 0 4px; font-weight: 650; }
     $('stView').setAttribute('aria-selected', String(m === 'view')); $('stMap').setAttribute('aria-selected', String(m === 'map'));
     if (m === 'map') { sizeMap(); drawMap(); } else { sizeView(); V.dirty = true; kick(); }
   }
-  // the pinned stage changes height (map, binoculars, Measure row): keep the scroll offset below it in step
+  // the pinned stage changes height (map, binoculars, Line up row): keep the scroll offset below it in step
   new ResizeObserver(() => document.documentElement.style.setProperty('--stick', ($('viewCard').offsetHeight + 51) + 'px')).observe($('viewCard'));
   $('stView').addEventListener('click', () => setStage('view'));
   $('stMap').addEventListener('click', () => setStage('map'));
@@ -1974,7 +1943,7 @@ legend { padding: 0 4px; font-weight: 650; }
     document.querySelectorAll('#phases li').forEach((li, i) => { li.className = i < pi ? 'done' : i === pi ? 'now' : ''; });
     if (guidedOn()) { const cat = pi <= 0 ? 'locate' : 'radio'; if (cat !== st.lastCat) { st.lastCat = cat; setTab(cat); } }
     if (guidedOn()) { const gs = gStep(); if (gs !== st.stageStep) { st.stageStep = gs; if (STAGE[gs] && STAGE[gs] !== st.stage) setStage(STAGE[gs]); if (gs === 'call' && st.cmp) setBino(true); } }
-    renderForm(); syncForm(); hints(); renderScore();
+    renderForm(); syncForm(); hints(); renderScore(); renderCap();
     $('endBar').hidden = !(st.examOn && st.running);
     $('btnRef').disabled = st.examOn && st.running;
     drawMap(); kick();
@@ -2013,7 +1982,7 @@ legend { padding: 0 4px; font-weight: 650; }
   function renderIntro() {
     const items = [
       'The clock starts when you press Start. Run ends at END OF MISSION or at 10:00.',
-      'Phase 1: fill the worksheet in any order. The cadre gives you the target size W and the G-M angle (box at the top of the worksheet); you measure M. OP grid (protractor), target count and type, apparent size M (Measure in the binoculars), range = W ÷ M × 1000, compass direction (Compass), grid direction (± G-M angle, then mils), target grid (Plot).',
+      'Phase 1: fill the worksheet in any order. The cadre gives you the target size W and the G-M angle (box at the top of the worksheet); you measure M. OP grid (protractor), target count and type, apparent size M (read the binocular reticle; Line up aims it), range = W ÷ M × 1000, compass direction (Compass), grid direction (± G-M angle, then mils), target grid (Plot).',
       `Phase 2: the radio is already on the fire net. Fill in the call-for-fire form (who, mission, grid, target, ammunition) and send it within ${cfg.cffMin}:00. OVER is added for you.`,
       `Phase 3: bracket ADD/DROP 400 → 200 → 100 → 50 + FIRE FOR EFFECT. Each correction within ${cfg.corrSec} s of the impact; fire for effect after 6 adjusting rounds or fewer, within 50 m of the target.`,
       'Phase 4: END OF MISSION with the surveillance you actually see.',
@@ -2078,7 +2047,7 @@ legend { padding: 0 4px; font-weight: 650; }
   document.addEventListener('focusin', e => { if (e.target.matches('#tools input, #tools select')) { document.body.classList.add('kbd'); st.typeStep = st.w && guidedOn() ? gStep() : ''; } });
   document.addEventListener('focusout', () => setTimeout(() => { if (!document.activeElement || !document.activeElement.matches('#tools input, #tools select')) document.body.classList.remove('kbd'); }, 50));
   renderIntro();
-  window.__cff = { st, cfg, get F() { return F; }, get R() { return R; }, truth, expCorr, spotOf, worldToGrid, gStep, gExpect, formWant, newCard, setMode, evalAll, finish, timing: () => { const t = performance.now(); renderTerrain(); return performance.now() - t; }, mapScale: () => ({ ratio: MV.scale / (MV.W / S), cx: MV.cx, cy: MV.cy, lab: MV.lab, u: MV.W / MV.cv.clientWidth, pro: st.pro && MV.pro, box: st.pro && MV.proBox, W: MV.W, H: MV.H, plot: plotPoint() }), frames: () => V.n, mapOff: () => MV.off, dbg: { onScale, LS, V, compassReading, setCmp, buildTerrain, placeTarget, genWorld, visibleSet, openAround, nearestLm, los, groundAt, addBurst, setView, proj, camF, gridToWorld, sheetCheck } };
+  window.__cff = { st, cfg, get F() { return F; }, get R() { return R; }, truth, expCorr, spotOf, worldToGrid, gStep, gExpect, formWant, newCard, setMode, evalAll, finish, timing: () => { const t = performance.now(); renderTerrain(); return performance.now() - t; }, mapScale: () => ({ ratio: MV.scale / (MV.W / S), cx: MV.cx, cy: MV.cy, lab: MV.lab, u: MV.W / MV.cv.clientWidth, pro: st.pro && MV.pro, box: st.pro && MV.proBox, W: MV.W, H: MV.H, plot: plotPoint() }), frames: () => V.n, mapOff: () => MV.off, dbg: { onScale, LS, V, binoCaption, compassReading, setCmp, buildTerrain, placeTarget, genWorld, visibleSet, openAround, nearestLm, los, groundAt, addBurst, setView, proj, camF, gridToWorld, sheetCheck } };
   newCard(QS.get('seed') ? +QS.get('seed') : undefined);
 })();
 </script>
