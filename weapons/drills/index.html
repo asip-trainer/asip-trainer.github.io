@@ -48,7 +48,7 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 @media (min-width: 960px) {
   .wrap { grid-template-columns: minmax(0, 1fr) 380px; grid-template-rows: auto auto 1fr; grid-template-areas: "stage task" "stage coach" "stage score"; column-gap: 20px; align-items: start; }
   .scol { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); }
-  .stage { height: calc(100vh - 200px) !important; min-height: 420px; }
+  .stage { height: calc(100vh - 300px) !important; min-height: 400px; }
 }
 .card { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
 .taskh { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
@@ -67,17 +67,49 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 /* stage */
 .stage { position: relative; height: clamp(360px, 62vh, 620px); overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: radial-gradient(130% 100% at 50% 0%, var(--surface), var(--bg)); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
-.tools { position: absolute; top: 8px; right: 8px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; max-width: calc(100% - 16px); }
-.tools button { padding: 5px 8px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); font-size: 12.5px; font-weight: 650; cursor: pointer; }
+.tools { position: absolute; top: 8px; right: 8px; pointer-events: none; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; max-width: calc(100% - 16px); }
+.tools button { pointer-events: auto; padding: 5px 8px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); font-size: 12.5px; font-weight: 650; cursor: pointer; }
 .tools button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
-.hud { position: absolute; left: 8px; top: 8px; z-index: 2; display: grid; grid-template-columns: auto auto; gap: 2px 8px; padding: 7px 9px; border-radius: 10px; background: rgba(20, 23, 16, .78); color: #eeecdc; font: 600 11.5px/1.3 var(--ui); pointer-events: none; }
+.hud { position: absolute; left: 8px; top: 8px; z-index: 2; max-width: calc(100% - 230px); padding: 6px 10px; border-radius: 10px; background: rgba(20, 23, 16, .78); color: #eeecdc; font: 600 12.5px/1.3 var(--ui); pointer-events: none; }
 .hud b { color: #f3c65c; font-weight: 700; }
 .hud .k { color: #b9b7a4; font-weight: 500; }
+/* Guided: a ring and a label on the part to use */
+.call { position: absolute; left: 0; top: 0; z-index: 3; width: 0; height: 0; pointer-events: none; }
+.call .ring { position: absolute; left: -24px; top: -24px; width: 48px; height: 48px; border: 3px solid var(--hint); border-radius: 50%; box-shadow: 0 0 0 2px rgba(0,0,0,.25); animation: ring 1.15s ease-out infinite; }
+.call .lab { position: absolute; left: 0; bottom: 30px; padding: 5px 10px; border-radius: 9px; background: var(--hint); color: #1b2016; font: 800 13.5px/1.2 var(--ui); white-space: nowrap; transform: translateX(-50%); box-shadow: 0 6px 16px rgba(0,0,0,.3); }
+.call .lab::after { content: ""; position: absolute; left: 50%; top: 100%; margin-left: -6px; border: 6px solid transparent; border-top-color: var(--hint); }
+@keyframes ring { from { transform: scale(.55); opacity: 1; } to { transform: scale(1.35); opacity: .15; } }
+.cks { position: absolute; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; }
+.ck { position: absolute; left: 0; top: 0; padding: 2px 7px; border-radius: 6px; background: rgba(20, 23, 16, .82); color: #f5d27a; font: 700 11.5px/1.3 var(--ui); white-space: nowrap; }
+.ck.ok { color: #7fe0a4; }
+/* control panel: one button per control, saying what it will do now */
+.ctrl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.cb { position: relative; display: grid; align-content: start; gap: 1px; min-height: 58px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); text-align: left; cursor: pointer; }
+.cb .cn { font: 650 10.5px/1.2 var(--ui); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.cb b { font-size: 15px; line-height: 1.2; }
+.cb .st { position: absolute; right: 8px; top: 6px; font: 700 11px var(--mono); color: var(--accent); }
+.cb:active:not(:disabled) { transform: translateY(1px); }
+.cb:disabled { opacity: .42; cursor: default; }
+.cb.want, .chkrow button.want { outline: 3px solid var(--hint); outline-offset: 1px; animation: wantB .75s ease-in-out infinite alternate; }
+.cb.nope { outline: 3px solid #e2432f; animation: nope .4s ease-in-out; }
+.chkrow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chkrow::before { content: "Safety check:"; align-self: center; margin-right: 2px; font-size: 13px; font-weight: 650; color: var(--muted); }
+.chkrow button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: 13px; font-weight: 650; cursor: pointer; }
+.chkrow button.done { border-color: transparent; background: var(--go-soft); color: var(--go); }
+.chkrow button:disabled:not(.done) { opacity: .5; cursor: default; }
+@media (max-width: 600px) {
+  .ctrl { gap: 6px; }
+  .cb { min-height: 52px; padding: 6px 7px; }
+  .cb .cn { font-size: 9.5px; letter-spacing: .03em; }
+  .cb b { font-size: 13px; }
+  .cb .st { display: none; }
+  .stage { height: clamp(320px, 50vh, 520px); }
+}
 .sdo { position: absolute; left: 8px; bottom: 30px; z-index: 2; max-width: min(78%, 520px); padding: 7px 10px; border-radius: 10px; background: var(--accent-soft); font-size: 13.5px; font-weight: 700; line-height: 1.25; pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,.15); }
 .sdo:empty { display: none; }
 @media (min-width: 960px) { .sdo:not(.ex) { display: none; } }
 @media (max-width: 600px) {
-  .hud { top: auto; bottom: 8px; grid-template-columns: auto auto auto auto; gap: 1px 6px; padding: 5px 7px; font-size: 10.5px; }
+  .hud { top: auto; bottom: 8px; max-width: calc(100% - 16px); font-size: 11.5px; }
   .sdo { top: 46px; bottom: auto; }
   .sthint { display: none; }
 }
@@ -127,10 +159,10 @@ td.nogo { color: var(--nogo); font-weight: 700; }
 .verdict { display: inline-block; padding: 4px 12px; border-radius: 999px; font: 700 15px var(--mono); }
 .verdict.go { background: var(--go-soft); color: var(--go); }
 .verdict.nogo { background: var(--nogo-soft); color: var(--nogo); }
-.toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 45; pointer-events: none; width: max-content; max-width: min(92vw, 520px); padding: 12px 16px; border-radius: 14px; background: var(--ink); color: var(--bg); font-size: 15px; line-height: 1.35; box-shadow: 0 10px 30px rgba(0,0,0,.35); transform: translateX(-50%); }
+.toast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 62px); z-index: 45; pointer-events: none; width: max-content; max-width: min(92vw, 520px); padding: 12px 16px; border-radius: 14px; background: var(--ink); color: var(--bg); font-size: 15px; line-height: 1.35; box-shadow: 0 10px 30px rgba(0,0,0,.35); transform: translateX(-50%); }
 .toast b { color: var(--hint); }
 .toast.pop { animation: pop .25s ease-out; }
-@keyframes pop { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes pop { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
 .modal.charlie { align-items: center; background: rgba(12, 14, 8, .82); }
 .ccard { position: relative; width: 100%; max-width: 460px; margin: auto 0; padding: 20px 18px 18px; overflow: hidden; border-radius: 18px; text-align: center; color: #f1efe0; background: radial-gradient(120% 90% at 50% 0%, #3d4628, #1c2112 70%); box-shadow: 0 20px 60px rgba(0,0,0,.5); }
 .ccard .eyebrow { font: 700 11px/1 var(--ui); letter-spacing: .16em; text-transform: uppercase; color: #c9c7a4; }
@@ -183,14 +215,24 @@ td.nogo { color: var(--nogo); font-weight: 700; }
         <button data-v="work" aria-pressed="true">Work</button><button data-v="right" aria-pressed="false">Right</button><button data-v="left" aria-pressed="false">Left</button><button data-v="top" aria-pressed="false">Top</button>
         <button id="tXray" aria-pressed="true">X-ray</button>
       </div>
+      <div class="cks" id="cks"></div>
+      <div class="call" id="call" hidden><div class="ring"></div><div class="lab" id="callLab"></div></div>
       <div class="sdo" id="sdo"></div>
-      <div class="sthint">Tap the charging handle, safety, trigger, feed cover, feed tray, ejection port cover or belt</div>
+      <div class="sthint">Tap a part of the gun, or use the buttons below</div>
       <div class="tip" id="tip" hidden></div>
     </div>
-    <div class="actbar">
-      <button class="btn" id="dirBtn">Point the weapon in a safe direction</button>
-      <button class="btn" id="endExam" hidden>End exam and grade now</button>
+    <div class="ctrl" id="ctrl">
+      <button class="cb" data-p="dir" id="dirBtn"><span class="cn">Muzzle</span><b>Safe direction</b><span class="st"></span></button>
+      <button class="cb" data-p="cock"><span class="cn">Charging handle</span><b></b><span class="st"></span></button>
+      <button class="cb" data-p="safety"><span class="cn">Safety</span><b></b><span class="st"></span></button>
+      <button class="cb" data-p="trig"><span class="cn">Trigger</span><b></b><span class="st"></span></button>
+      <button class="cb" data-p="cover"><span class="cn">Feed cover</span><b></b><span class="st"></span></button>
+      <button class="cb" data-p="tray"><span class="cn">Feed tray</span><b></b><span class="st"></span></button>
+      <button class="cb" data-p="belt"><span class="cn">Belt</span><b></b><span class="st"></span></button>
+      <button class="cb" data-p="port"><span class="cn">Ejection port</span><b></b><span class="st"></span></button>
     </div>
+    <div class="chkrow" id="chkRow" hidden></div>
+    <div class="actbar"><button class="btn" id="endExam" hidden>End exam and grade now</button></div>
   </section>
 
   <section class="card" id="scoreCard" aria-label="Score sheet">
@@ -387,10 +429,10 @@ function buildM249(rig) {
   box(po, MAT.plate, -4, 4, -.3, .05, -2.9, 0);
   hitbox(po, -5, 5, -1.2, 1, -3.6, .8);
   P.chk = {
-    pawl: hotspot(cv, 'chk:pawl', '1 · Feed pawl assembly', -10, -1.2, 0),
+    pawl: hotspot(cv, 'chk:pawl', '1 · Feed pawl', -10, -1.2, 0),
     tray: hotspot(tr, 'chk:tray', '2 · Feed tray', -7, 1.4, 0),
     chamber: hotspot(rc, 'chk:chamber', '3 · Chamber', 23.8, Y + .6, 0),
-    bolt: hotspot(rc, 'chk:bolt', '4 · Bolt face to chamber, under the bolt', 15.5, Y - 1.4, 0),
+    bolt: hotspot(rc, 'chk:bolt', '4 · Bolt face & under bolt', 15.5, Y - 1.4, 0),
     magwell: hotspot(rc, 'chk:magwell', '5 · Magazine well', 20.2, 6.6, -5),
   };
   const ck = P.cock = part(rig, 'cock', 'Charging handle');
@@ -412,11 +454,11 @@ function buildM249(rig) {
   box(tg, MAT.metal, 20.6, 21.4, -4.6, -1.6, -.8, .8);
   const tb = P.trig = part(tg, 'trig', 'Trigger', 16.45, -1.6, 0);
   box(tb, MAT.steel, -.45, .45, -2.3, 0, -.35, .35);
-  hitbox(tb, -1.6, 2.4, -3.6, .4, -1.6, 1.6);
+  hitbox(tb, -1.1, 1.1, -2.6, .2, -1.4, 1.4);
   const sf = P.safety = part(tg, 'safety', 'Safety (push right = SAFE, left = FIRE)', 18.4, -.9, 0);
   cylZ(sf, MAT.steel, -3.1, 3.1, .42, 0, 0);
   cylZ(sf, MAT.red, -3.3, -2.9, .46, 0, 0);
-  hitbox(sf, -1.3, 1.3, -1.3, 1.3, -4.6, 4.6);
+  hitbox(sf, -.6, 1, -.8, .8, -4.6, 4.6);
   const br = part(rig, null, 'Barrel assembly');
   cylX(br, MAT.metal, 22.3, 72, 1.25, Y, 0);
   cylX(br, MAT.metal, 33.4, 36.6, 2, Y, 0, 28);
@@ -483,10 +525,10 @@ function buildM240(rig) {
   box(po, MAT.plate, -5, 5, -.3, .05, -4.4, 0);
   hitbox(po, -6, 6, -1.2, 1, -5, .8);
   P.chk = {
-    pawl: hotspot(cv, 'chk:pawl', '1 · Feed pawl assembly', -13, -1.2, 0),
+    pawl: hotspot(cv, 'chk:pawl', '1 · Feed pawl', -13, -1.2, 0),
     tray: hotspot(tr, 'chk:tray', '2 · Feed tray', -11, 1.5, 0),
     chamber: hotspot(rc, 'chk:chamber', '3 · Chamber', 33.6, Y + .6, 0),
-    bolt: hotspot(rc, 'chk:bolt', '4 · Bolt face to chamber, under the bolt', 27, Y - 1.4, 0),
+    bolt: hotspot(rc, 'chk:bolt', '4 · Bolt face & under bolt', 27, Y - 1.4, 0),
   };
   const ck = P.cock = part(rig, 'cock', 'Charging handle');
   box(ck, MAT.metal, 34.4, 36.2, 6.8, 8, 4.4, 5.2);
@@ -501,11 +543,11 @@ function buildM240(rig) {
   box(tg, MAT.metal, 21.2, 22, -5.6, -2, -.8, .8);
   const tb = P.trig = part(tg, 'trig', 'Trigger', 16.65, -2, 0);
   box(tb, MAT.steel, -.45, .45, -2.6, 0, -.35, .35);
-  hitbox(tb, -1.6, 2.4, -3.9, .4, -1.6, 1.6);
+  hitbox(tb, -1.1, 1.1, -2.9, .2, -1.4, 1.4);
   const sf = P.safety = part(tg, 'safety', 'Safety (push right = S, left = F)', 18.8, -1.2, 0);
   cylZ(sf, MAT.steel, -3.2, 3.2, .42, 0, 0);
   cylZ(sf, MAT.red, -3.4, -3, .46, 0, 0);
-  hitbox(sf, -1.3, 1.3, -1.3, 1.3, -4.7, 4.7);
+  hitbox(sf, -.6, 1, -.8, .8, -4.7, 4.7);
   const ptp = part(rig, null, 'Trigger housing spring pin', 6.5, -1.1, 0); cylZ(ptp, MAT.pin, -3.8, 3.8, .34, 0, 0); cylZ(ptp, MAT.pin, 3.8, 4.3, .6, 0, 0);
   const st = part(rig, null, 'Buttstock and buffer assembly');
   box(st, MAT.metal, -5, .4, 0, 10.2, -3.2, 3.2);
@@ -677,7 +719,7 @@ function buildWeapon() {
   /* ammo can with the belt on top, to the left of the feed tray */
   W.can = new THREE.Group(); root.add(W.can);
   /* ammo can on a sandbag, to the left of the feed tray, high enough to see over the receiver */
-  const cx = D.rig[0] + W.trayX + 9, cz = -15, cb = 10, ct = cb + 15;
+  const cx = D.rig[0] + W.trayX + 9, cz = -15, cb = 16, ct = cb + 15;
   box(W.can, MAT.olive, cx - 11, cx + 11, 0, cb, cz - 9, cz + 9);
   box(W.can, MAT.can, cx - 7, cx + 7, cb, ct, cz - 6, cz + 6); box(W.can, MAT.olive, cx - 7.2, cx + 7.2, ct, ct + .8, cz - 6.2, cz + 6.2);
   box(W.can, MAT.olive, cx - 1.5, cx + 1.5, ct + .8, ct + 1.6, cz - 4, cz + 4);
@@ -786,7 +828,7 @@ async function perform(a) {
     case 'portClose': S.port = 'closed'; return to(P.port, {}, 140);
     case 'belt': {
       S.belt = 'tray'; const b = W.belt.b, c = W.cal;
-      b.children.filter(x => x.userData.proxy).forEach(x => b.remove(x));
+      b.children.filter(x => x.userData.proxy).forEach(x => b.remove(x)); b.userData.pick = null; b.userData.name = 'Link belt on the feed tray';
       W.rig.attach(b);
       const p0 = b.position.clone(), q0 = b.quaternion.clone(), p = V(c.x0, c.y, 0), mid = p0.clone().lerp(p, .5); mid.y = Math.max(p0.y, p.y) + 6;
       return tween(480, k => { const u = 1 - k; b.position.set(0, 0, 0).addScaledVector(p0, u * u).addScaledVector(mid, 2 * u * k).addScaledVector(p, k * k); b.quaternion.slerpQuaternions(q0, new THREE.Quaternion(), k); });
@@ -795,7 +837,7 @@ async function perform(a) {
       if (a.startsWith('chk:')) {
         S.checked.add(a); hotspots();
         if (a === 'chk:tray' && S.lastLink) { S.lastLink = false; W.lastLink.visible = false; return say('Removed the last link from the feed tray. Clear.'); }
-        return say(`${nameOf(W.P.chk[a.slice(4)])}: no brass, links or ammo.`);
+        return;
       }
   }
 }
@@ -845,7 +887,7 @@ function spawnLink() {
 let curView = 'work';
 function viewSpec(name) {
   const f = V(...D.focus).add(V(...D.rig));
-  return { work: [f.clone().add(V(0, 0, -3)), V(.5, 1.05, 1), camera.aspect < 1 ? 38 : 31], right: [f, V(.12, .25, 1), 26], left: [f, V(-.12, .25, -1), 26], top: [f.clone().add(V(0, 0, -4)), V(.05, 1, .25), 28] }[name];
+  return { work: [f.clone().add(V(1, -.5, -3)), V(.42, .7, 1), camera.aspect < 1 ? 40 : 32], right: [f, V(.12, .25, 1), 26], left: [f, V(-.12, .25, -1), 26], top: [f.clone().add(V(0, 0, -4)), V(.05, 1, .25), 28] }[name];
 }
 function view(name, ms = 600) {
   const [t, dir, R] = viewSpec(name), fv = THREE.MathUtils.degToRad(camera.fov) / 2;
@@ -887,11 +929,12 @@ function newRun() {
   GEN++; BUSY = false; ended = false; T0 = null; stopAt = null; ERR = {}; NOTES = []; WHY = null; glow = []; nope = null;
   buildWeapon(); repaint();
   LIST = drills(D.n)[DK]; SI = 0;
+  buildChecks();
   $('#toast').hidden = true;
   renderAll();
 }
 function advanceStates() { while (cur() && cur().state && cur().state(S)) SI++; }
-async function onAction(pick, srcObj) {
+async function onAction(pick, srcObj, btn) {
   if (ended || BUSY) return;
   if (MODE === 'exam' && !T0) return;
   const ev = intent(pick);
@@ -903,7 +946,7 @@ async function onAction(pick, srcObj) {
   const aux = s.set && (ev.a === 'trayUp' || ev.a === 'trayDown');
   if (ev.noop && !match) { say(ev.msg); if (ev.a === 'trigTest' || ev.a === 'dry') { BUSY = true; await perform(ev.a); BUSY = false; } return; }
   if (!match && !aux) {
-    if (MODE === 'guided') return guard(s, pick, srcObj);
+    if (MODE === 'guided') return guard(s, pick, srcObj, btn);
     if (!harmless(ev.a)) { const m = s.m; (ERR[m] = ERR[m] || []).push(`Out of sequence: ${DESC[ev.a] || ev.a} when the next step was "${s.do}"`); }
     if (ev.a === 'slam') (ERR[s.m] = ERR[s.m] || []).push('Let the bolt slam forward on an empty chamber instead of easing it forward.');
   }
@@ -925,11 +968,11 @@ function say(html, warn) {
   const t = $('#toast');
   t.innerHTML = warn ? `<b>Not that one.</b> ${html}` : esc(html);
   t.hidden = false; t.classList.remove('pop'); void t.offsetWidth; t.classList.add('pop');
-  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, warn ? 3400 : 2000);
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, warn ? 3000 : 1700);
 }
-function guard(s, pick, src) {
-  const top = src ? pickOf(src) : null;
-  if (pick === 'dir') { const b = $('#dirBtn'); b.classList.remove('nope'); void b.offsetWidth; b.classList.add('nope'); }
+function guard(s, pick, src, btn) {
+  const top = src ? pickOf(src) || src : null;
+  if (btn || pick === 'dir') { const b = btn || $('#dirBtn'); b.classList.remove('nope'); void b.offsetWidth; b.classList.add('nope'); }
   else if (top) { nope = top; repaint(); setTimeout(() => { if (nope === top) { nope = null; repaint(); } }, 600); }
   const c = $('#coach'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
   say(`${esc(s.do)} ${esc(s.how || '')}`, true);
@@ -956,21 +999,15 @@ function renderAll() {
   sdo.textContent = ex ? '' : s ? s.do : 'Done.';
   const g = !ex && s && !BUSY ? glowFor(s) : [];
   setGlow(g);
-  $('#dirBtn').classList.toggle('want', !ex && !!s && s.a === 'dir');
-  renderHud(); renderScore();
+  renderHud(); renderControls(); renderScore();
+  if (MODE === 'guided' && !BUSY) ensureVisible();
   const running = ex && !!T0 && !ended;
   $('#endExam').hidden = !running;
   $('#btnRef').disabled = running;
 }
 function renderHud() {
-  const row = (k, v) => `<span class="k">${k}</span><b>${v}</b>`;
-  $('#hud').innerHTML = row('Bolt', S.bolt === 'fwd' ? (S.chamber ? 'fwd, round in' : 'forward') : 'rear, locked') +
-    row('Handle', S.handle === 'held' ? 'held to rear' : 'forward') +
-    row('Safety', S.safety === 'F' ? 'F (FIRE)' : 'S (SAFE)') +
-    row('Trigger', S.trig ? 'held down' : 'released') +
-    row('Cover', S.cover) + row('Tray', S.cover === 'open' ? S.tray : '–') +
-    row('Port', S.port) +
-    (DK === 'lmu' ? row('Belt', S.belt === 'box' ? 'on ammo can' : S.belt === 'tray' ? 'on feed tray' : BELT_LEFT() ? `loaded, ${W.belt.rounds.filter(r => r.alive).length} rds` : S.lastLink ? 'last link' : 'empty') : '');
+  $('#hud').innerHTML = `<span class="k">Bolt</span> <b>${S.bolt === 'fwd' ? (S.chamber ? 'forward, round in the chamber' : 'forward') : 'locked to the rear'}</b>`;
+
 }
 function renderScore() {
   const card = $('#scoreCard'), ex = MODE === 'exam';
@@ -985,6 +1022,102 @@ function renderScore() {
     const subs = items.map((t, i) => `<li class="${itemDone(m, i) ? 'ok' : s && s.m === m && s.i === i ? 'now' : ''}">${esc(t)}</li>`).join('');
     return `<li class="m${bad ? ' bad' : done ? ' done' : s && s.m === m ? ' cur' : ''}"><span class="num">${m}</span><div><div class="mt">${esc(title)}</div><ul class="subs">${subs}</ul></div></li>`;
   }).join('');
+}
+
+/* ---------- control panel: one button per control, saying what a press does right now ---------- */
+function ctrlInfo(p) {
+  const left = W.belt.rounds.filter(r => r.alive).length;
+  switch (p) {
+    case 'dir': return { t: 'Safe direction', st: '' };
+    case 'cock': return { t: S.handle === 'fwd' ? 'Pull & hold' : S.trig && S.safety === 'F' ? 'Ease forward' : 'Push forward', st: S.handle === 'fwd' ? 'fwd' : 'held' };
+    case 'safety': return { t: S.safety === 'F' ? 'Push to SAFE' : 'Push to FIRE', st: S.safety };
+    case 'trig': return { t: S.trig ? 'Release' : S.handle === 'held' && S.safety === 'F' ? 'Hold down' : 'Press', st: S.trig ? 'held' : '' };
+    case 'cover': return { t: S.cover === 'closed' ? 'Open' : 'Close', st: S.cover };
+    case 'tray': return { t: S.tray === 'down' ? 'Lift' : 'Lower', st: S.cover === 'open' ? S.tray : '', off: S.cover !== 'open' };
+    case 'belt': return { t: S.belt === 'box' ? 'Put on feed tray' : left ? `${left} rounds left` : 'Empty', st: '', off: S.belt !== 'box', hide: DK !== 'lmu' };
+    case 'port': return { t: S.port === 'open' ? 'Close' : 'Closed', st: S.port, off: S.port !== 'open' };
+  }
+  return { t: '' };
+}
+/* the control a perfect candidate uses next */
+function nextPick() {
+  const s = cur(); if (!s) return null;
+  if (s.set) { const id = s.set.find(i => !S.checked.has(i)); if (id === 'chk:chamber' && S.tray === 'down') return 'tray'; if (id === 'chk:tray' && S.tray === 'up') return 'tray'; return id; }
+  if (s.state) return 'tray';
+  if (s.a === 'dir') return 'dir';
+  return PART_OF[s.a];
+}
+const objFor = p => !p || p === 'dir' ? null : p.startsWith('chk:') ? W.P.chk[p.slice(4)] : p === 'belt' ? W.belt.b : W.P[p];
+function buildChecks() {
+  $('#chkRow').innerHTML = Object.entries(W.P.chk).map(([k, g]) => `<button data-p="chk:${k}">${esc(g.userData.name)}</button>`).join('');
+  $$('#chkRow button').forEach(b => b.addEventListener('click', () => onAction(b.dataset.p, objFor(b.dataset.p), b)));
+  $('#cks').innerHTML = Object.keys(W.P.chk).map(k => `<div class="ck" data-k="${k}" hidden></div>`).join('');
+}
+function renderControls() {
+  const want = MODE === 'guided' && !BUSY && !ended ? nextPick() : null;
+  $$('#ctrl .cb').forEach(b => {
+    const i = ctrlInfo(b.dataset.p);
+    b.hidden = !!i.hide;
+    b.querySelector('b').textContent = i.t;
+    b.querySelector('.st').textContent = i.st || '';
+    b.disabled = !!i.off || ended;
+    b.classList.toggle('want', b.dataset.p === want);
+  });
+  const row = $('#chkRow');
+  row.hidden = S.cover !== 'open' || ended;
+  $$('#chkRow button').forEach(b => {
+    const k = b.dataset.p.slice(4), g = W.P.chk[k], done = S.checked.has(b.dataset.p);
+    b.classList.toggle('done', done);
+    b.textContent = (done ? '✓ ' : '') + g.userData.name + (!done && !g.visible ? (k === 'chamber' ? ' (lift the tray)' : k === 'tray' ? ' (lower the tray)' : '') : '');
+    b.disabled = done || !g.visible;
+    b.classList.toggle('want', b.dataset.p === want);
+  });
+}
+/* the ring-and-label marker on the part to use, and the numbers on the safety-check points */
+const tmp = V(0, 0, 0);
+function anchor(o) {
+  if (!o.userData.anchor) {
+    const b = new THREE.Box3(); o.updateMatrixWorld(true);
+    o.traverse(c => { if (c.isMesh && !c.userData.proxy) { if (!c.geometry.boundingBox) c.geometry.computeBoundingBox(); b.union(c.geometry.boundingBox.clone().applyMatrix4(c.matrixWorld)); } });
+    o.userData.anchor = b.isEmpty() ? V(0, 0, 0) : o.worldToLocal(b.getCenter(V(0, 0, 0)));
+  }
+  return o.userData.anchor;
+}
+function screenOf(o) {
+  tmp.copy(anchor(o)); o.localToWorld(tmp); tmp.project(camera);
+  return { x: (tmp.x + 1) / 2 * stage.clientWidth, y: (1 - tmp.y) / 2 * stage.clientHeight, on: tmp.z < 1 && Math.abs(tmp.x) < .92 && Math.abs(tmp.y) < .92 };
+}
+const shownObj = o => { for (let c = o; c; c = c.parent) if (!c.visible) return false; return true; };
+let callTxt = '';
+function placeOverlays() {
+  const call = $('#call'), p = MODE === 'guided' && !BUSY && !ended ? nextPick() : null, o = objFor(p);
+  if (o && shownObj(o)) {
+    const q = screenOf(o);
+    call.hidden = !q.on;
+    if (q.on) {
+      call.style.transform = `translate(${q.x.toFixed(0)}px, ${q.y.toFixed(0)}px)`;
+      const t = p.startsWith('chk:') ? `Check: ${o.userData.name.replace(/^\d · /, '')}` : `${ctrlInfo(p).t}`;
+      if (t !== callTxt) { callTxt = t; $('#callLab').textContent = t; }
+    }
+  } else call.hidden = true;
+  for (const el of $$('#cks .ck')) {
+    const g = W.P.chk[el.dataset.k];
+    if (!g || !shownObj(g)) { el.hidden = true; continue; }
+    const q = screenOf(g), done = S.checked.has('chk:' + el.dataset.k);
+    el.hidden = !q.on;
+    if (q.on) {
+      el.style.transform = `translate(${(q.x + 16).toFixed(0)}px, ${(q.y - 10).toFixed(0)}px)`;
+      const t = (done ? '✓ ' : '') + g.userData.name;
+      if (el.textContent !== t) el.textContent = t;
+      el.classList.toggle('ok', done);
+    }
+  }
+}
+/* Guided: if the part to use is off screen, turn back to the work view */
+function ensureVisible() {
+  const o = objFor(nextPick());
+  if (!o || !shownObj(o)) return;
+  if (!screenOf(o).on) view('work', 450);
 }
 
 /* ---------- clock, finish, results ---------- */
@@ -1079,8 +1212,9 @@ function hit(e) {
   ptr.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
   ray.setFromCamera(ptr, camera);
   const hits = ray.intersectObjects(root.children, true).filter(h => h.object.isMesh && shown(h.object));
-  const hot = hits.find(h => { const p = pickOf(h.object); return p && p.userData.pick.startsWith('chk:'); });
-  return hot || hits.find(h => pickOf(h.object)) || hits[0];
+  const want = MODE === 'guided' && !ended ? nextPick() : null;
+  const is = (h, f) => { const p = pickOf(h.object); return p && f(p.userData.pick); };
+  return (want && hits.find(h => is(h, k => k === want))) || hits.find(h => is(h, k => k.startsWith('chk:') && !S.checked.has(k))) || hits.find(h => pickOf(h.object)) || hits[0];
 }
 let down = null;
 renderer.domElement.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId }; });
@@ -1107,7 +1241,7 @@ if (matchMedia('(hover: hover)').matches) {
   });
   renderer.domElement.addEventListener('pointerleave', () => { $('#tip').hidden = true; });
 }
-$('#dirBtn').addEventListener('click', () => onAction('dir', null));
+$$('#ctrl .cb').forEach(b => b.addEventListener('click', () => onAction(b.dataset.p, objFor(b.dataset.p), b)));
 $$('.tools [data-v]').forEach(b => b.addEventListener('click', () => view(b.dataset.v)));
 $('#tXray').addEventListener('click', () => { XRAY = !XRAY; $('#tXray').setAttribute('aria-pressed', String(XRAY)); repaint(); });
 $('#restart').addEventListener('click', () => { if (MODE === 'exam') { ATT = 1; newRun(); renderIntro(); openModal('mIntro'); } else newRun(); });
@@ -1140,6 +1274,7 @@ renderer.setAnimationLoop(t => {
   HOT.opacity = .55 + .4 * (.5 + .5 * Math.sin(t / 150));
   controls.update();
   renderer.render(scene, camera);
+  if (W) placeOverlays();
 });
 
 /* ---------- hooks for the test suite ---------- */
@@ -1147,8 +1282,10 @@ window.WT = {
   state: () => ({ weapon: D.key, drill: DK, mode: MODE, si: SI, n: LIST.length, step: cur() && (cur().set ? cur().set.find(id => !S.checked.has(id)) : cur().a), m: cur() && cur().m, busy: BUSY, ended, why: WHY, err: ERR, att: ATT, S: { ...S, checked: [...S.checked] }, rounds: W.belt.rounds.filter(r => r.alive).length }),
   tap(pick) { let src = null; if (pick !== 'dir') { const find = o => { if (o.userData.pick === pick) return o; for (const c of o.children) { const f = find(c); if (f) return f; } return null; }; const o = find(root); if (o) o.traverse(c => { if (!src && c.isMesh) src = c; }); } return onAction(pick, src); },
   /* the control the next step needs (what a perfect candidate taps) */
-  next() { const s = cur(); if (!s) return null; if (s.set) { const id = s.set.find(i => !S.checked.has(i)); if (id === 'chk:chamber' && S.tray === 'down') return 'tray'; if (id === 'chk:tray' && S.tray === 'up') return 'tray'; return id; } if (s.state) return 'tray'; if (s.a === 'dir') return 'dir'; return PART_OF[s.a]; },
+  next: () => nextPick(),
+  press(p) { const b = document.querySelector(`[data-p="${p}"]`); if (b && !b.disabled && !b.hidden) { b.click(); return true; } return false; },
   speed(x) { SPEED = x; }, setWeapon, setDrill, setMode, startExam, finish, view,
+  screen(p) { const o = objFor(p); if (!o) return null; const q = screenOf(o), r = renderer.domElement.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y, on: q.on }; },
 };
 </script>
 </body>
