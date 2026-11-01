@@ -43,7 +43,7 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 @media (max-width: 440px) { .brand small { display: none; } .seg button { padding: 6px 9px; } }
 @media (max-width: 360px) { .brand { display: none; } .top-bar .seg { margin-right: auto; } }
 
-.wrap { display: grid; gap: 12px; max-width: 1400px; margin: 0 auto; padding-block: 12px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); grid-template-columns: minmax(0, 1fr); grid-template-areas: "task" "coach" "stage" "score"; }
+.wrap { display: grid; gap: 12px; max-width: 1400px; margin: 0 auto; padding-block: 12px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); grid-template-columns: minmax(0, 1fr); grid-template-areas: "stage" "coach" "task" "score"; }   /* phones: the gun and its controls first */
 #task { grid-area: task; } #coach { grid-area: coach; } .scol { grid-area: stage; min-width: 0; } #scoreCard { grid-area: score; }
 @media (min-width: 960px) {
   .wrap { grid-template-columns: minmax(0, 1fr) 380px; grid-template-rows: auto auto 1fr; grid-template-areas: "stage task" "stage coach" "stage score"; column-gap: 20px; align-items: start; }
