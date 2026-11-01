@@ -97,6 +97,16 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .chkrow button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: 13px; font-weight: 650; cursor: pointer; }
 .chkrow button.done { border-color: transparent; background: var(--go-soft); color: var(--go); }
 .chkrow button:disabled:not(.done) { opacity: .5; cursor: default; }
+/* phones held sideways: the gun fills the screen height and the controls sit beside it */
+@media (orientation: landscape) and (max-height: 520px) {
+  .top-bar { padding-block: 4px; }
+  .brand small { display: none; }
+  .wrap { padding-top: 8px; }
+  .scol { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, 40%); column-gap: 10px; align-items: start; }
+  .scol > :not(.stage) { grid-column: 2; }
+  .stage { grid-column: 1; grid-row: 1 / span 4; height: calc(100vh - 58px); height: calc(100dvh - 58px); min-height: 240px; }
+  .ctrl { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0; }
+}
 @media (max-width: 600px) {
   .ctrl { gap: 6px; }
   .cb { min-height: 52px; padding: 6px 7px; }
@@ -117,6 +127,7 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .tip { position: absolute; z-index: 3; pointer-events: none; padding: 4px 8px; border-radius: 8px; background: var(--ink); color: var(--bg); font-size: 12.5px; font-weight: 600; white-space: nowrap; transform: translate(12px, 12px); }
 .loading { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; color: var(--muted); text-align: center; }
 .actbar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.more-x summary { padding: 4px 0; color: var(--accent); font-size: 13px; font-weight: 650; cursor: pointer; }
 .actbar .btn { flex: 1 1 auto; padding: 12px 14px; font-size: 15px; }
 .btn.want { outline: 4px solid var(--hint); outline-offset: 2px; animation: wantB .8s ease-in-out infinite alternate; }
 @keyframes wantB { to { outline-color: transparent; } }
@@ -218,7 +229,7 @@ td.nogo { color: var(--nogo); font-weight: 700; }
       <div class="cks" id="cks"></div>
       <div class="call" id="call" hidden><div class="ring"></div><div class="lab" id="callLab"></div></div>
       <div class="sdo" id="sdo"></div>
-      <div class="sthint">Tap a part of the gun, or use the buttons below</div>
+      <div class="sthint">Tap a part of the gun, or use the buttons</div>
       <div class="tip" id="tip" hidden></div>
     </div>
     <div class="ctrl" id="ctrl">
@@ -247,6 +258,7 @@ td.nogo { color: var(--nogo); font-weight: 700; }
   <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="exT">
     <h2 id="exT">Exam mode</h2>
     <ul id="exList"></ul>
+    <details class="more-x"><summary>More about the exam</summary><ul id="exMore"></ul></details>
     <div class="txrow"><button class="btn" id="exBack">Back to Guided</button><button class="btn primary" id="exStart">Start</button></div>
   </div>
 </div>
@@ -1189,6 +1201,11 @@ function renderIntro() {
   const lim = DRILL[DK].limit;
   $('#exT').textContent = `Exam mode · ${D.name} · ${DRILL[DK].name}`;
   $('#exList').innerHTML = [
+    lim ? `All steps in sequence within <b>${lim} seconds</b>.` : 'All steps in sequence. The sheet gives this part no separate time limit.',
+    'No help: no glowing controls and no ✓ marks until the end. A step out of order is a NO-GO; looking and checking never count against you.',
+    lmu() ? 'Pass on the 1st try 20 pts, on the 2nd 14, two fails 0 and Charlie Company.' : 'GO or NO-GO; try again as often as you like.',
+  ].map(t => `<li>${t}</li>`).join('');
+  $('#exMore').innerHTML = [
     lim ? `The clock starts when you press Start: <b>all steps in sequence within ${lim} seconds</b>.` : 'The clock starts when you press Start. The sheet has no separate limit for this part (it shares 3:00 with the take-apart or put-together), so be quick.',
     'No coach, no glowing controls, no ✓ marks until the end. The weapon behaves like the real one: the safety only goes to SAFE with the bolt to the rear, the charging handle never goes forward by itself, and the bolt only eases forward with the trigger held.',
     'Any step out of sequence is a NO-GO for that performance measure. Looking and checking (safe direction, the safety-check points, lifting the feed tray) never count against you.',

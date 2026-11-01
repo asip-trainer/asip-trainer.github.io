@@ -63,6 +63,8 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .coach .lbl { color: var(--accent); }
 .coach .do { margin-top: 4px; font-size: 16px; font-weight: 700; line-height: 1.3; }
 .coach .how { margin-top: 2px; font-size: 13.5px; color: var(--muted); }
+.coach .feel { margin-top: 4px; font-size: 13.5px; font-weight: 600; }
+.coach .feel:empty { display: none; }
 .coach.shake { animation: nope .4s ease-in-out; }
 .coach.ok { animation: okflash .7s ease-out; }
 @keyframes okflash { from { background: var(--go-soft); box-shadow: 0 0 0 2px var(--go); } }
@@ -75,10 +77,11 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .tools button { pointer-events: auto; padding: 5px 8px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); font-size: 12.5px; font-weight: 650; cursor: pointer; }
 .tools button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
 .tools .gap { width: 4px; }
-.sdo { position: absolute; left: 8px; bottom: 30px; z-index: 2; max-width: min(78%, 520px); padding: 7px 10px; border-radius: 10px; background: var(--accent-soft); font-size: 13.5px; font-weight: 700; line-height: 1.25; pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,.15); }
+.tools .more { display: contents; }
+.sdo { position: absolute; left: 8px; bottom: 36px; z-index: 2; max-width: min(78%, 520px); padding: 7px 10px; border-radius: 10px; background: var(--accent-soft); font-size: 13.5px; font-weight: 700; line-height: 1.25; pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,.15); }
 .sdo:empty { display: none; }
 @media (min-width: 960px) { .sdo:not(.ex) { display: none; } }
-.sthint { position: absolute; left: 10px; right: 10px; bottom: 8px; overflow: hidden; font-size: 12px; color: var(--muted); white-space: nowrap; text-overflow: ellipsis; pointer-events: none; }
+.sthint { position: absolute; left: 8px; bottom: 8px; max-width: calc(100% - 16px); overflow: hidden; padding: 3px 8px; border-radius: 7px; background: rgba(20, 23, 16, .62); color: #eeecdc; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; pointer-events: none; }
 .tip { position: absolute; z-index: 3; pointer-events: none; padding: 4px 8px; border-radius: 8px; background: var(--ink); color: var(--bg); font-size: 12.5px; font-weight: 600; white-space: nowrap; transform: translate(12px, 12px); }
 .names { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
 .nm { position: absolute; left: 0; top: 0; padding: 2px 6px; border-left: 3px solid var(--c, #ddd); border-radius: 5px; background: rgba(18, 20, 14, .8); color: #f4f2e4; font-size: 11.5px; font-weight: 650; white-space: nowrap; }
@@ -86,6 +89,7 @@ h2 { margin: 0 0 10px; font: 700 12px/1.2 var(--ui); letter-spacing: .1em; text-
 .call { position: absolute; left: 0; top: 0; z-index: 3; width: 0; height: 0; pointer-events: none; }
 .call .ring { position: absolute; left: -24px; top: -24px; width: 48px; height: 48px; border: 3px solid var(--hint); border-radius: 50%; box-shadow: 0 0 0 2px rgba(0,0,0,.25); animation: ring 1.15s ease-out infinite; }
 .call .lab { position: absolute; left: 0; bottom: 30px; padding: 5px 10px; border-radius: 9px; background: var(--hint); color: #1b2016; font: 800 13.5px/1.2 var(--ui); white-space: nowrap; transform: translateX(-50%); box-shadow: 0 6px 16px rgba(0,0,0,.3); }
+.call .lab small { display: block; font-size: 11.5px; font-weight: 650; opacity: .78; }
 .call .lab::after { content: ""; position: absolute; left: 50%; top: 100%; margin-left: -6px; border: 6px solid transparent; border-top-color: var(--hint); }
 @keyframes ring { from { transform: scale(.55); opacity: 1; } to { transform: scale(1.35); opacity: .15; } }
 body.demo .call { display: none; }
@@ -101,6 +105,10 @@ body.demo .call { display: none; }
 .stage.grab canvas { cursor: grab; }
 .stage.grabbing canvas { cursor: grabbing; }
 .hnote { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); }
+/* secondary choices stay folded until wanted */
+.opts summary, .more-x summary { padding: 4px 0; color: var(--accent); font-size: 13px; font-weight: 650; cursor: pointer; }
+.opts[open] summary { margin-bottom: 6px; }
+.opts .seg + .seg { margin-top: 8px; }
 /* Guided: after a few idle seconds a finger shows the move once, then again */
 .finger { position: absolute; left: 0; top: 0; z-index: 3; width: 0; height: 0; pointer-events: none; }
 .finger i { position: absolute; left: -16px; top: -16px; width: 32px; height: 32px; border: 3px solid var(--hint); border-radius: 50%; background: rgba(255,255,255,.85); box-shadow: 0 4px 14px rgba(0,0,0,.35); animation: fdrag 2.3s ease-in-out infinite; }
@@ -108,6 +116,13 @@ body.demo .call { display: none; }
 @keyframes fdrag { 0% { transform: translate(var(--x0), var(--y0)) scale(1.3); opacity: 0; } 14% { transform: translate(var(--x0), var(--y0)) scale(.85); opacity: 1; } 72% { transform: translate(var(--x1), var(--y1)) scale(.85); opacity: 1; } 88%, 100% { transform: translate(var(--x1), var(--y1)) scale(1.25); opacity: 0; } }
 @keyframes fpress { 0%, 100% { transform: translate(var(--x0), var(--y0)) scale(1.25); opacity: .45; } 35%, 75% { transform: translate(var(--x0), var(--y0)) scale(.8); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .arr path { animation: none; } .finger i { animation: none; transform: translate(var(--x0), var(--y0)); } .coach.ok { animation: none; } }
+/* phones held sideways: the gun fills the screen height (iPhone Safari has no full screen for a page) */
+@media (orientation: landscape) and (max-height: 520px) {
+  .top-bar { padding-block: 4px; }
+  .brand small { display: none; }
+  .wrap { padding-top: 8px; }
+  .stage { height: calc(100vh - 58px); height: calc(100dvh - 58px); min-height: 240px; }
+}
 .readybar { display: flex; margin-top: 10px; }
 .readybar .btn { flex: 1; margin: 0; padding: 12px; font-size: 15px; }
 
@@ -203,15 +218,18 @@ body.demo .stage { height: 100vh !important; border: 0; border-radius: 0; backgr
     <div class="taskh"><h2>Weapon</h2><a class="linkbtn" href="drills/" style="text-decoration:none">Clearing drills ›</a><button class="linkbtn" id="restart">Restart</button></div>
     <div class="seg" role="group" aria-label="Weapon"><button id="wM249" aria-pressed="true">M249</button><button id="wM240" aria-pressed="false">M240B</button></div>
     <p class="tline" id="tline"></p>
-    <div class="seg" role="group" aria-label="Start with" id="startSeg"><button id="stGun" aria-pressed="true">Start assembled</button><button id="stMat" aria-pressed="false">Start with parts on the mat</button></div>
-    <div class="seg" role="group" aria-label="How you move the parts" style="margin-top:8px"><button id="hOn" aria-pressed="true">Hands-on</button><button id="hOff" aria-pressed="false">Tap</button></div>
-    <p class="hnote" id="hNote"></p>
+    <details class="opts"><summary>More options</summary>
+      <div class="seg" role="group" aria-label="Start with" id="startSeg"><button id="stGun" aria-pressed="true">Start assembled</button><button id="stMat" aria-pressed="false">Start with parts on the mat</button></div>
+      <div class="seg" role="group" aria-label="How you move the parts"><button id="hOn" aria-pressed="true">Hands-on</button><button id="hOff" aria-pressed="false">Tap</button></div>
+      <p class="hnote" id="hNote"></p>
+    </details>
   </section>
 
   <section class="coach" id="coach" aria-live="polite">
     <span class="lbl" id="cStep"></span>
     <div class="do" id="cDo"></div>
     <div class="how" id="cHow"></div>
+    <div class="feel" id="cFeel"></div>
   </section>
 
   <section class="scol" aria-label="3D weapon on the maintenance mat">
@@ -221,7 +239,8 @@ body.demo .stage { height: 100vh !important; border: 0; border-radius: 0; backgr
       <div class="tools">
         <button data-v="work" aria-pressed="true">Work</button><button data-v="right" aria-pressed="false">Right</button><button data-v="left" aria-pressed="false">Left</button><button data-v="mat" aria-pressed="false">Mat</button>
         <span class="gap"></span>
-        <button id="tColors" aria-pressed="true">Colors</button><button id="tNames" aria-pressed="false">Names</button><button id="tXray" aria-pressed="false">X-ray</button><button id="tSound" aria-pressed="true">Sound</button>
+        <button id="tXray" aria-pressed="false">X-ray</button><button id="tMore" aria-expanded="false" aria-label="More tools">⋯</button>
+        <span class="more" id="toolsMore" hidden><button id="tColors" aria-pressed="true">Colors</button><button id="tNames" aria-pressed="false">Names</button><button id="tSound" aria-pressed="true">Sound</button></span>
       </div>
       <svg class="arr" id="arr" hidden><path id="arrLine" d=""/><path class="head" id="arrHead" d=""/></svg>
       <div class="call" id="call" hidden><div class="ring"></div><div class="lab" id="callLab"></div></div>
@@ -247,6 +266,7 @@ body.demo .stage { height: 100vh !important; border: 0; border-radius: 0; backgr
   <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="exT">
     <h2 id="exT">Exam mode</h2>
     <ul id="exList"></ul>
+    <details class="more-x"><summary>More about the exam</summary><ul id="exMore"></ul></details>
     <div class="txrow"><button class="btn" id="exBack">Back to Guided</button><button class="btn primary" id="exStart">Start part 1</button></div>
   </div>
 </div>
@@ -986,11 +1006,11 @@ function buildMat() {
 }
 
 /* ---------- camera views ---------- */
-let curView = 'work', userMoved = false;
+let curView = 'work', userMoved = false, ZOOM = false;   // ZOOM: a double-tap zoomed in
 function viewSpec(name) {
   const [, , z0, z1] = D.mat, gy = D.rig[1] * .55, gz = D.rig[2];
   return {
-    work: [V(0, gy * .45, gz - 40), V(.1, 1.2, 1), camera.aspect < 1 ? Math.max(D.R.work, (D.mat[1] - D.mat[0]) * .47) : D.R.work], // phones: the whole mat width, so every label can be tapped
+    work: [V(0, gy * .45, gz - 40), V(.1, 1.2, 1), camera.aspect < 1 || stage.clientHeight < 450 ? Math.max(D.R.work, (D.mat[1] - D.mat[0]) * .47) : D.R.work], // phones (and short stages): the whole mat, so every label can be reached
     right: [V(0, gy + 4, gz), V(.3, .3, 1), D.R.gun],
     left: [V(0, gy + 4, gz), V(-.3, .3, -1), D.R.gun],
     mat: [V(0, 0, (z0 + z1) / 2), V(0, 1, .28), D.R.mat],
@@ -1000,7 +1020,7 @@ function viewSpec(name) {
 function view(name, ms = 1100) {
   const [t, dir, R] = viewSpec(name), f = THREE.MathUtils.degToRad(camera.fov) / 2;
   const fit = Math.min(f, Math.atan(Math.tan(f) * camera.aspect)), p = t.clone().add(dir.clone().normalize().multiplyScalar(R / Math.tan(fit)));
-  curView = name; userMoved = false;
+  curView = name; userMoved = false; ZOOM = false;
   $$('.tools [data-v]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === name)));
   tweens = tweens.filter(w => !w.cam);
   const t0 = controls.target.clone(), s0 = new THREE.Spherical().setFromVector3(camera.position.clone().sub(t0)), s1 = new THREE.Spherical().setFromVector3(p.clone().sub(t));
@@ -1159,9 +1179,9 @@ function renderAll() {
   $('#startSeg').hidden = ex;
   setToggle('#hOn', HANDS); setToggle('#hOff', !HANDS);
   $('#hNote').textContent = HANDS ? 'Drag each part the way it really moves. Firm parts resist, springs push back. Off: carry each group to its label. On: bring it to the blue outline, then push it home.' : 'Tap a part and it moves by itself.';
-  $('#sthint').textContent = HANDS ? (TOUCH ? 'Drag a part to move it · elsewhere to turn · pinch to zoom' : 'Drag a part to move it · drag empty space to turn · scroll to zoom') : 'Drag to turn · pinch or scroll to zoom · tap a part';
+  $('#sthint').textContent = HANDS ? (TOUCH ? 'Drag a part to move it · double-tap to zoom' : 'Drag a part to move it · drag elsewhere to turn · double-click to zoom') : (TOUCH ? 'Tap a part · drag to turn · double-tap to zoom' : 'Click a part · drag to turn · double-click to zoom');
   stage.classList.toggle('grab', !!handStep());
-  if (handStep()) syncHand();
+  if (handStep()) syncHand(); else $('#cFeel').textContent = '';
   $('#coach').hidden = ex;
   $('#cStep').textContent = PHASE === 'done' ? 'Done' : `${PHASE === 'dis' ? 'Part 1 · Disassemble' : 'Part 2 · Assemble'} · step ${SI + 1} of ${n}`;
   $('#cDo').textContent = s ? s.do : `The ${D.name} is back together.`;
@@ -1270,6 +1290,11 @@ function setWeapon(k) {
 function renderIntro() {
   $('#exT').textContent = `Exam mode · Maintain ${D.key === 'm249' ? 'a' : 'an'} ${D.name}`;
   $('#exList').innerHTML = [
+    '<b>Part 1</b> take it apart, <b>Part 2</b> put it back: <b>3:00</b> each.',
+    HANDS ? 'No help: no arrows, outlines or colors. Each group goes on its label; a wrong label is a NO-GO.' : 'No help: no glow or colors. Tap each group\'s label to put it down; a wrong label is a NO-GO.',
+    'Pass on the 1st try 20 pts, on the 2nd 14, two fails 0 and Charlie Company.',
+  ].map(t => `<li>${t}</li>`).join('');
+  $('#exMore').innerHTML = [
     'Two clocks, like the station: <b>Part 1</b> clear and disassemble within <b>3:00</b>, <b>Part 2</b> assemble and functions check within <b>3:00</b>. Here you only handle the parts (clearing and the functions check are in the clearing trainer), so beat the clock with time to spare.',
     HANDS ? 'No coach, no arrows, no outlines, no colors. Move each part by hand the way it really comes off and goes back, in the order the gun allows: a part that cannot move yet just stays put (on the real gun that costs you time).' : 'No coach, no glowing part, no colors. Tap the parts in the order the gun allows: a part that cannot come off yet just stays put (on the real gun that costs you time).',
     HANDS ? 'Carry every group that comes off <b>to its nomenclature label on the mat</b> and let go. A group on the wrong label is a NO-GO. Separate the groups the sheet marks "separated". Putting it together, a part lines up by itself when you bring it close to where it goes.' : 'Every group that comes off is in your hand: <b>tap its nomenclature label on the mat</b> to put it down. A group on the wrong label is a NO-GO. Separate the groups the sheet marks "separated".',
@@ -1301,10 +1326,16 @@ const DRAG = new Map(), HOLD = {};
 function handStep() { const s = cur(); return HANDS && s && HL[PHASE] ? HL[PHASE][SI] || null : null; }
 function syncHand() { const key = `${PHASE}:${SI}`; if (HS && HS.key === key) return; HS = { key, i: 0 }; setPhase(0); }
 function setPhase(i) {
-  const st = handStep(); HS.i = i; HS.travel = 0; HS.twist = 0; HS.clk = 0;
+  const st = handStep(); HS.i = i; HS.travel = 0; HS.twist = 0; HS.clk = 0; showFeel();
   const ph = st && st.ph[i]; if (!ph) return;
   if (ph.g === 'slide' || ph.g === 'twist' || ph.g === 'swing') { const o = W.P[ph.part]; HS.base = o.position.clone(); HS.baseQ = o.quaternion.clone(); HS.withBase = (ph.with || []).map(([id, r]) => [W.P[id], W.P[id].position.clone(), r]); }
   if (ph.g === 'apart') HS.sep = new Set();
+}
+/* Guided: how the move feels, in words, in the step card (the note by the finger stays short) */
+function showFeel() {
+  const st = handStep(), ph = st && HS && st.ph[HS.i];
+  const t = !ph ? '' : ph.feel || (ph.g === 'mount' ? 'Drag it to the blue outline: it lines up by itself when it is close.' : ph.g === 'place' ? 'Carry it to its label and let go.' : '');
+  $('#cFeel').textContent = t ? `By hand: ${t}` : '';
 }
 /* the next move of this step, or the next step */
 function advance() {
@@ -1401,7 +1432,7 @@ function handDown(e) {
   if (!T0) T0 = Date.now();
   if (hid && pick === hid) {
     const nm = nameOf(W.P[hid]).toLowerCase();
-    holdDown(hid, e.pointerId); grabbing(true); pill(e, 'hold', ph.g === 'hold' ? `The ${nm} is pressed. Keep holding it.` : `The ${nm} is pressed.`);
+    holdDown(hid, e.pointerId); grabbing(true); if (pdown) pdown.hold = true; pill(e, 'hold', ph.g === 'hold' ? 'Held · keep holding' : 'Held');
     if (ph.g === 'hold') advance();
     return true;
   }
@@ -1412,9 +1443,9 @@ function handDown(e) {
   else if (ph.g === 'apart' || ph.g === 'join') {
     const m = pieceAt(e, ph.g === 'apart' ? W.S[ph.key].slice(1).filter(x => !HS.sep.has(x)) : movers(ph.key));
     if (m) d = ph.g === 'apart' ? startApart(e, ph, m) : startMount(e, ph, m, approach(m));
-    else if (pick === ph.key) { pill(e, 'firm', ph.g === 'apart' ? 'Grab a piece that comes off and pull it away.' : 'Grab a loose piece and put it on.'); return true; }
+    else if (pick === ph.key) { pill(e, 'firm', ph.g === 'apart' ? 'Grab a piece that comes off' : 'Grab a loose piece'); return true; }
   }
-  if (!d) { wrongPart(top, h.object); return true; }
+  if (!d) { const o = h.object; clearTimeout(tapNoteT); tapNoteT = setTimeout(() => wrongPart(top, o), 330); return true; }
   d.id = e.pointerId; DRAG.set(e.pointerId, d); grabbing(true);
   try { renderer.domElement.setPointerCapture(e.pointerId); } catch (err) { /* older browser */ }
   return true;
@@ -1447,14 +1478,15 @@ function setTravel(ph, t) {
 }
 function moveSlide(d, e) {
   const ph = d.ph;
-  if (ph.needs && HOLD[ph.needs] == null) { d.sx = e.clientX; d.sy = e.clientY; d.t0 = HS.travel; return pill(e, 'hold', `It will not move: keep the ${nameOf(W.P[ph.needs]).toLowerCase()} pressed (a second finger, or hold Space).`); }
+  if (ph.needs && HOLD[ph.needs] == null) { d.sx = e.clientX; d.sy = e.clientY; d.t0 = HS.travel; return pill(e, 'hold', TOUCH ? `Hold the ${ph.needs} with another finger` : `Hold Space for the ${ph.needs}`); }
   const raw = ((e.clientX - d.sx) * d.a.x + (e.clientY - d.sy) * d.a.y) / (d.a.x ** 2 + d.a.y ** 2);
   const t = Math.min(ph.dist, Math.max(0, d.t0 + raw * GAIN[ph.force]));
   d.moved = Math.max(d.moved, Math.hypot(e.clientX - d.sx, e.clientY - d.sy));
   if (raw * GAIN[ph.force] + d.t0 < -ph.dist * .2 && !d.warned && MODE === 'guided') { d.warned = true; say('It does not go that way. Follow the yellow arrow.'); }
   setTravel(ph, t);
   if (ph.clicks) { const n = Math.floor(t / ph.dist * ph.clicks + .001); if (n > HS.clk && n < ph.clicks) sfx('tick', .8); HS.clk = n; }   // detents you can count
-  pill(e, ph.force, ph.feel, t / ph.dist);
+  const extra = ph.spring ? 'spring pushes back' : ph.clicks ? 'count the clicks' : ph.needs ? `${ph.needs} held` : '';
+  pill(e, ph.force, `${ph.g === 'swing' ? 'Swing' : 'Slide'} ${arrowChar(d.a.x, d.a.y)}${extra ? ' · ' + extra : ''}`, t / ph.dist);   // a glance, not a sentence: the step card says how it feels
   if (t >= ph.dist * .985) { setTravel(ph, ph.dist); phaseDone(d, e); }
 }
 /* a twist is a roll: drag across the part (70 px of finger travel for the full turn at light force) */
@@ -1465,7 +1497,7 @@ function moveTwist(d, e) {
   const rot = Math.min(ph.angle, Math.abs(HS.twist) * GAIN[ph.force]) * (ph.dir || Math.sign(HS.twist) || 1);   // either way off; back on it turns home
   d.o.quaternion.copy(HS.baseQ).multiply(qAxis('x', rot)); HS.travel = Math.abs(rot);
   d.moved = Math.max(d.moved, Math.hypot(e.clientX - d.sx, e.clientY - d.sy));
-  pill(e, ph.force, ph.feel, Math.abs(rot) / ph.angle);
+  pill(e, ph.force, `Roll it ${arrowChar(d.n.x, d.n.y)}`, Math.abs(rot) / ph.angle);
   if (Math.abs(rot) >= ph.angle * .97) phaseDone(d, e);
 }
 /* a phase is done: click, and if the finger is still down, keep going into the next move or into carrying the part */
@@ -1481,6 +1513,7 @@ function phaseDone(d, e) {
   DRAG.delete(d.id); hidePill(); releaseIfIdle(); renderAll();
 }
 function startCarry(e, ph, arm = 40) {   // straight out of a slide the finger must move on 40 px before a drop counts; a fresh grab, 8 px
+  if (ZOOM) view('work', 900);   // the labels must be in view
   const o = W.P[ph.key];
   if (o.parent !== root) root.attach(o);
   return { kind: 'carry', ph, o, off: aimW(o).sub(o.position), q: new THREE.Quaternion().setFromEuler(new THREE.Euler(...(D.items[ph.key].r || [0, 0, 0]))), sx: e.clientX, sy: e.clientY, arm, armed: false };
@@ -1492,7 +1525,7 @@ function moveCarry(d, e) {
   d.o.position.set(P.x - d.off.x, CARRY_Y - d.off.y, P.z - d.off.z);
   d.o.quaternion.slerp(d.q, .15);
   aim(e); const m = ray.intersectObject(matMesh)[0]; HOVERZ = m ? zoneAt(m.point) || null : null;
-  pill(e, 'light', HOVERZ ? `Over label ${HOVERZ}: ${D.zones[HOVERZ][4]}. Let go to put it down.` : 'Carry it to its label on the mat.');
+  pill(e, 'light', HOVERZ ? `Label ${HOVERZ} · let go` : 'To its label');
 }
 /* let go anywhere but a label (or the wrong label in Guided): the part floats to your "hand" above the gun, in view */
 async function toHand(o) {
@@ -1512,6 +1545,7 @@ async function dropCarry(d) {
 }
 /* put-together: carry the part (or a loose piece of its group) to the blue outline; near it, it snaps into line */
 function startMount(e, ph, o, a) {
+  if (ZOOM && ph.g === 'mount') view('work', 900);
   const gc = centerAt(o, a.M), wp = V(0, 0, 0), wq = new THREE.Quaternion(); a.M.decompose(wp, wq, V(0, 0, 0));
   if (o.parent !== root) root.attach(o);
   return { kind: 'mount', ph, o, a, gc, wp, wq, p0: o.position.clone(), q0: o.quaternion.clone(), sx: e.clientX, sy: e.clientY, moved: 0, snap: false };
@@ -1523,19 +1557,19 @@ function moveMount(d, e) {
   if (near && first === d.o) {
     if (!d.snap) { d.snap = true; sfx('tick'); }
     d.o.position.copy(d.wp); d.o.quaternion.copy(d.wq);
-    return pill(e, 'light', 'Lined up. Let go and it sits in place.');
+    return pill(e, 'light', 'Lined up · let go');
   }
   d.snap = false;
   const P = planeAt(e, d.gc.y); if (!P) return;
   P.x = Math.min(D.mat[1] - 4, Math.max(D.mat[0] + 4, P.x)); P.z = Math.min(D.mat[3] - 4, Math.max(D.mat[2] + 4, P.z));
   d.o.quaternion.slerp(d.wq, .12);
   d.o.position.add(P.sub(aimW(d.o)));   // its middle under the finger
-  pill(e, 'light', near ? `It does not go on yet: the ${nameOf(first).toLowerCase()} goes first.` : d.ph.g === 'join' ? d.ph.feel : MODE === 'guided' ? 'Bring it to the blue outline on the gun.' : 'Bring it to where it goes on the gun.');
+  pill(e, 'light', near ? `${nameOf(first)} goes first` : d.ph.g === 'join' ? 'Onto its piece' : MODE === 'guided' ? 'To the blue outline' : 'To where it goes');
 }
 async function dropMount(d) {
   hidePill();
   if (!d.snap) {
-    if (MODE === 'guided') { say(d.moved < 6 ? 'Drag it, do not just tap. Follow the yellow arrow.' : 'Bring it right onto the blue outline: it lines up by itself when it is close.'); IDLE0 = performance.now() - 3000; }
+    if (MODE === 'guided') { const m = d.moved; clearTimeout(tapNoteT); tapNoteT = setTimeout(() => { say(m < 6 ? 'Drag it, do not just tap. Follow the yellow arrow.' : 'Bring it right onto the blue outline: it lines up by itself when it is close.'); IDLE0 = performance.now() - 3000; }, m < 6 ? 330 : 0); }
     BUSY = true; await fly(d.o, d.p0, d.q0, 360); BUSY = false; return renderAll();
   }
   const { par, ap, aq } = d.a;
@@ -1571,7 +1605,7 @@ function moveApart(d, e) {
   const P = planeAt(e, d.y); if (!P) return;
   d.o.position.set(d.p0.x + P.x - d.P0.x, d.p0.y + .4, d.p0.z + P.z - d.P0.z);
   const moved = Math.hypot(P.x - d.P0.x, P.z - d.P0.z);
-  pill(e, 'firm', d.ph.feel, moved / 4);
+  pill(e, 'firm', 'Pull it away', moved / 4);
 }
 async function settleApart(d) {
   const moved = Math.hypot(d.o.position.x - d.p0.x, d.o.position.z - d.p0.z), key = d.ph.key, subs = W.S[key];
@@ -1605,7 +1639,7 @@ function handUp(e) {
     else if (d.kind === 'mount') dropMount(d);
     else {
       hidePill();
-      if (d.moved < 6 && !d.cont && MODE === 'guided') { say(d.kind === 'twist' ? 'Turn it: drag across it, as if rolling it under your finger.' : 'Drag it, do not just tap. Follow the yellow arrow.'); IDLE0 = performance.now() - 3000; }   // and the finger shows the move at once
+      if (d.moved < 6 && !d.cont && MODE === 'guided') { const k = d.kind; clearTimeout(tapNoteT); tapNoteT = setTimeout(() => { say(k === 'twist' ? 'Turn it: drag across it, as if rolling it under your finger.' : 'Drag it, do not just tap. Follow the yellow arrow.'); IDLE0 = performance.now() - 3000; }, 330); }   // and the finger shows the move at once
       /* spring-loaded parts snap back if you let go early */
       if (HS.travel > 0 && (d.ph.spring || d.ph.g === 'twist')) {
         const ph = d.ph, t0 = HS.travel; sfx('spring');
@@ -1647,7 +1681,7 @@ function handCue() {
   let o = null, from = null, to = null, text = '';
   if (ph.needs && HOLD[ph.needs] == null) { o = W.P[ph.needs]; text = TOUCH ? `Hold this ${ph.needs} with one finger` : `Hold Space (or this ${ph.needs})`; }
   else if (ph.g === 'slide' || ph.g === 'swing') { o = W.P[ph.part]; const { A, a } = axisPx(o, ph), L = Math.hypot(a.x, a.y) || 1; from = A; to = { x: A.x + a.x / L * 95, y: A.y + a.y / L * 95 }; text = `${ph.g === 'swing' ? 'Swing' : 'Drag'} ${arrowChar(a.x, a.y)} · ${FORCE[ph.force].toLowerCase()}${ph.clicks ? ' · count the clicks' : ''}`; }
-  else if (ph.g === 'mount' || ph.g === 'join') { o = ph.g === 'mount' ? W.P[ph.key] : movers(ph.key)[0]; if (o) { from = scr(aimW(o)); to = scr(centerAt(o, approach(o, ph.off, ph.via).M)); text = ph.g === 'mount' ? 'Drag it onto the outline' : `Put the ${nameOf(o).toLowerCase().replace(/ assembly$/, '')} on`; } }
+  else if (ph.g === 'mount' || ph.g === 'join') { o = ph.g === 'mount' ? W.P[ph.key] : movers(ph.key)[0]; if (o) { from = scr(aimW(o)); to = scr(centerAt(o, approach(o, ph.off, ph.via).M)); text = ph.g === 'mount' ? 'Drag it onto the outline' : 'Put it on'; } }
   else if (ph.g === 'twist') { o = W.P[ph.part]; const r = rollDir(o); from = r.A; to = { x: r.A.x + r.n.x * 80, y: r.A.y + r.n.y * 80 }; text = `Roll it ${arrowChar(r.n.x, r.n.y)} · turn · ${FORCE[ph.force].toLowerCase()}`; }
   else if (ph.g === 'hold') { o = W.P[ph.part]; text = TOUCH ? 'Press & hold' : 'Press & hold (or Space)'; }
   else if (ph.g === 'place') { o = W.P[ph.key]; const z = D.zones[D.items[ph.key].zone]; from = scr(aimW(o)); to = scr(V((z[0] + z[1]) / 2, 0, (z[2] + z[3]) / 2)); text = `Carry to label ${D.items[ph.key].zone}`; }
@@ -1684,12 +1718,27 @@ function hit(e) {
   const want = MODE === 'guided' && cur() ? cur().pick : null;
   return (want && hits.find(h => pickOf(h.object)?.userData.pick === want)) || hits.find(h => { const p = pickOf(h.object); return p && p.userData.pick !== 'receiver'; }) || hits[0];
 }
-let down = null;
+let down = null, pdown = null, lastTap = null, tapNoteT = 0;
+/* double-tap (or double-click) zooms in on that spot, as in Sketchfab; double-tap again, or on empty space, goes back to the Work view */
+function zoomAt(e) {
+  aim(e);
+  const h = ray.intersectObjects([...root.children, matMesh], true).find(x => x.object.isMesh);
+  if (!h || ZOOM) return view('work', 800);
+  const off = camera.position.clone().sub(controls.target), t0 = controls.target.clone(), p0 = camera.position.clone(), t1 = h.point.clone(), p1 = t1.clone().add(off.setLength(Math.max(26, off.length() * .45)));
+  tweens = tweens.filter(w => !w.cam); ZOOM = true; curView = null; userMoved = true;
+  $$('.tools [data-v]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+  return tween(650, k => { controls.target.lerpVectors(t0, t1, k); camera.position.lerpVectors(p0, p1, k); }, easeCam, true);
+}
 /* a press on a part you can move never reaches the view control, so a part drag never turns the view */
-renderer.domElement.addEventListener('pointerdown', e => { IDLE0 = performance.now(); if (handDown(e)) { e.stopImmediatePropagation(); down = null; return; } down = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId }; }, true);
+renderer.domElement.addEventListener('pointerdown', e => {
+  IDLE0 = performance.now();
+  if (lastTap && performance.now() - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30) { lastTap = null; clearTimeout(tapNoteT); zoomAt(e); e.stopImmediatePropagation(); down = null; return; }
+  pdown = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId, hold: false };
+  if (handDown(e)) { e.stopImmediatePropagation(); down = null; return; } down = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId }; }, true);
 renderer.domElement.addEventListener('pointermove', e => { handMove(e); });
 renderer.domElement.addEventListener('pointercancel', e => { handUp(e); });
 renderer.domElement.addEventListener('pointerup', e => {
+  if (pdown && pdown.id === e.pointerId) { lastTap = !pdown.hold && Math.hypot(e.clientX - pdown.x, e.clientY - pdown.y) < 8 && performance.now() - pdown.t < 300 ? { t: performance.now(), x: e.clientX, y: e.clientY } : null; pdown = null; }
   if (handUp(e)) return;
   if (!down || down.id !== e.pointerId) return;
   const tap = Math.hypot(e.clientX - down.x, e.clientY - down.y) < 8 && performance.now() - down.t < 700;
@@ -1718,6 +1767,7 @@ $('#tSound').addEventListener('click', () => { SOUND = !SOUND; S.sound = SOUND; 
 const setHands = on => { HANDS = on; S.hands = on; save(); newRun(); };
 $('#hOn').addEventListener('click', () => { if (!HANDS) setHands(true); });
 $('#hOff').addEventListener('click', () => { if (HANDS) setHands(false); });
+$('#tMore').addEventListener('click', () => { const m = $('#toolsMore'); m.hidden = !m.hidden; $('#tMore').setAttribute('aria-expanded', String(!m.hidden)); });
 $('#tXray').addEventListener('click', () => { XRAY = !XRAY; setToggle('#tXray', XRAY); repaint(); });
 $('#tNames').addEventListener('click', () => { NAMES = !NAMES; setToggle('#tNames', NAMES); if (!NAMES) nameEls.forEach(n => { n.el.hidden = true; }); });
 $('#restart').addEventListener('click', () => { if (MODE === 'exam') { ATT = 1; newRun(); renderIntro(); openModal('mIntro'); } else newRun(); });
@@ -1783,7 +1833,8 @@ function placeCall() {
     const on = tmp.z < 1 && Math.abs(tmp.x) < .95 && Math.abs(tmp.y) < .95;
     el.hidden = !on; if (!on) return;
     el.style.transform = `translate(${((tmp.x + 1) / 2 * stage.clientWidth).toFixed(0)}px, ${((1 - tmp.y) / 2 * stage.clientHeight).toFixed(0)}px)`;
-    if (cue.text !== callTxt) { callTxt = cue.text; $('#callLab').textContent = cue.text; }
+    const nm = cue.o ? nameOf(cue.o) : '', lab = nm + '|' + cue.text;   // the part's name over what to do with it
+    if (lab !== callTxt) { callTxt = lab; $('#callLab').innerHTML = `${nm ? `<small>${esc(nm)}</small>` : ''}${esc(cue.text)}`; }
     return;
   }
   $('#arr').setAttribute('hidden', ''); $('#finger').hidden = true;
@@ -1832,6 +1883,7 @@ window.WT = {
   spots: () => Object.fromEntries(Object.entries(D.items).filter(([, it]) => !it.g).map(([k, it]) => { const v = V(it.x, 1, it.z).project(camera); return [k, [+v.x.toFixed(2), +v.y.toFixed(2)]]; })),
   hs: () => HS && { i: HS.i, travel: HS.travel, drags: DRAG.size, held: Object.keys(HOLD).filter(k => HOLD[k] != null), sep: HS.sep ? HS.sep.size : 0, loose: HL[PHASE] && W.S ? Object.keys(W.S).map(k => movers(k).length).join('') : '' },
   calm: () => !tweens.some(w => w.cam),
+  camDist: () => camera.position.distanceTo(controls.target),
   debugApart() { const subs = W.S.bsp; return subs.map(o => { const c = aimW(o), w = o.getWorldPosition(V(0, 0, 0)); return { name: o.userData.name, parent: o.parent === root ? 'root' : o.parent.userData.pick || o.parent.type, c: [c.x, c.y, c.z].map(v => +v.toFixed(1)), w: [w.x, w.y, w.z].map(v => +v.toFixed(1)), vis: o.visible }; }); },
 };
 if (DEMO) document.body.classList.add('demo');
