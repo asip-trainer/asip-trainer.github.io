@@ -625,7 +625,7 @@ const clearList = n => ['Point weapon in safe direction. Ensure safety is on FIR
   'Lower feed tray and close feed cover, making sure it locks shut.', 'Pull/hold charging handle to rear, place safety to FIRE, ease bolt forward while fully depressing trigger. Release trigger.', 'Attempt to place safety to SAFE; safety must not be able to be moved to SAFE.'];
 const WEAPONS = {
   m249: {
-    key: 'm249', name: 'M249', video: ['video/M249_3D_demo.mp4', '4:17'], sheet: 'Warrior Task: Maintain a M249', codes: '071-COM-4025 (Maintain M249) & 071-COM-4026 (Perform Function Check M249)',
+    key: 'm249', name: 'M249', video: ['video/M249_3D_demo.mp4', '4:10'], sheet: 'Warrior Task: Maintain a M249', codes: '071-COM-4025 (Maintain M249) & 071-COM-4026 (Perform Function Check M249)',
     build: buildM249, rig: [-23, 36, 30], mat: [-86, 86, -98, 56], R: { work: 64, gun: 58, mat: 108 }, internal: ['oprod', 'bsp'], home: 'D',
     zones: {
       A: [-84, -56, -42, 4, 'Driving spring and return rod transfer mechanism assembly', C.amber, true],
@@ -677,7 +677,7 @@ const WEAPONS = {
     ],
   },
   m240: {
-    key: 'm240', name: 'M240B', video: ['video/M240B_3D_demo.mp4', '3:29'], sheet: 'Warrior Task: Maintain an M240', codes: '071-025-0001 (Maintain M240B) & 071-025-0002 (Perform Function Check M240B)',
+    key: 'm240', name: 'M240B', video: ['video/M240B_3D_demo.mp4', '3:19'], sheet: 'Warrior Task: Maintain an M240', codes: '071-025-0001 (Maintain M240B) & 071-025-0002 (Perform Function Check M240B)',
     build: buildM240, rig: [-34, 28, 30], mat: [-102, 102, -108, 58], R: { work: 78, gun: 72, mat: 126 }, internal: ['dsr', 'bor'], home: 'F',
     zones: {
       A: [-100, -52, -46, 2, 'Buttstock and buffer assembly', C.amber],
@@ -735,11 +735,12 @@ let tweens = [], FAST = false, SPEED = 1, manualNow = null;
 const clock = () => manualNow ?? performance.now();
 const ease = k => k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
 const slow = matchMedia('(prefers-reduced-motion: reduce)').matches ? .45 : 1;
-function tween(ms, fn) {
-  return new Promise(res => { if (FAST || !ms) { fn(1); res(); } else tweens.push({ t0: clock(), ms: ms * slow * SPEED, fn, res }); });
+const easeCam = k => .5 - .5 * Math.cos(Math.PI * k);   // gentle start and stop for the camera
+function tween(ms, fn, ez, cam) {
+  return new Promise(res => { if (FAST || !ms) { fn(1); res(); } else tweens.push({ t0: clock(), ms: ms * slow * SPEED, fn, res, ez, cam }); });
 }
 function stepTweens(now) {
-  tweens = tweens.filter(w => { const k = Math.min(1, Math.max(0, (now - w.t0) / w.ms)); w.fn(ease(k)); if (k >= 1) { w.res(); return false; } return true; });
+  tweens = tweens.filter(w => { const k = Math.min(1, Math.max(0, (now - w.t0) / w.ms)); w.fn((w.ez || ease)(k)); if (k >= 1) { w.res(); return false; } return true; });
 }
 function moveTo(o, p, q, ms) { const p0 = o.position.clone(), q0 = o.quaternion.clone(); return tween(ms, k => { o.position.lerpVectors(p0, p, k); o.quaternion.slerpQuaternions(q0, q, k); }); }
 function fly(o, p, q, ms = 820) {
@@ -880,16 +881,21 @@ function viewSpec(name) {
     mat: [V(0, 0, (z0 + z1) / 2), V(0, 1, .28), D.R.mat],
   }[name];
 }
-function view(name, ms = 650) {
+/* the camera circles around the gun (never cuts through it), slowly, easing in and out */
+function view(name, ms = 1100) {
   const [t, dir, R] = viewSpec(name), f = THREE.MathUtils.degToRad(camera.fov) / 2;
   const fit = Math.min(f, Math.atan(Math.tan(f) * camera.aspect)), p = t.clone().add(dir.clone().normalize().multiplyScalar(R / Math.tan(fit)));
   curView = name; userMoved = false;
   $$('.tools [data-v]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === name)));
-  const p0 = camera.position.clone(), t0 = controls.target.clone();
-  return tween(ms, k => { camera.position.lerpVectors(p0, p, k); controls.target.lerpVectors(t0, t, k); });
+  tweens = tweens.filter(w => !w.cam);
+  const t0 = controls.target.clone(), s0 = new THREE.Spherical().setFromVector3(camera.position.clone().sub(t0)), s1 = new THREE.Spherical().setFromVector3(p.clone().sub(t));
+  let dth = s1.theta - s0.theta; dth -= Math.round(dth / (2 * Math.PI)) * 2 * Math.PI;
+  const sp = new THREE.Spherical(), off = V(0, 0, 0);
+  return tween(ms, k => { controls.target.lerpVectors(t0, t, k); sp.set(s0.radius + (s1.radius - s0.radius) * k, s0.phi + (s1.phi - s0.phi) * k, s0.theta + dth * k); camera.position.copy(controls.target).add(off.setFromSpherical(sp)); }, easeCam, true);
 }
-controls.addEventListener('start', () => { userMoved = true; curView = null; $$('.tools [data-v]').forEach(b => b.setAttribute('aria-pressed', 'false')); });
-/* Guided: turn the gun to the side the next part is on (pins and the barrel lever are on the left) */
+/* grabbing the view stops any camera move at once */
+controls.addEventListener('start', () => { tweens = tweens.filter(w => !w.cam); userMoved = true; curView = null; $$('.tools [data-v]').forEach(b => b.setAttribute('aria-pressed', 'false')); });
+/* Guided: the camera only moves when the next part is off screen (taps reach parts on the far side or inside the receiver) */
 const tcam = new THREE.PerspectiveCamera();
 function camFor(name) {
   const [t, dir, R] = viewSpec(name), f = THREE.MathUtils.degToRad(camera.fov) / 2, fit = Math.min(f, Math.atan(Math.tan(f) * camera.aspect));
@@ -900,11 +906,8 @@ function follow() {
   if (MODE !== 'guided' || FAST) return;
   const s = cur(); if (!s) return;
   const o = objsOf(s.pick).find(g => !bounds(g).isEmpty());
-  let want = s.cam || 'work';
-  /* the part must be on screen: if the step's view does not show it, use the work view, else the whole mat */
-  if (o && !seen(o, camFor(want))) want = seen(o, camFor('work')) ? 'work' : 'mat';
-  if (curView === want) return;
-  if (!userMoved || s.cam || (o && !seen(o, camera))) view(want);
+  if (!o || seen(o, camera)) return;
+  view(seen(o, camFor('work')) ? 'work' : 'mat', 1600);
 }
 
 /* ---------- paint: real finish or group colors, X-ray shells, glow on the next part, red flash on a wrong one ---------- */
