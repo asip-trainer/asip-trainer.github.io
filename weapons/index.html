@@ -657,10 +657,10 @@ function buildM240(rig) {
   box(hd, MAT.metal, -.6, .6, 0, 3.2, -.5, .5);
   cylY(hd, MAT.poly, 0, 7.4, 0, .95, 8.4);
   hitbox(hd, -2, 2, 0, 11.8, -2, 2);
-  const hs = P.hshield = sub(br, 'Heat shield (stays on the barrel)', null, 0xc6b2f5);
-  halfPipe(hs, MAT.shield, 56, 84, 2.4, Y);
-  for (let x = 58; x < 82; x += 3) box(hs, MAT.hole, x, x + 1.6, Y + 2.35, Y + 2.45, -.9, .9);
-  for (const s of [-1, 1]) box(hs, MAT.metal, 70.6, 71.6, Y - .4, Y + .5, s * 2.4 - .15, s * 2.4 + .15);
+  const hs = P.hshield = part(br, 'hshield', 'Heat shield', 0xc6b2f5, 56, Y, 0);   // comes off before the barrel (class video); pivots on its rear end
+  halfPipe(hs, MAT.shield, 0, 28, 2.4, 0);
+  for (let x = 2; x < 26; x += 3) box(hs, MAT.hole, x, x + 1.6, 2.35, 2.45, -.9, .9);
+  for (const s of [-1, 1]) box(hs, MAT.metal, 14.6, 15.6, -.4, .5, s * 2.4 - .15, s * 2.4 + .15);
   return { P, S };
 }
 
@@ -779,7 +779,7 @@ const WEAPONS = {
     items: {
       stock: { x: -77, z: -26, zone: 'A' }, bor: { x: -8, z: -26, zone: 'B' }, dsr: { x: 68, z: -26, zone: 'C' },
       trigger: { x: -78, z: -84, zone: 'D' }, tpin: { x: -78, z: -70, zone: 'D', free: true },
-      barrel: { x: 12, z: -84, zone: 'E' },
+      barrel: { x: 12, z: -84, zone: 'E' }, hshield: { x: 52, z: -64, zone: 'E' },
       cover: { x: 20, z: 44, zone: 'F' }, tray: { x: 50, z: 44, zone: 'F' }, coverPin: { x: 72, z: 44, zone: 'F', free: true },
     },
     orders: 'REPORT TO: C Co, 3rd Platoon<br>TIME: 0430 tomorrow<br>BRING: ruck, M240B, and the driving spring rod before the bolt',
@@ -790,11 +790,12 @@ const WEAPONS = {
       { pick: 'bor', grp: 'B', do: 'Pull the bolt and operating rod out the rear.', how: 'Index finger in through the top, push the bolt face rearward until the group sticks out the rear, and pull it out. Then push the charging handle forward. (You may need to pull the trigger to lower the sear.)', run: () => off('bor', [{ d: [-58, 0, 0], t: 780 }], () => act('cock', {}, 320)) },
       { pick: 'tpin', grp: 'D', cam: 'right', do: 'Remove the trigger housing pin.', how: 'The spring pin at the rear of the trigger housing. Press its spring and pull it out (tap it with the buttstock back plate if it is tight).', run: () => off('tpin', [{ d: [0, 0, 7], t: 320 }]) },
       { pick: 'trigger', grp: 'D', do: 'Remove the trigger housing.', how: 'Rotate its rear down, unhook the holding notch at the front from its recess under the receiver, and lift it off.', run: () => off('trigger', [{ rz: .35, t: 320 }, { d: [1.5, -4, 0] }]) },
-      { pick: 'coverPin', grp: 'F', cam: 'right', do: 'Remove the cover pin.', how: 'The cover must be closed (it is). The spring pin is in the hinge at the front of the cover: press its spring and pull it out.', run: () => off('coverPin', [{ d: [0, 0, 7], t: 320 }]) },
+      { pick: 'coverPin', grp: 'F', cam: 'right', do: 'Remove the cover pin.', how: 'The cover must be closed (it is). The spring pin is in the hinge at the front of the cover: press its spring and pull it out (tap it with the buttstock if it is tight).', run: () => off('coverPin', [{ d: [0, 0, 7], t: 320 }]) },
       { pick: 'cover', grp: 'F', do: 'Lift the cover assembly off.', how: 'Press in the cover latches, raise the cover and lift it off the receiver.', run: () => off('cover', [{ rz: -.55, t: 320 }, { d: [0, 7, 0], t: 320 }]) },
       { pick: 'tray', grp: 'F', do: 'Remove the feed tray.', how: 'Lift it out of the receiver. It goes on the same label as the cover and the receiver.', run: () => off('tray', [{ d: [0, 4, 0] }]) },
+      { pick: 'hshield', grp: 'E', do: 'Remove the heat shield.', how: 'Lift its front end off the barrel and pull it forward off. It goes on the barrel label ("removing heat shield").', run: () => off('hshield', [{ rz: .25, t: 260 }, { d: [5, 0, 0], t: 320 }]) },
       { pick: 'latch', cam: 'left', do: 'Press and hold the barrel locking latch.', how: 'Left side of the receiver, where the barrel joins it. Check first that the carrying handle is to the right.', run: () => act('latch', { z: .6 }, 220) },
-      { pick: 'barrel', grp: 'E', do: 'Turn the carrying handle up, push the barrel forward and lift it out.', how: 'Holding the latch in, rotate the carrying handle to the upright position (without pulling up), then push the barrel forward and pull it up off the receiver. It comes off whole, heat shield and all.', run: async () => { await act('handle', { rx: -Math.PI / 2 }, 420); await off('barrel', [{ d: [4, 0, 0] }, { d: [0, 4, 0] }], () => act('latch', {}, 220)); } },
+      { pick: 'barrel', grp: 'E', do: 'Turn the carrying handle up, push the barrel forward and lift it out.', how: 'Holding the latch in, rotate the carrying handle to the upright position (without pulling up), then push the barrel forward and pull it up off the receiver.', run: async () => { await act('handle', { rx: -Math.PI / 2 }, 420); await off('barrel', [{ d: [4, 0, 0] }, { d: [0, 4, 0] }], () => act('latch', {}, 220)); } },
     ],
     hands: () => ({ dis: [
       { ph: [{ g: 'slide', part: 'stock', axis: [0, 1, 0], dist: 14, force: 'firm', feel: 'Thumb in on the latch underneath, then slide the buttstock straight up.' }, { g: 'place', key: 'stock' }] },
@@ -806,10 +807,12 @@ const WEAPONS = {
       { ph: [{ g: 'slide', part: 'tpin', axis: [0, 0, 1], dist: 7, force: 'firm', feel: 'Press its spring and pull it out to the right.' }, { g: 'place', key: 'tpin' }] },
       { ph: [{ g: 'swing', part: 'trigger', ax: 'z', dir: 1, dist: .35, force: 'light', feel: 'Rotate its rear down.' },
         { g: 'slide', part: 'trigger', axis: [1.5, -4, 0], dist: Math.hypot(1.5, 4), force: 'light', feel: 'Unhook the holding notch at the front and lift it off.' }, { g: 'place', key: 'trigger' }] },
-      { ph: [{ g: 'slide', part: 'coverPin', axis: [0, 0, 1], dist: 7, force: 'firm', feel: 'Press its spring and pull it out to the right.' }, { g: 'place', key: 'coverPin' }] },
+      { ph: [{ g: 'slide', part: 'coverPin', axis: [0, 0, 1], dist: 7, force: 'firm', feel: 'Press its spring and pull it out to the right. Tight? Tap it with the buttstock.' }, { g: 'place', key: 'coverPin' }] },
       { ph: [{ g: 'swing', part: 'cover', ax: 'z', dir: -1, dist: .55, force: 'light', feel: 'Press in the cover latches and raise the cover.' },
         { g: 'slide', part: 'cover', axis: [0, 1, 0], dist: 7, force: 'light', feel: 'Lift it off the receiver.' }, { g: 'place', key: 'cover' }] },
       { ph: [{ g: 'slide', part: 'tray', axis: [0, 1, 0], dist: 4, force: 'light', feel: 'Lift the feed tray out.' }, { g: 'place', key: 'tray' }] },
+      { ph: [{ g: 'swing', part: 'hshield', ax: 'z', dir: 1, dist: .25, force: 'light', feel: 'Lift the front end of the heat shield off the barrel.' },
+        { g: 'slide', part: 'hshield', axis: [1, 0, 0], dist: 5, force: 'light', feel: 'Pull it forward off the barrel.' }, { g: 'place', key: 'hshield' }] },
       { ph: [{ g: 'hold', part: 'latch', feel: 'Press it in and keep holding: a second finger on a phone, Space on a computer.' }] },
       { ph: [{ g: 'swing', part: 'handle', ax: 'x', dir: -1, dist: Math.PI / 2, force: 'light', needs: 'latch', feel: 'Latch held: turn the carrying handle up. Do not pull up yet.' },
         { g: 'slide', part: 'barrel', axis: [1, 0, 0], dist: 4, force: 'firm', needs: 'latch', feel: 'Latch held: push the barrel forward.' },
@@ -818,29 +821,32 @@ const WEAPONS = {
       { ph: [{ g: 'mount', key: 'barrel', via: { d: [4, 4, 0] } }, { g: 'slide', part: 'barrel', axis: [0, -1, 0], dist: 4, force: 'light', feel: 'Handle upright, gas regulator down: set it on the barrel support.' },
         { g: 'slide', part: 'barrel', axis: [-1, 0, 0], dist: 4, force: 'firm', feel: 'Gun upright: pull it rearward into the receiver, gas plug into the gas cylinder.' }] },
       { ph: [{ g: 'swing', part: 'handle', ax: 'x', dir: 1, dist: Math.PI / 2, force: 'firm', clicks: 5, endSound: 'clack', feel: 'Turn it fully to the right and count the clicks: 2 to 7 means good headspace.' }] },
+      { ph: [{ g: 'mount', key: 'hshield', via: { d: [5, 0, 0], rz: .25 } }, { g: 'slide', part: 'hshield', axis: [-1, 0, 0], dist: 5, force: 'light', feel: 'Heat shield to the back first: slide its rear end in against the receiver.' },
+        { g: 'swing', part: 'hshield', ax: 'z', dir: -1, dist: .25, force: 'light', endSound: 'clack', feel: 'Slap the front down onto the barrel.' }] },
       { ph: [{ g: 'mount', key: 'tray', via: { d: [0, 4, 0] } }, { g: 'slide', part: 'tray', axis: [0, -1, 0], dist: 4, force: 'light', feel: 'Guides on the receiver brackets: set it in.' }] },
       { ph: [{ g: 'mount', key: 'cover', via: { d: [0, 7, 0], rz: -.55 } }, { g: 'slide', part: 'cover', axis: [0, -1, 0], dist: 7, force: 'light', feel: 'Mounting holes on the brackets.' },
         { g: 'swing', part: 'cover', ax: 'z', dir: 1, dist: .55, force: 'light', endSound: 'clack', feel: 'Close the cover.' }] },
-      { ph: [{ g: 'mount', key: 'coverPin', via: { d: [0, 0, 7] } }, { g: 'slide', part: 'coverPin', axis: [0, 0, -1], dist: 7, force: 'firm', feel: 'Spring end first: push it in from the right side to the left.' }] },
-      { ph: [{ g: 'mount', key: 'trigger', via: { d: [1.5, -4, 0], rz: .35 } }, { g: 'slide', part: 'trigger', axis: [-1.5, 4, 0], dist: Math.hypot(1.5, 4), force: 'light', feel: 'Holding notch into the recess under the receiver.' },
-        { g: 'swing', part: 'trigger', ax: 'z', dir: -1, dist: .35, force: 'light', feel: 'Rotate the rear up until the holes line up, and hold it.' }] },
-      { ph: [{ g: 'mount', key: 'tpin', via: { d: [0, 0, 7] } }, { g: 'slide', part: 'tpin', axis: [0, 0, -1], dist: 7, force: 'firm', feel: 'From the right, push it through the bracket to the left.' }] },
-      { ph: [{ g: 'mount', key: 'bor', via: { d: [-40, 0, 0] } }, { g: 'slide', part: 'bor', axis: [1, 0, 0], dist: 40, force: 'light', feel: 'Bolt up, operating rod beneath, on the rails: push it all the way in.' }] },
+      { ph: [{ g: 'mount', key: 'coverPin', via: { d: [0, 0, 7] } }, { g: 'slide', part: 'coverPin', axis: [0, 0, -1], dist: 7, force: 'firm', feel: 'Spring end first: get it started, then tap it in (the buttstock works).' }] },
+      { ph: [{ g: 'mount', key: 'bor', via: { d: [-40, 0, 0] } }, { g: 'slide', part: 'bor', axis: [1, 0, 0], dist: 40, force: 'light', feel: 'Up and extended: operating rod on the bottom, bolt up top, above the tracks. It slides right in.' }] },
       { ph: [{ g: 'mount', key: 'dsr', via: { d: [-26, .9, 0] } }, { g: 'slide', part: 'dsr', axis: [1, 0, 0], dist: 26, force: 'firm', spring: true, feel: 'Into the recess in the rear of the operating rod: push against the spring. Let go early and it pushes back out.' },
-        { g: 'slide', part: 'dsr', axis: [0, -1, 0], dist: .9, force: 'firm', endSound: 'clack', feel: 'Push in and lower it: the retaining stud drops into its hole.' }] },
+        { g: 'slide', part: 'dsr', axis: [0, -1, 0], dist: .9, force: 'firm', endSound: 'clack', feel: 'Push it in and get the lip down into the bottom hole.' }] },
+      { ph: [{ g: 'mount', key: 'trigger', via: { d: [1.5, -4, 0], rz: .35 } }, { g: 'slide', part: 'trigger', axis: [-1.5, 4, 0], dist: Math.hypot(1.5, 4), force: 'light', feel: 'Hook its front underneath the receiver.' },
+        { g: 'swing', part: 'trigger', ax: 'z', dir: -1, dist: .35, force: 'light', feel: 'Rotate the rear up until the holes line up, and hold it.' }] },
+      { ph: [{ g: 'mount', key: 'tpin', via: { d: [0, 0, 7] } }, { g: 'slide', part: 'tpin', axis: [0, 0, -1], dist: 7, force: 'firm', feel: 'Little detent end in first, then push it through.' }] },
       { ph: [{ g: 'mount', key: 'stock', via: { d: [0, 14, 0] } }, { g: 'slide', part: 'stock', axis: [0, -1, 0], dist: 14, force: 'firm', endSound: 'clack', feel: 'Grooves on the receiver grooves: slide it straight down until it locks.' }] },
     ] }),
     holds: { latch: { z: .6 } },
     as: () => [
       { pick: 'barrel', do: 'Install the barrel.', how: 'Carrying handle upright, gas regulator down: set the barrel on the barrel support, keep the gun upright and pull the barrel rearward into the receiver, guiding the gas plug into the gas cylinder.', run: () => home('barrel', {}, { d: [4, 4, 0], t: 520 }) },
       { pick: 'barrel', cam: 'right', do: 'Rotate the carrying handle fully to the right.', how: 'Count the clicks: 2 to 7 means the headspace is right. Fewer or more: turn it in to the armorer.', run: () => act('handle', {}, 480) },
+      { pick: 'hshield', do: 'Put the heat shield on.', how: 'Rear end in first, then slap the front down onto the barrel.', run: () => home('hshield', {}, { d: [5, 0, 0], rz: .25, t: 380 }) },
       { pick: 'tray', do: 'Put the feed tray in.', how: 'Feed tray guides lined up with the receiver brackets.', run: () => home('tray', {}, { d: [0, 4, 0] }) },
       { pick: 'cover', do: 'Put the cover assembly on and close it.', how: 'Line up its mounting holes with the brackets on the receiver and close the cover.', run: () => home('cover', {}, { d: [0, 7, 0], rz: -.55, t: 380 }) },
-      { pick: 'coverPin', cam: 'right', do: 'Insert the cover pin.', how: 'Spring end first: push it in from the right side to the left.', run: () => home('coverPin', {}, { d: [0, 0, 7] }) },
-      { pick: 'trigger', do: 'Put the trigger housing on.', how: 'Holding notch at the front into the recess under the receiver, rotate the rear up so the holes line up with the mounting bracket, and hold it.', run: () => home('trigger', {}, { d: [1.5, -4, 0], rz: .35, t: 380 }) },
-      { pick: 'tpin', cam: 'right', do: 'Insert the trigger housing pin.', how: 'From the right, push it through the bracket to the left.', run: () => home('tpin', {}, { d: [0, 0, 7] }) },
-      { pick: 'bor', do: 'Insert the bolt and operating rod.', how: 'Fully extended (unlocked), bolt up and operating rod beneath, on the rails inside the receiver. Push it in as far as it goes, then pull the trigger so the sear drops and it slides all the way in.', run: () => home('bor', {}, { d: [-58, 0, 0], t: 780 }) },
-      { pick: 'dsr', do: 'Insert the driving spring rod assembly.', how: 'Slide it all the way forward into the recess in the rear of the operating rod, then push in and lower it so the retaining stud drops into the hole in the bottom of the receiver.', run: () => home('dsr', {}, { d: [-26, .9, 0], t: 480 }) },
+      { pick: 'coverPin', cam: 'right', do: 'Insert the cover pin.', how: 'Spring end first: get it started by hand, then tap it in (the buttstock works as a hammer).', run: () => home('coverPin', {}, { d: [0, 0, 7] }) },
+      { pick: 'bor', do: 'Insert the bolt and operating rod.', how: 'Fully extended (unlocked): the operating rod goes in on the bottom, the bolt up top, lifted above the tracks inside the receiver. Pushed straight in, it slides right in.', run: () => home('bor', {}, { d: [-58, 0, 0], t: 780 }) },
+      { pick: 'dsr', do: 'Insert the driving spring rod assembly.', how: 'Into the recess in the rear of the operating rod, push it all the way in, and get its lip (the retaining stud) down into the hole in the bottom of the receiver.', run: () => home('dsr', {}, { d: [-26, .9, 0], t: 480 }) },
+      { pick: 'trigger', do: 'Put the trigger housing on.', how: 'Hook its front underneath the receiver (holding notch into the recess), then rotate the rear up so the holes line up with the mounting bracket, and hold it.', run: () => home('trigger', {}, { d: [1.5, -4, 0], rz: .35, t: 380 }) },
+      { pick: 'tpin', cam: 'right', do: 'Insert the trigger housing pin.', how: 'Put the little detent (spring) end in first, then push it through the bracket. That makes it easier.', run: () => home('tpin', {}, { d: [0, 0, 7] }) },
       { pick: 'stock', do: 'Slide the buttstock down onto the receiver.', how: 'Bottom grooves of the buttstock onto the receiver grooves, slide it straight down until it locks. Tug it to be sure. Then the functions check.', run: () => home('stock', {}, { d: [0, 14, 0], t: 480 }) },
     ],
   },
