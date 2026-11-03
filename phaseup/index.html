@@ -253,11 +253,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .weak li:first-child { border-top: 0; }
 .weak small { color: var(--muted); display: block; font-size: 12px; }
 
-/* say it */
-.srow .cover { display: block; width: 100%; text-align: left; min-height: 44px; padding: 10px 12px; border: 0; background: repeating-linear-gradient(-45deg, var(--bg) 0 8px, var(--surface) 8px 16px); color: var(--muted); font: 500 14px/1.3 var(--f-body); cursor: pointer; }
-.srow .ans { padding: 10px 12px 4px; font-weight: 600; }
-.srow .sg { display: flex; gap: 8px; padding: 2px 12px 10px; }
-.srow.ok { background: var(--ok-bg); } .srow.bad { background: var(--bad-bg); }
 
 /* sheet */
 .sheetgrid { columns: 2 380px; column-gap: 16px; }
@@ -373,7 +368,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   ];
   const KEY = 'phaseup-recall-v2';
   const INT = [0, 10 * 60e3, 60 * 60e3, 5 * 3600e3, 24 * 3600e3, 72 * 3600e3];
-  const LEVELS = [['Learn', 'Meet it a few at a time, build it, type along'], ['Practice', 'Recall it with hints that fade'], ['Master', 'From memory, no hints']];
+  const LEVELS = [['Learn', 'Meet it a few at a time, build it, type along'], ['Practice', 'Recall it with hints that fade'], ['Master', 'From memory, no hints. Spelling doesn’t count']];
 
   const $ = (s, r) => (r || document).querySelector(s);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -415,7 +410,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   const norm = s => String(s || '').toLowerCase().replace(/&/g, ' and ').replace(/['’‘`]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
   const STOP = new Set(['the', 'a', 'an', 'of', 'and', 'to', 'for', 'in']);
   const core = n => n.split(' ').filter(w => !STOP.has(w)).join('');
-  const tol = n => n <= 4 ? 0 : n <= 7 ? 1 : n <= 14 ? 2 : 3;
   function lev(a, b) {
     if (a === b) return 0;
     if (!a.length || !b.length) return a.length || b.length;
@@ -427,32 +421,44 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     }
     return prev[b.length];
   }
-  function matchItem(v, accepts) {
-    const t = norm(v); if (!t) return null;
-    const tc = core(t); let close = false;
-    for (const a of accepts) {
-      const n = norm(a), nc = core(n);
-      if (t === n || tc === nc) return 'ok';
-      if (lev(tc, nc) <= tol(nc.length)) close = true;
-    }
-    return close ? 'close' : null;
+  // The board is oral, so spelling never counts: a typed word fits if it is near the word or starts it,
+  // and one word may be missing from answers of three words or more.
+  function wordFits(t, e) {
+    if (t === e) return true;
+    if (e.length <= 3) return t.startsWith(e) && t.length <= e.length + 1;
+    if (t.length >= 4 && (e.startsWith(t) || t.startsWith(e))) return true;
+    return lev(t, e) <= Math.max(1, Math.floor(e.length / 3));
+  }
+  function fit(v, a) {
+    const t = norm(v), n = norm(a); if (!t || !n) return 0;
+    if (t === n || core(t) === core(n)) return 1;
+    if (lev(core(t), core(n)) <= Math.floor(core(n).length / 4)) return 0.9;
+    const tw = t.split(' ').filter(w => !STOP.has(w)), ew = n.split(' ').filter(w => !STOP.has(w)), used = new Set();
+    let hit = 0;
+    ew.forEach(e => { const k = tw.findIndex((w, i) => !used.has(i) && wordFits(w, e)); if (k > -1) { used.add(k); hit++; } });
+    return ew.length && hit >= ew.length - (ew.length >= 3 ? 1 : 0) ? Math.max(0.05, 0.5 + 0.4 * hit / ew.length - 0.05 * (tw.length - used.size)) : 0;
+  }
+  // 'ok' = word for word, 'close' = near enough (counts the same), null = wrong, or it fits another item better.
+  function matchItem(v, accepts, others) {
+    const best = acc => Math.max(0, ...acc.map(a => fit(v, a))), mine = best(accepts);
+    if (!mine) return null;
+    if (mine === 1) return 'ok';
+    return others && others.some(o => best(o) >= mine) ? null : 'close';
   }
   const RANKS = [['sergeant major of the army', 'sma'], ['command sergeant major', 'csm'], ['sergeant major', 'sgm'], ['first sergeant', '1sg'], ['1st sergeant', '1sg'],
     ['sergeant first class', 'sfc'], ['staff sergeant', 'ssg'], ['lieutenant general', 'ltg'], ['lt gen', 'ltg'], ['major general', 'mg'], ['maj gen', 'mg'],
     ['brigadier general', 'bg'], ['brig gen', 'bg'], ['lieutenant colonel', 'ltc'], ['lt col', 'ltc'], ['first lieutenant', '1lt'], ['1st lieutenant', '1lt'],
     ['the honorable', 'hon'], ['honorable', 'hon'], ['colonel', 'col'], ['captain', 'cpt'], ['capt', 'cpt'], ['general', 'gen'], ['potus', 'president']];
-  const RANKSET = new Set(RANKS.map(r => r[1]).concat(['maj', '2lt', 'msg', 'sgt']));
   function normName(s) { let n = ' ' + norm(s) + ' '; for (const [f, a] of RANKS) n = n.split(' ' + f + ' ').join(' ' + a + ' '); return n.trim(); }
-  function matchName(v, ans) {
+  // Names: the last name decides, spelled roughly; rank and first name are optional.
+  function matchName(v, ans, others) {
     const t = normName(v).split(' ').filter(Boolean); if (!t.length) return null;
-    const a = normName(ans).split(' '), rank = a[0], key = a[a.length - 1];
     const cands = t.concat(t.slice(1).map((w, i) => t[i] + w));
-    const hit = cands.includes(key) ? 2 : cands.some(w => lev(w, key) <= tol(key.length)) ? 1 : 0;
-    if (!hit) return null;
-    const said = t.filter(w => RANKSET.has(w)), tips = [], rk = ans.split(' ')[0];
-    if (hit === 1) tips.push('check the spelling');
-    if (!said.includes(rank)) tips.push(said.length ? `the rank is ${rk}` : `say “${rk}” too`);
-    return { s: tips.length ? 'close' : 'ok', tip: tips.join(', ') };
+    const dist = a => { const key = normName(a).split(' ').pop(); return Math.min(...cands.map(w => lev(w, key))); };
+    const d = dist(ans);
+    if (d > Math.max(1, Math.floor(normName(ans).split(' ').pop().length / 3))) return null;
+    if (others && others.some(o => dist(o) < d)) return null;
+    return { s: d ? 'close' : 'ok' };
   }
   const initials = t => t.split(/\s+/).map(w => w.replace(/^([^A-Za-z0-9]*)([A-Za-z0-9])([A-Za-z0-9’'\-]*)(.*)$/, (m, a, b, c, d) => a + b + '_'.repeat(Math.min(c.length, 9)) + d)).join(' ');
   const nameHint = t => { const w = t.split(' '); return w[0] + ' ' + initials(w.slice(1).join(' ')); };
@@ -523,9 +529,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   function hintFor(sec, i) { const mw = sec.memoWords && sec.memoWords[i]; return (mw ? `“${mw}” · ` : '') + initials(sec.items[i].text); }
   function askItem(sec, i, mode, show) {
     const it = sec.items[i], key = `${sec.id}:${i}`;
-    if (mode === 'rev') return { t: 'ask', sec, key, q: `${it.text} is which class?`, accepts: [sec.labels[i], String(i + 1), 'class ' + sec.labels[i], 'class ' + (i + 1)], answer: `Class ${sec.labels[i]}`, hint: `It is #${i + 1} in the list` };
+    const cls = j => [sec.labels[j], String(j + 1), 'class ' + sec.labels[j], 'class ' + (j + 1)];
+    if (mode === 'rev') return { t: 'ask', sec, key, q: `${it.text} is which class?`, accepts: cls(i), others: sec.labels.map((_, j) => j).filter(j => j !== i).map(cls), answer: `Class ${sec.labels[i]}`, hint: `It is #${i + 1} in the list` };
     if (mode === 'memo' && !(sec.memoWords && sec.memoWords[i])) mode = 'num';
-    const base = { t: 'ask', sec, key, accepts: it.accepts, answer: it.text, hint: hintFor(sec, i), show };
+    const base = { t: 'ask', sec, key, accepts: it.accepts, others: sec.items.filter((_, j) => j !== i).map(x => x.accepts), answer: it.text, hint: hintFor(sec, i), show };
     if (mode === 'num') return { ...base, q: sec.labels ? `What is Class ${sec.labels[i]}?` : `What is #${i + 1}?` };
     if (mode === 'memo') return { ...base, q: `“${sec.memoWords[i]}” stands for …`, memoIdx: i };
     return { ...base, q: i ? 'What comes next?' : 'What comes first?', ctx: i ? `<b>${label(sec, i - 1)}.</b> ${esc(sec.items[i - 1].text)}  →` : '' };
@@ -533,11 +540,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   function askCell(sec, r, c, show) {
     const row = sec.rows[r], ans = row.cells[c];
     const q = r < 4 ? (c ? `Who is the NCO alongside the ${row.cue}?` : `Who is the ${row.cue}?`) : `Who is the ${c ? 'NCO' : 'commander'} of ${row.cue}?`;
-    return { t: 'ask', sec, key: `${sec.id}:${r}.${c}`, q, name: true, answer: ans, hint: nameHint(ans), show };
+    return { t: 'ask', sec, key: `${sec.id}:${r}.${c}`, q, name: true, answer: ans, others: sec.rows.flatMap(x => x.cells).filter(x => x && x !== ans), hint: nameHint(ans), show };
   }
   function askPos(sec, r, c) {
     const row = sec.rows[r], ans = row.cells[c];
-    return { t: 'ask', sec, key: `${sec.id}:${r}.${c}`, q: `${ans} is the ${c ? 'NCO' : 'commander'} of …`, accepts: row.accepts, answer: row.cue, hint: initials(row.cue) };
+    return { t: 'ask', sec, key: `${sec.id}:${r}.${c}`, q: `${ans} is the ${c ? 'NCO' : 'commander'} of …`, accepts: row.accepts, others: sec.rows.filter((_, j) => j !== r).map(x => x.accepts), answer: row.cue, hint: initials(row.cue) };
   }
   const listRows = (sec, idx, show) => idx.map(i => ({ key: `${sec.id}:${i}`, text: sec.items[i].text, accepts: sec.items[i].accepts, label: label(sec, i), hint: show ? hintFor(sec, i) : initials(sec.items[i].text), shown: show }));
   const subEx = (sec, i, show) => ({ t: 'recite', sec, key: `${sec.id}:${i}s`, title: `Under “${sec.items[i].text}”`,
@@ -704,7 +711,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     : ex.t === 'order' ? ex.items.map(x => x.text).join(' → ') : ex.t === 'recite' ? ex.rows.map(r => r.text).join(', ')
     : ex.sec.groups.map(g => `${g[1]}: ${ex.sec.items.filter((_, i) => groupOf(ex.sec, i) === g[1]).map(it => it.text).join(', ')}`).join(' · '));
   document.addEventListener('keydown', e => { if (L && L.key) L.key(e); });
-  window.PUR = { get L() { return L; }, BY };
+  window.PUR = { get L() { return L; }, BY, matchItem, matchName };
 
   const head = (ex, q, plain) => `<p class="eyebrow">${esc(ex.sec.title)}</p><h2 class="lq${plain ? ' plain' : ''}">${q}</h2>`;
   const RENDER = {
@@ -790,12 +797,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
         <input class="ain" id="ain" aria-label="Your answer" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
         <div class="lact"><button class="btn ghost" data-a="hint"${hinted ? ' hidden' : ''}>Hint</button><button class="btn ghost" data-a="skip">I don’t know</button><button class="btn pri" data-a="check">Check</button></div>`;
       const inp = $('#ain', host), hintEl = $('.hint', host);
-      const test = v => ex.name ? matchName(v, ex.answer) : (m => m ? { s: m, tip: m === 'close' ? 'check the spelling' : '' } : null)(matchItem(v, ex.accepts));
+      const test = v => ex.name ? matchName(v, ex.answer, ex.others) : (m => m ? { s: m } : null)(matchItem(v, ex.accepts, ex.others));
       const finish = (ok, msg) => { if (fin) return; fin = true; inp.readOnly = true; inp.blur(); done({ ok, msg, keys: [[ex.key, ok ? (hinted ? 0.5 : 1) : 0]] }); };
       const check = () => {
         const v = inp.value; if (!v.trim()) { inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); return; }
         const m = test(v);
-        if (m) finish(true, m.s === 'ok' ? `<b>${esc(ex.answer)}</b>` : `Counts, but ${esc(m.tip)}: <b>${esc(ex.answer)}</b>`);
+        if (m) finish(true, `<b>${esc(ex.answer)}</b>`);
         else finish(false, `Answer: <b>${esc(ex.answer)}</b>`);
       };
       inp.addEventListener('input', () => { const m = test(inp.value); if (m && m.s === 'ok' && !ex.name) finish(true, `<b>${esc(ex.answer)}</b>`); });
@@ -832,8 +839,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
       const enter = () => {
         if (fin) return;
         const v = inp.value; if (!v.trim()) { shake(); return; }
-        const m = matchItem(v, rows[i].accepts);
-        if (m) { accept(m === 'ok' && !rowMiss && !rowHint ? 'ok' : 'close'); return; }
+        const m = matchItem(v, rows[i].accepts, rows.filter((_, k) => k !== i).map(r => r.accepts));
+        if (m) { accept(!rowMiss && !rowHint ? 'ok' : 'close'); return; }
         const j = rows.findIndex((r, k) => k > i && matchItem(v, r.accepts));
         rowMiss++; shake();
         say.textContent = j > -1 ? `That one is #${rows[j].label}. What is #${rows[i].label}?` : rowMiss >= 2 ? '' : 'Not that one. Try again.';
@@ -887,7 +894,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 
   /* ---------- views ---------- */
   function setTab(v) {
-    const tab = v === 'skill' || v === 'say' ? 'path' : v;
+    const tab = v === 'skill' ? 'path' : v;
     document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.go === tab ? 'page' : 'false'));
     const n = SECTIONS.filter(usable).reduce((a, s) => a + dueOf(s), 0);
     $('#due-badge').textContent = n ? String(n) : '';
@@ -897,7 +904,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     document.body.classList.remove('lesson-on');
     setTab(v);
     if (v === 'skill' && BY[arg]) viewSkill(BY[arg]);
-    else if (v === 'say' && BY[arg]) viewSay(BY[arg]);
     else if (v === 'review') viewReview();
     else if (v === 'sheet') viewSheet();
     else viewPath();
@@ -913,7 +919,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     const up = nextUp(), due = SECTIONS.filter(usable).reduce((a, s) => a + dueOf(s), 0);
     const mastered = SECTIONS.filter(s => lvOf(s) === 3).length;
     app.innerHTML = `<section class="phead"><div><p class="eyebrow">Phase up · weeks 1–5 study guide</p><h1>Learn it a few pieces at a time</h1>
-      <p class="sub">Each skill has three short levels: learn it with its memory sentence, practice with hints that fade, then master it from memory. Missed items come back in Review.</p></div>
+      <p class="sub">Each skill has three short levels: learn it with its memory sentence, practice with hints that fade, then master it from memory. Missed items come back in Review. Spelling never counts: the board is oral.</p></div>
       <div class="stats"><div><b class="mono">${streak()}</b><span>day streak</span></div><div><b class="mono">${P.xp || 0}</b><span>XP</span></div><div><b class="mono">${mastered}/${SECTIONS.length}</b><span>mastered</span></div></div></section>
       <div class="cta">${up ? `<button class="btn gold" id="go-next">Continue: ${esc(up.title)} · Level ${lvOf(up) + 1}</button>` : ''}<button class="btn" data-go="review">Review${due ? ` · ${due} due` : ''}</button><button class="btn" data-go="sheet">Read the sheet</button></div>
       <div class="weeks">${[1, 2, 3, 4, 5].map(w => `<section class="week"><h3>Week ${w}</h3><ol class="path">${SECTIONS.filter(s => s.week === w).map(s => {
@@ -941,7 +947,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
       <div><p class="eyebrow">Week ${sec.week}${ready ? ' · ' + countLabel(sec) : ''}</p><h1>${esc(sec.title)}</h1>${sec.tag ? `<p class="hint">${esc(sec.tag)}</p>` : ''}</div>
       ${memoHTML(sec)}
       ${ready ? `<div class="levels">${LEVELS.map(([n, d], k) => `<button class="lvl${k < lv ? ' done' : k === lv ? ' next' : ''}" data-lv="${k + 1}"><span class="ln">LEVEL ${k + 1}${k < lv ? ' · DONE' : ''}</span><b>${n}</b><small>${d}</small></button>`).join('')}</div>
-      <div class="row2"><button class="btn gold" data-lv="${Math.min(lv + 1, 3)}">${lv === 3 ? 'Run Master again' : `Start level ${lv + 1}: ${LEVELS[lv][0]}`}</button><button class="btn" data-go="say" data-arg="${sec.id}">Say it out loud</button></div>
+      <div class="row2"><button class="btn gold" data-lv="${Math.min(lv + 1, 3)}">${lv === 3 ? 'Run Master again' : `Start level ${lv + 1}: ${LEVELS[lv][0]}`}</button></div>
       <div class="card"><header class="chead"><h2>The content</h2><span class="cnt">${countLabel(sec)}</span></header><div class="irows">${rowsHTML(sec)}</div>${sec.note ? `<p class="note">${esc(sec.note)}</p>` : ''}</div>
       <div class="hook"><label for="hook-${sec.id}">Your own memory hook</label><textarea id="hook-${sec.id}" rows="2" placeholder="A sentence, picture or story that links them. Hooks you make up yourself stick best.">${esc(P.hooks[sec.id] || '')}</textarea><small>Shows up whenever this skill teaches something new.</small></div>` : ''}
       ${custom}</div>`;
@@ -949,31 +955,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     const hk = $(`#hook-${sec.id}`); if (hk) hk.oninput = () => { const v = hk.value.trim(); if (v) P.hooks[sec.id] = v; else delete P.hooks[sec.id]; save(); };
     const cs = $('#cust-save');
     if (cs) cs.onclick = () => { const v = $(`#cust-${sec.id}`).value.trim(); if (v) P.custom[sec.id] = v; else delete P.custom[sec.id]; prep(sec); save(); viewSkill(sec); setTab('skill'); };
-  }
-
-  function viewSay(sec) {
-    const rows = sec.type === 'table' ? sec.rows.flatMap((r, ri) => r.cells.map((c, ci) => c ? { key: `${sec.id}:${ri}.${ci}`, label: `${r.cue} · ${sec.head[ci + 1]}`, text: c } : null).filter(Boolean))
-      : isText(sec) ? sec.lines.map((l, i) => ({ key: `${sec.id}:${i}`, label: String(i + 1), text: l.text }))
-      : sec.items.map((it, i) => ({ key: `${sec.id}:${i}`, label: label(sec, i), text: it.text + (it.sub ? ' — ' + it.sub.map(s => s.text).join(', ') : '') }));
-    app.innerHTML = `<div class="skill"><div><button class="btn ghost" data-go="skill" data-arg="${sec.id}">‹ ${esc(sec.title)}</button></div>
-      <div><p class="eyebrow">Say it out loud</p><h1>${esc(sec.title)}</h1><p class="sub">Recite each one out loud first, then tap to check yourself. Good for the oral board.</p></div>
-      <div class="card"><div class="irows">${rows.map((r, i) => `<div class="irow srow" data-i="${i}"><span class="num">${esc(sec.type === 'table' ? String(i + 1) : r.label)}</span><div class="slot">${sec.type === 'table' ? `<div class="itx" style="padding-bottom:0"><small class="mono">${esc(r.label)}</small></div>` : ''}<button class="cover" data-a="rev">${i ? 'Tap to check' : 'Say it, then tap to check'}</button></div></div>`).join('')}</div></div>
-      <div class="row2"><span class="say mono" id="say-score">0/${rows.length} checked</span></div></div>`;
-    const marks = rows.map(() => null);
-    app.querySelector('.card').onclick = e => {
-      const b = e.target.closest('[data-a], [data-v]'); if (!b) return;
-      const row = b.closest('.srow'), i = +row.dataset.i;
-      if (b.dataset.a === 'rev') {
-        b.outerHTML = `<div class="ans">${esc(rows[i].text)}</div><div class="sg"><button class="btn sm" data-v="1">Knew it</button><button class="btn sm" data-v="0">Missed it</button></div>`;
-        $('[data-v="1"]', row).focus({ preventScroll: true });
-      } else {
-        const v = +b.dataset.v; marks[i] = v; grade(rows[i].key, v); save();
-        row.classList.add(v ? 'ok' : 'bad'); $('.sg', row).remove();
-        const n = marks.filter(x => x !== null).length, k = marks.filter(x => x === 1).length;
-        $('#say-score').textContent = n === rows.length ? `You knew ${k} of ${rows.length}` : `${n}/${rows.length} checked`;
-        const c = $('.cover', app); if (c && fine) c.focus({ preventScroll: true });
-      }
-    };
   }
 
   function viewReview() {
