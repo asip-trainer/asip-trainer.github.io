@@ -567,7 +567,9 @@ function buildM240(rig) {
   box(rc, MAT.hole, -.06, .02, .8, 9.4, -2.9, 2.9);
   shell(box(rc, MAT.recv, 14, 38.5, 6.4, 8.4, 3.3, 4.4));
   box(rc, MAT.hole, 15, 36, 7.1, 7.7, 4.38, 4.46);
-  box(rc, MAT.plate, 16, 26, -.3, .05, -2.2, 2.2);                                                       // ejection port cover (bottom)
+  const pc = P.port = part(rc, 'port', 'Ejection port cover', null, 16, 0, 2.2);                        // ejection port cover (bottom), hinged on its right edge
+  box(pc, MAT.plate, 0, 10, -.3, .05, -4.4, 0);
+  hitbox(pc, -.5, 10.5, -1.6, .6, -4.6, .4);
   box(rc, MAT.hole, 22, 30, 7.6, 9, 3.6, 3.7);                                                            // link ejection port
   shell(cylX(rc, MAT.recv, 39, 44, 2.6, Y, 0, 28));
   for (const s of [-1, 1]) box(rc, MAT.recv, 5, 8, -2.2, 0, s > 0 ? 2.8 : -3.5, s > 0 ? 3.5 : -2.8);    // trigger housing bracket
@@ -599,7 +601,7 @@ function buildM240(rig) {
   box(la, MAT.steel2, -1.1, 1.1, -1, 1.4, -1.1, 0);
   hitbox(la, -2.4, 2.4, -2.4, 2.8, -3, .4);
 
-  const ck = P.cock = part(rig, 'cock', 'Charging handle', null);
+  const ck = P.cock = part(rc, 'cock', 'Charging handle', null);   // on the receiver: it goes down with it
   box(ck, MAT.metal, 34.4, 36.2, 6.8, 8, 4.4, 5.2);
   box(ck, MAT.metal, 34, 36.8, 6, 8.8, 5.2, 7.4);
   for (const x of [34.4, 35.1, 35.8]) box(ck, MAT.hole, x, x + .3, 6.05, 8.75, 7.38, 7.44);
@@ -613,8 +615,10 @@ function buildM240(rig) {
   box(ti, MAT.metal, 13.6, 22, -6, -5.2, -.8, .8);
   box(ti, MAT.metal, 21.2, 22, -5.6, -2, -.8, .8);
   box(ti, MAT.steel, 16.2, 17.1, -4.6, -2, -.35, .35);
-  cylZ(ti, MAT.steel, -3.2, 3.2, .42, 18.8, -1.2);
-  cylZ(ti, MAT.red, -3.4, -3.1, .45, 18.8, -1.2);
+  const sf = P.safety = part(ti, 'safety', 'Safety', null, 18.8, -1.2, 0);   // FIRE: red ring out on the left; SAFE: pushed to the right
+  cylZ(sf, MAT.steel, -3.2, 3.2, .42, 0, 0);
+  cylZ(sf, MAT.red, -3.4, -3.1, .45, 0, 0);
+  hitbox(sf, -1.3, 1.3, -1.3, 1.3, -4.4, 4.4);
   P.tpin = pinPart(rig, 'tpin', 'Trigger housing spring pin', 6.5, -1.1, 3.8, true, 0x9be8b8);
 
   const st = P.stock = part(rig, 'stock', 'Buttstock and buffer assembly', C.amber);
@@ -781,9 +785,17 @@ const WEAPONS = {
       trigger: { x: -78, z: -84, zone: 'D' }, tpin: { x: -78, z: -70, zone: 'D', free: true },
       barrel: { x: 12, z: -84, zone: 'E' }, hshield: { x: 52, z: -64, zone: 'E' },
       cover: { x: 20, z: 44, zone: 'F' }, tray: { x: 50, z: 44, zone: 'F' }, coverPin: { x: 72, z: 44, zone: 'F', free: true },
+      receiver: { x: -50, z: 32, zone: 'F', r: [Math.PI / 2, 0, 0] },
     },
     orders: 'REPORT TO: C Co, 3rd Platoon<br>TIME: 0430 tomorrow<br>BRING: ruck, M240B, and the driving spring rod before the bolt',
     dis: () => [
+      /* clear the weapon first, as at the station (class video): the sheet's 7 clearing steps */
+      { sec: 'clr', pick: 'cock', cam: 'right', do: 'Pull the charging handle to the rear and hold it.', how: 'Weapon in a safe direction, safety on FIRE. Palm up, pull it all the way back: the bolt locks to the rear and the ejection port cover opens.', run: () => Promise.all([act('cock', { x: -12 }, 420), act('bor', { x: -10 }, 420), act('port', { rx: -1.2 }, 300)]) },
+      { sec: 'clr', pick: 'safety', do: 'Put the safety on SAFE, then return the charging handle forward.', how: 'While holding the handle to the rear (no tension on the bolt), push the safety to SAFE. Then let the handle go fully forward and locked. The bolt stays to the rear.', run: async () => { await act('safety', { z: .7 }, 220); await act('cock', {}, 320); } },
+      { sec: 'clr', pick: 'cover', do: 'Open the feed cover and do the 4-point check.', how: 'Push in the cover latches, look in a safe direction, raise the cover and lift the feed tray. Check for brass, links or ammo, the feed pawl, the feed tray, the chamber and under the bolt. No rounds: clear.', run: async () => { await act('cover', { rz: -1.1 }, 420); await act('tray', { y: 2.5 }, 260); } },
+      { sec: 'clr', pick: 'tray', do: 'Lower the feed tray and close the feed cover.', how: 'Press the cover down until it locks shut.', run: async () => { await act('tray', {}, 220); await act('cover', {}, 420); } },
+      { sec: 'clr', pick: 'cock', cam: 'right', do: 'Charging handle back, safety on FIRE, pull the trigger and ride the bolt forward.', how: 'Pull and hold the charging handle to the rear, put the safety on FIRE, hold the trigger and ease the bolt forward. Then release the trigger.', run: async () => { await act('cock', { x: -12 }, 320); await act('safety', {}, 220); await Promise.all([act('cock', {}, 600), act('bor', {}, 600)]); } },
+      { sec: 'clr', pick: 'safety', do: 'Try to put the safety on SAFE.', how: 'With the bolt forward it must not go to SAFE. The weapon is clear.', run: async () => { await act('safety', { z: .15 }, 120); await act('safety', {}, 160); } },
       { pick: 'stock', grp: 'A', do: 'Depress the buttstock latch and slide the buttstock straight up.', how: 'The latch is under the buttstock where it meets the receiver. Hold it in and slide the buttstock and buffer straight up off the receiver.', run: () => off('stock', [{ d: [0, 14, 0], t: 480 }]) },
       { pick: 'dsr', grp: 'C', do: 'Remove the driving spring rod assembly.', how: 'Push it forward and up to free its retaining stud, then pull it out the rear. Hold it firmly (spring tension) and keep your face away from the rear of the receiver.', run: () => off('dsr', [{ d: [.6, .9, 0] }, { d: [-26, 0, 0], t: 480 }]) },
       { pick: 'cock', cam: 'right', do: 'Pull the charging handle to the rear.', how: 'Palm up. It starts the bolt and operating rod moving to the rear. Do this only after the driving spring rod is out.', run: () => Promise.all([act('cock', { x: -12 }, 420), act('bor', { x: -10 }, 420)]) },
@@ -796,8 +808,17 @@ const WEAPONS = {
       { pick: 'hshield', grp: 'E', do: 'Remove the heat shield.', how: 'Lift its front end off the barrel and pull it forward off. It goes on the barrel label ("removing heat shield").', run: () => off('hshield', [{ rz: .25, t: 260 }, { d: [5, 0, 0], t: 320 }]) },
       { pick: 'latch', cam: 'left', do: 'Press and hold the barrel locking latch.', how: 'Left side of the receiver, where the barrel joins it. Check first that the carrying handle is to the right.', run: () => act('latch', { z: .6 }, 220) },
       { pick: 'barrel', grp: 'E', do: 'Turn the carrying handle up, push the barrel forward and lift it out.', how: 'Holding the latch in, rotate the carrying handle to the upright position (without pulling up), then push the barrel forward and pull it up off the receiver.', run: async () => { await act('handle', { rx: -Math.PI / 2 }, 420); await off('barrel', [{ d: [4, 0, 0] }, { d: [0, 4, 0] }], () => act('latch', {}, 220)); } },
+      { pick: 'receiver', grp: 'F', do: 'Lay the receiver down on its label.', how: 'With the cover and the feed tray already off, set the receiver (with the bipod) down on label F next to them.', run: () => off('receiver', [{ d: [0, 3, 0] }]) },
     ],
     hands: () => ({ dis: [
+      { ph: [{ g: 'slide', part: 'cock', axis: [-1, 0, 0], dist: 12, force: 'light', with: [['bor', 10 / 12]], endSound: 'clack', feel: 'Palm up: pull it all the way back until the bolt locks.' }], done: () => act('port', { rx: -1.2 }, 200) },
+      { ph: [{ g: 'slide', part: 'safety', axis: [0, 0, 1], dist: .7, force: 'firm', feel: 'Push the safety across to SAFE.' }, { g: 'slide', part: 'cock', axis: [1, 0, 0], dist: 12, force: 'light', feel: 'Let the handle go forward: the bolt stays back.' }] },
+      { ph: [{ g: 'swing', part: 'cover', ax: 'z', dir: -1, dist: 1.1, force: 'light', feel: 'Push in the latches and raise the cover.' }, { g: 'slide', part: 'tray', axis: [0, 1, 0], dist: 2.5, force: 'light', feel: 'Lift the feed tray to see under it.' },
+        { g: 'look', part: 'receiver', cue: 'Tap to check', say: 'Clear: no brass, links or ammo', feel: 'Look: feed pawl, feed tray, chamber, under the bolt.' }] },
+      { ph: [{ g: 'slide', part: 'tray', axis: [0, -1, 0], dist: 2.5, force: 'light', feel: 'Lower the feed tray.' }, { g: 'swing', part: 'cover', ax: 'z', dir: 1, dist: 1.1, force: 'light', endSound: 'clack', feel: 'Close the cover until it locks.' }] },
+      { ph: [{ g: 'slide', part: 'cock', axis: [-1, 0, 0], dist: 12, force: 'light', feel: 'Pull and hold the charging handle to the rear.' }, { g: 'slide', part: 'safety', axis: [0, 0, -1], dist: .7, force: 'firm', feel: 'Safety to FIRE.' },
+        { g: 'slide', part: 'cock', axis: [1, 0, 0], dist: 12, force: 'light', needs: 'trigger', with: [['bor', 10 / 12]], endSound: 'clack', feel: 'Trigger held: ride the handle forward until the bolt closes.' }] },
+      { ph: [{ g: 'look', part: 'safety', cue: 'Try SAFE', say: 'It does not move: clear', feel: 'Try to push it to SAFE: with the bolt forward it must not move.' }] },
       { ph: [{ g: 'slide', part: 'stock', axis: [0, 1, 0], dist: 14, force: 'firm', feel: 'Thumb in on the latch underneath, then slide the buttstock straight up.' }, { g: 'place', key: 'stock' }] },
       { ph: [{ g: 'slide', part: 'dsr', axis: [.6, .9, 0], dist: Math.hypot(.6, .9), force: 'firm', feel: 'Push it forward and up to free the retaining stud.' },
         { g: 'slide', part: 'dsr', axis: [-1, 0, 0], dist: 26, force: 'firm', feel: 'Hold it firmly (spring tension) and draw it out the rear, face clear.' }, { g: 'place', key: 'dsr' }] },
@@ -817,7 +838,9 @@ const WEAPONS = {
       { ph: [{ g: 'swing', part: 'handle', ax: 'x', dir: -1, dist: Math.PI / 2, force: 'light', needs: 'latch', feel: 'Latch held: turn the carrying handle up. Do not pull up yet.' },
         { g: 'slide', part: 'barrel', axis: [1, 0, 0], dist: 4, force: 'firm', needs: 'latch', feel: 'Latch held: push the barrel forward.' },
         { g: 'slide', part: 'barrel', axis: [0, 1, 0], dist: 4, force: 'light', feel: 'Now lift it up off the receiver.' }, { g: 'place', key: 'barrel' }] },
+      { ph: [{ g: 'place', key: 'receiver' }] },
     ], as: [
+      { ph: [{ g: 'mount', key: 'receiver', via: { d: [0, 6, 0] } }, { g: 'slide', part: 'receiver', axis: [0, -1, 0], dist: 6, force: 'light', feel: 'Set it down on its bipod in front of you.' }] },
       { ph: [{ g: 'mount', key: 'barrel', via: { d: [4, 4, 0] } }, { g: 'slide', part: 'barrel', axis: [0, -1, 0], dist: 4, force: 'light', feel: 'Handle upright, gas regulator down: set it on the barrel support.' },
         { g: 'slide', part: 'barrel', axis: [-1, 0, 0], dist: 4, force: 'firm', feel: 'Gun upright: pull it rearward into the receiver, gas plug into the gas cylinder.' }] },
       { ph: [{ g: 'swing', part: 'handle', ax: 'x', dir: 1, dist: Math.PI / 2, force: 'firm', clicks: 5, endSound: 'clack', feel: 'Turn it fully to the right and count the clicks: 2 to 7 means good headspace.' }] },
@@ -834,9 +857,14 @@ const WEAPONS = {
         { g: 'swing', part: 'trigger', ax: 'z', dir: -1, dist: .35, force: 'light', feel: 'Rotate the rear up until the holes line up, and hold it.' }] },
       { ph: [{ g: 'mount', key: 'tpin', via: { d: [0, 0, 7] } }, { g: 'slide', part: 'tpin', axis: [0, 0, -1], dist: 7, force: 'firm', feel: 'Little detent end in first, then push it through.' }] },
       { ph: [{ g: 'mount', key: 'stock', via: { d: [0, 14, 0] } }, { g: 'slide', part: 'stock', axis: [0, -1, 0], dist: 14, force: 'firm', endSound: 'clack', feel: 'Grooves on the receiver grooves: slide it straight down until it locks.' }] },
+      { ph: [{ g: 'slide', part: 'cock', axis: [-1, 0, 0], dist: 12, force: 'light', with: [['bor', 10 / 12]], endSound: 'clack', feel: 'Safety on FIRE: pull the handle back until the bolt locks.' }], done: () => act('port', { rx: -1.2 }, 200) },
+      { ph: [{ g: 'slide', part: 'safety', axis: [0, 0, 1], dist: .7, force: 'firm', feel: 'Safety to SAFE (keep holding the charging handle).' }, { g: 'look', part: 'trigger', cue: 'Pull the trigger', say: 'Nothing happens: good', feel: 'Pull the trigger: it must not fire.' }] },
+      { ph: [{ g: 'slide', part: 'safety', axis: [0, 0, -1], dist: .7, force: 'firm', feel: 'Safety to FIRE.' }, { g: 'slide', part: 'cock', axis: [1, 0, 0], dist: 12, force: 'light', needs: 'trigger', with: [['bor', 10 / 12]], endSound: 'clack', feel: 'Trigger held: ride the handle forward until the bolt closes.' }] },
+      { ph: [{ g: 'look', part: 'safety', cue: 'Try SAFE', say: 'It does not move: good', feel: 'Try to push it to SAFE: it must not move.' }, { g: 'swing', part: 'port', ax: 'x', dir: 1, dist: 1.2, force: 'light', endSound: 'clack', feel: 'Close the ejection port cover.' }] },
     ] }),
-    holds: { latch: { z: .6 } },
+    holds: { latch: { z: .6 }, trigger: {} },
     as: () => [
+      { pick: 'receiver', do: 'Pick up the receiver.', how: 'Set it back on its bipod in front of you, ready for the barrel: work from front to back.', run: () => home('receiver', {}, { d: [0, 6, 0] }) },
       { pick: 'barrel', do: 'Install the barrel.', how: 'Carrying handle upright, gas regulator down: set the barrel on the barrel support, keep the gun upright and pull the barrel rearward into the receiver, guiding the gas plug into the gas cylinder.', run: () => home('barrel', {}, { d: [4, 4, 0], t: 520 }) },
       { pick: 'barrel', cam: 'right', do: 'Rotate the carrying handle fully to the right.', how: 'Count the clicks: 2 to 7 means the headspace is right. Fewer or more: turn it in to the armorer.', run: () => act('handle', {}, 480) },
       { pick: 'hshield', do: 'Put the heat shield on.', how: 'Rear end in first, then slap the front down onto the barrel.', run: () => home('hshield', {}, { d: [5, 0, 0], rz: .25, t: 380 }) },
@@ -848,6 +876,11 @@ const WEAPONS = {
       { pick: 'trigger', do: 'Put the trigger housing on.', how: 'Hook its front underneath the receiver (holding notch into the recess), then rotate the rear up so the holes line up with the mounting bracket, and hold it.', run: () => home('trigger', {}, { d: [1.5, -4, 0], rz: .35, t: 380 }) },
       { pick: 'tpin', cam: 'right', do: 'Insert the trigger housing pin.', how: 'Put the little detent (spring) end in first, then push it through the bracket. That makes it easier.', run: () => home('tpin', {}, { d: [0, 0, 7] }) },
       { pick: 'stock', do: 'Slide the buttstock down onto the receiver.', how: 'Bottom grooves of the buttstock onto the receiver grooves, slide it straight down until it locks. Tug it to be sure. Then the functions check.', run: () => home('stock', {}, { d: [0, 14, 0], t: 480 }) },
+      /* then the functions check, as at the station */
+      { sec: 'fc', pick: 'cock', cam: 'right', do: 'Pull the charging handle to the rear and hold it.', how: 'Safety on FIRE first. Pull it to the rear: the bolt locks back.', run: () => Promise.all([act('cock', { x: -12 }, 420), act('bor', { x: -10 }, 420), act('port', { rx: -1.2 }, 300)]) },
+      { sec: 'fc', pick: 'safety', do: 'Safety on SAFE and pull the trigger: nothing happens.', how: 'Still holding the charging handle (no tension on the bolt), put it on SAFE and pull the trigger. The weapon must not fire.', run: () => act('safety', { z: .7 }, 220) },
+      { sec: 'fc', pick: 'safety', do: 'Safety on FIRE, pull the trigger and ride the bolt forward.', how: 'Hold the trigger and ease the charging handle forward until the bolt closes and locks. Release the trigger.', run: async () => { await act('safety', {}, 220); await Promise.all([act('cock', {}, 600), act('bor', {}, 600)]); } },
+      { sec: 'fc', pick: 'safety', do: 'Try SAFE, then close the ejection port cover.', how: 'The safety must not go to SAFE. Close the ejection port cover. Done.', run: async () => { await act('safety', { z: .15 }, 120); await act('safety', {}, 160); await act('port', {}, 300); } },
     ],
   },
 };
@@ -1181,7 +1214,7 @@ function renderAll() {
   $('#brandSub').textContent = `${D.name} · take it apart, put it back`;
   $('#wM249').setAttribute('aria-pressed', String(D.key === 'm249'));
   $('#wM240').setAttribute('aria-pressed', String(D.key === 'm240'));
-  $('#tline').innerHTML = `<b>${esc(D.sheet)}</b> · ${esc(D.codes)}. Starts standing; the gun on a flat surface, bipod legs extended, free of ammo, on FIRE, bolt forward. <b>3:00 per part.</b> Clearing and the functions check are drilled in the clearing trainer. <a class="vlink" href="${D.video[0]}" target="_blank" rel="noopener">▶ Demo video (${D.video[1]})</a>`;
+  $('#tline').innerHTML = `<b>${esc(D.sheet)}</b> · ${esc(D.codes)}. Starts standing; the gun on a flat surface, bipod legs extended, free of ammo, on FIRE, bolt forward. <b>3:00 per part.</b> ${D.dis().some(x => x.sec) ? 'Clear it first and do the functions check last, as at the station.' : 'Clearing and the functions check are drilled in the clearing trainer.'} <a class="vlink" href="${D.video[0]}" target="_blank" rel="noopener">▶ Demo video (${D.video[1]})</a>`;
   $('#startSeg').hidden = ex;
   setToggle('#hOn', HANDS); setToggle('#hOff', !HANDS);
   $('#hNote').textContent = HANDS ? 'Drag each part the way it really moves. Firm parts resist, springs push back. Off: carry each group to its label. On: bring it to the blue outline, then push it home.' : 'Tap a part and it moves by itself.';
@@ -1189,7 +1222,8 @@ function renderAll() {
   stage.classList.toggle('grab', !!handStep());
   if (handStep()) syncHand(); else $('#cFeel').textContent = '';
   $('#coach').hidden = ex;
-  $('#cStep').textContent = PHASE === 'done' ? 'Done' : `${PHASE === 'dis' ? 'Part 1 · Disassemble' : 'Part 2 · Assemble'} · step ${SI + 1} of ${n}`;
+  const sec = s && s.sec === 'clr' ? 'Part 1 · Clear the weapon' : s && s.sec === 'fc' ? 'Part 2 · Functions check' : PHASE === 'dis' ? 'Part 1 · Disassemble' : 'Part 2 · Assemble';
+  $('#cStep').textContent = PHASE === 'done' ? 'Done' : `${sec} · step ${SI + 1} of ${n}`;
   $('#cDo').textContent = s ? s.do : `The ${D.name} is back together.`;
   $('#cHow').textContent = s ? s.how : `Done in ${mmss(elapsed())}${TIMES.dis != null ? ` (take-apart ${mmss(TIMES.dis)}, put-together ${mmss(TIMES.as || 0)})` : ''}. Next comes the functions check. Try Exam mode.`;
   const sdo = $('#sdo');
@@ -1209,18 +1243,19 @@ function renderScore() {
   card.hidden = ex && !ended;
   if (card.hidden) return;
   $('#scoreT').textContent = `Score sheet · ${D.sheet.replace('Warrior Task: ', '')}`;
-  const s = cur(), dis = D.dis(), disDone = PHASE !== 'dis';
+  const s = cur(), dis = D.dis(), disDone = PHASE !== 'dis', as = D.as().map((x, i) => [x, i]), clr = dis.filter(x => x.sec === 'clr'), fc = as.filter(([x]) => x.sec === 'fc');
   const zoneDone = k => k === D.home ? disDone : disDone || dis.reduce((last, x, i) => x.grp === k ? i : last, -1) < SI;
   const li = (t, ok, now, cls = '') => `<li class="${ok ? 'ok' : now ? 'now' : cls}">${t}</li>`;
   const m = (n, title, done, cur, subs) => `<li class="m${done ? ' done' : cur ? ' cur' : ''}"><span class="num">${n}</span><div><div class="mt">${title}</div><ul class="subs">${subs}</ul></div></li>`;
   $('#score').innerHTML =
-    m(1, 'Clear the weapon.', false, false, li('7 checks: in the clearing trainer (next).', false, false, 'na')) +
-    m(2, 'Disassemble weapon into the following groups (matching nomenclature labels):', disDone, PHASE === 'dis',
+    m(1, 'Clear the weapon.', clr.length > 0 && (disDone || SI >= clr.length), PHASE === 'dis' && s && s.sec === 'clr',
+      clr.length ? clr.map((x, i) => li(esc(x.do), disDone || i < SI, PHASE === 'dis' && i === SI)).join('') : li('7 checks: in the clearing trainer (next).', false, false, 'na')) +
+    m(2, 'Disassemble weapon into the following groups (matching nomenclature labels):', disDone, PHASE === 'dis' && !(s && s.sec),
       Object.entries(D.zones).map(([k, z]) => li(`<span class="sw" style="--c:${hex(z[5])}"></span>${k}. ${esc(z[4])}${z[6] ? ' (separated)' : ''}`, zoneDone(k), PHASE === 'dis' && s && s.grp === k)).join('')) +
     m(3, 'Assemble and perform a functions check:', PHASE === 'done', PHASE === 'as',
       li('Assemble the weapon correctly in sequence:', PHASE === 'done', false) +
-      D.as().map((x, i) => li('&nbsp;&nbsp;' + esc(x.do), PHASE === 'done' || (PHASE === 'as' && i < SI), PHASE === 'as' && i === SI)).join('') +
-      li('Functions check: in the clearing trainer (next).', false, false, 'na'));
+      as.filter(([x]) => !x.sec).map(([x, i]) => li('&nbsp;&nbsp;' + esc(x.do), PHASE === 'done' || (PHASE === 'as' && i < SI), PHASE === 'as' && i === SI)).join('') +
+      (fc.length ? li('Functions check:', PHASE === 'done', false) + fc.map(([x, i]) => li('&nbsp;&nbsp;' + esc(x.do), PHASE === 'done' || (PHASE === 'as' && i < SI), PHASE === 'as' && i === SI)).join('') : li('Functions check: in the clearing trainer (next).', false, false, 'na')));
 }
 
 /* ---------- clock, exam parts, result ---------- */
@@ -1251,11 +1286,12 @@ function results(why) {
   bad.forEach(k => f1.push(`${nameOf(W.P[k])} was put on label ${PLACED[k]} (${D.zones[PLACED[k]][4]}); it belongs on ${D.items[k].zone} (${D.zones[D.items[k].zone][4]}).`));
   const p2 = p1 && TIMES.as != null && TIMES.as <= LIMIT;
   if (!p1) f2.push('Not reached.'); else if (TIMES.as == null) f2.push(why === 'time' ? 'Time ran out (3:00).' : 'Not finished.');
-  const go = p1 && p2;
+  const go = p1 && p2, nClr = D.dis().filter(x => x.sec === 'clr').length, hasFc = D.as().some(x => x.sec === 'fc');
+  const cleared = nClr ? TIMES.dis != null || SI >= nClr : null;
   const rows = [
-    ['1', 'Clear the weapon.', 'Drilled in the clearing trainer', null, []],
+    ['1', 'Clear the weapon.', nClr ? 'Done first, inside Part 1' : 'Drilled in the clearing trainer', cleared, cleared === false ? [why === 'time' ? 'Time ran out (3:00).' : 'Not finished.'] : []],
     ['2', 'Disassemble weapon into the following groups (matching nomenclature labels).', `Part 1 time ${TIMES.dis != null ? mmss(TIMES.dis) : '–'} of 3:00`, p1, f1],
-    ['3', 'Assemble and perform a functions check.', `Part 2 time ${TIMES.as != null ? mmss(TIMES.as) : '–'} of 3:00 (the functions check is drilled in the clearing trainer)`, p2, f2],
+    ['3', 'Assemble and perform a functions check.', `Part 2 time ${TIMES.as != null ? mmss(TIMES.as) : '–'} of 3:00${hasFc ? '' : ' (the functions check is drilled in the clearing trainer)'}`, p2, f2],
   ];
   const pts = go ? (ATT === 1 ? '1st attempt pass · 20 / 20 PTS' : '2nd attempt pass · 14 / 20 PTS') : ATT === 1 ? 'NO-GO on the 1st attempt. You get a 2nd attempt (a pass is worth 14 PTS).' : 'Double failure · 0 / 20 PTS';
   $('#resBody').innerHTML = `<p><span class="verdict ${go ? 'go' : 'nogo'}">${go ? 'GO' : 'NO-GO'}</span>&nbsp; ${esc(pts)}</p>
@@ -1295,20 +1331,21 @@ function setWeapon(k) {
 }
 function renderIntro() {
   $('#exT').textContent = `Exam mode · Maintain ${D.key === 'm249' ? 'a' : 'an'} ${D.name}`;
+  const full = D.dis().some(x => x.sec);   // clearing and the functions check are part of this run
   $('#exList').innerHTML = [
-    '<b>Part 1</b> take it apart, <b>Part 2</b> put it back: <b>3:00</b> each.',
+    full ? '<b>Part 1</b> clear it and take it apart, <b>Part 2</b> put it back and do the functions check: <b>3:00</b> each.' : '<b>Part 1</b> take it apart, <b>Part 2</b> put it back: <b>3:00</b> each.',
     HANDS ? 'No help: no arrows, outlines or colors. Each group goes on its label; a wrong label is a NO-GO.' : 'No help: no glow or colors. Tap each group\'s label to put it down; a wrong label is a NO-GO.',
     'Pass on the 1st try 20 pts, on the 2nd 14, two fails 0 and Charlie Company.',
   ].map(t => `<li>${t}</li>`).join('');
   $('#exMore').innerHTML = [
-    'Two clocks, like the station: <b>Part 1</b> clear and disassemble within <b>3:00</b>, <b>Part 2</b> assemble and functions check within <b>3:00</b>. Here you only handle the parts (clearing and the functions check are in the clearing trainer), so beat the clock with time to spare.',
+    'Two clocks, like the station: <b>Part 1</b> clear and disassemble within <b>3:00</b>, <b>Part 2</b> assemble and functions check within <b>3:00</b>.' + (full ? '' : ' Here you only handle the parts (clearing and the functions check are in the clearing trainer), so beat the clock with time to spare.'),
     HANDS ? 'No coach, no arrows, no outlines, no colors. Move each part by hand the way it really comes off and goes back, in the order the gun allows: a part that cannot move yet just stays put (on the real gun that costs you time).' : 'No coach, no glowing part, no colors. Tap the parts in the order the gun allows: a part that cannot come off yet just stays put (on the real gun that costs you time).',
     HANDS ? 'Carry every group that comes off <b>to its nomenclature label on the mat</b> and let go. A group on the wrong label is a NO-GO. Separate the groups the sheet marks "separated". Putting it together, a part lines up by itself when you bring it close to where it goes.' : 'Every group that comes off is in your hand: <b>tap its nomenclature label on the mat</b> to put it down. A group on the wrong label is a NO-GO. Separate the groups the sheet marks "separated".',
     'Two attempts: pass on the 1st = 20 PTS, on the 2nd = 14 PTS, double failure = 0 PTS and Charlie Company.',
   ].map(t => `<li>${t}</li>`).join('');
 }
 function renderRef() {
-  const dis = D.dis(), as = D.as();
+  const dis = D.dis().filter(x => !x.sec), as = D.as().filter(x => !x.sec);
   $('#refT').textContent = `${D.sheet} · score sheet and how-to`;
   $('#refBody').innerHTML = `<p class="muted">${esc(D.codes)}. Start position: standing. Conditions: member of team returned from mission; directed to conduct maintenance on the ${esc(D.name)} on a flat surface with bipod legs extended. Starting config: free of ammo, on FIRE, bolt forward. Standards: clear and disassemble matching nomenclature labels within 3 mins; assemble and perform functions check within 3 mins. Scoring: 1st attempt 20 pts, 2nd attempt 14 pts, double fail 0 pts.</p>
     <h3>1 · Clear the weapon</h3><ol>${clearList(D.key === 'm249' ? 5 : 4).map(t => `<li>${esc(t)}</li>`).join('')}</ol>
@@ -1415,6 +1452,8 @@ function handHit(e, prefer) {
   for (const w of prefer) { const x = hits.find(hh => typeof w === 'string' ? pickOf(hh.object)?.userData.pick === w : isIn(w, hh.object)); if (x) return x; }
   return hits.find(hh => { const p = pickOf(hh.object); return p && p.userData.pick !== 'receiver'; }) || hits[0];
 }
+/* the mesh is the part's own (or one of its pieces), not another part mounted on it: the feed tray is not the receiver */
+const owns = (o, m) => { const q = pickOf(m); return !!q && (q === o || (q.userData.pick === o.userData.pick && isIn(o, q))); };
 /* the part within a fingertip of the press (32 px on a phone, 16 with a mouse): the nearest outline on screen, the smaller part on a tie */
 function nearest(e, list) {
   let best = null, bd = TOUCH ? 32 : 16, ba = Infinity;
@@ -1444,8 +1483,8 @@ function handDown(e) {
   let h = handHit(e, [...(hid ? [hid] : []), ...(target ? [target] : [])]), top = h ? pickOf(h.object) : null;
   /* a fingertip that lands just beside a small part (a spring, a pin, the latch) still gets it, if that part can be used now */
   const list = ph.g === 'apart' ? W.S[ph.key].slice(1).filter(x => !HS.sep.has(x)) : ph.g === 'join' ? movers(ph.key) : [...(hid ? [W.P[hid]] : []), mp || W.P[ph.key]];
-  if (hid && !(h && isIn(W.P[hid], h.object)) && nearest(e, [W.P[hid]])) { h = { object: W.P[hid] }; top = W.P[hid]; }   // a lever that must be held wins a press within reach of it
-  else if (!(h && list.some(o => isIn(o, h.object)))) { const o = nearest(e, list); if (o) { h = { object: o }; top = pickOf(o); } }
+  if (hid && !(h && owns(W.P[hid], h.object)) && nearest(e, [W.P[hid]])) { h = { object: W.P[hid] }; top = W.P[hid]; }   // a lever that must be held wins a press within reach of it
+  else if (!(h && list.some(o => owns(o, h.object)))) { const o = nearest(e, list); if (o) { h = { object: o }; top = pickOf(o); } }
   const pick = top && top.userData.pick;
   if (!top) return false;
   if (!T0) T0 = Date.now();
@@ -1454,6 +1493,7 @@ function handDown(e) {
     if (ph.g === 'hold') advance();
     return true;
   }
+  if (ph.g === 'look' && pick === mp.userData.pick) { if (ph.say) say(ph.say); sfx('tick'); advance(); return true; }   // a check: press it and look
   let d = null;
   if ((ph.g === 'slide' || ph.g === 'twist' || ph.g === 'swing') && (mp.userData.sub ? isIn(mp, h.object) : pick === mp.userData.pick)) d = startMove(e, ph);
   else if (ph.g === 'place' && pick === ph.key) d = startCarry(e, ph, 8);
@@ -1702,6 +1742,7 @@ function handCue() {
   else if (ph.g === 'mount' || ph.g === 'join') { o = ph.g === 'mount' ? W.P[ph.key] : movers(ph.key)[0]; if (o) { from = scr(aimW(o)); to = scr(centerAt(o, approach(o, ph.off, ph.via).M)); text = ph.g === 'mount' ? 'Drag it onto the outline' : 'Put it on'; } }
   else if (ph.g === 'twist') { o = W.P[ph.part]; const r = rollDir(o); from = r.A; to = { x: r.A.x + r.n.x * 80, y: r.A.y + r.n.y * 80 }; text = `Roll it ${arrowChar(r.n.x, r.n.y)} · turn · ${FORCE[ph.force].toLowerCase()}`; }
   else if (ph.g === 'hold') { o = W.P[ph.part]; text = TOUCH ? 'Press & hold' : 'Press & hold (or Space)'; }
+  else if (ph.g === 'look') { o = W.P[ph.part]; text = ph.cue || 'Tap to check'; }
   else if (ph.g === 'place') { o = W.P[ph.key]; const z = D.zones[D.items[ph.key].zone]; from = scr(aimW(o)); to = scr(V((z[0] + z[1]) / 2, 0, (z[2] + z[3]) / 2)); text = `Carry to label ${D.items[ph.key].zone}`; }
   else if (ph.g === 'apart') { const subs = W.S[ph.key]; o = subs.slice(1).find(x => !HS.sep.has(x)); if (o) { from = scr(aimW(o)); to = spotScreen(o, `${ph.key}.${subs.indexOf(o)}`); text = 'Pull it apart'; } }
   return { o, from, to, text };
@@ -1835,7 +1876,8 @@ function frame(t) {
 /* the middle of the part's biggest piece, in world space */
 function aimAt(o, out) {
   let best = null, vol = 0; o.updateMatrixWorld(true);
-  o.traverse(c => { if (c.isMesh && !c.userData.proxy && c.visible) { if (!c.geometry.boundingBox) c.geometry.computeBoundingBox(); const b = c.geometry.boundingBox.clone().applyMatrix4(c.matrixWorld), d = b.getSize(V(0, 0, 0)), v = d.x * d.y * d.z + 1e-6; if (v > vol) { vol = v; best = b; } } });
+  const own = c => { for (let p = c.parent; p && p !== o; p = p.parent) if (p.userData.pick && p.userData.pick !== o.userData.pick) return false; return true; };   // not a part mounted on it (the receiver's cover)
+  o.traverse(c => { if (c.isMesh && !c.userData.proxy && c.visible && own(c)) { if (!c.geometry.boundingBox) c.geometry.computeBoundingBox(); const b = c.geometry.boundingBox.clone().applyMatrix4(c.matrixWorld), d = b.getSize(V(0, 0, 0)), v = d.x * d.y * d.z + 1e-6; if (v > vol) { vol = v; best = b; } } });
   if (!best) return false; best.getCenter(out); return true;
 }
 /* Guided: a ring and the part's name on the part to tap */
@@ -1882,6 +1924,7 @@ window.WT = {
   colors(on) { COLORS = on; setToggle('#tColors', on); repaint(); },
   /* where the marker for a part sits on the page (for click tests) */
   screen(id) { const o = objsOf(id).find(g => !bounds(g).isEmpty()); if (!o) return null; const c = V(0, 0, 0); aimAt(o, c); c.project(camera); const r = renderer.domElement.getBoundingClientRect(); return { x: r.left + (c.x + 1) / 2 * r.width, y: r.top + (1 - c.y) / 2 * r.height, on: c.z < 1 && Math.abs(c.x) < 1 && Math.abs(c.y) < 1 }; },
+  hitsAt(x, y) { aim({ clientX: x, clientY: y }); return ray.intersectObjects(root.children, true).filter(h => h.object.isMesh).map(h => (pickOf(h.object)?.userData.pick || '-') + (h.object.userData.proxy ? '*' : '')); },
   hitAt(x, y) { const h = hit({ clientX: x, clientY: y }); return h ? (pickOf(h.object)?.userData.pick || 'mesh:' + nameOf(h.object)) : null; },
   names(on) { NAMES = on; setToggle('#tNames', on); if (!on) nameEls.forEach(n => { n.el.hidden = true; }); },
   hands(on) { setHands(on); },
@@ -1892,6 +1935,7 @@ window.WT = {
     if (ph.g === 'mount' || ph.g === 'join') { const o = ph.g === 'mount' ? W.P[ph.key] : movers(ph.key)[0]; return { g: ph.g, part: ph.key, from: scr(aimW(o)), to: scr(centerAt(o, approach(o, ph.off, ph.via).M)) }; }
     if (ph.g === 'twist') { const r = rollDir(W.P[ph.part]), k = 70 / GAIN[ph.force] * 1.15; return { g: 'twist', part: ph.part, from: r.A, to: { x: r.A.x + r.n.x * k, y: r.A.y + r.n.y * k } }; }
     if (ph.g === 'hold') return { g: 'hold', at: scr(aimW(W.P[ph.part])) };
+    if (ph.g === 'look') return { g: 'look', part: ph.part, at: scr(aimW(W.P[ph.part])) };
     if (ph.g === 'place') { const z = D.zones[D.items[ph.key].zone]; return { g: 'place', zone: D.items[ph.key].zone, from: scr(aimW(W.P[ph.key])), to: scr(V((z[0] + z[1]) / 2, 0, (z[2] + z[3]) / 2)) }; }
     if (ph.g === 'apart') { const subs = W.S[ph.key], o = subs.slice(1).find(x => !HS.sep.has(x)); return { g: 'apart', from: scr(aimW(o)), to: spotScreen(o, `${ph.key}.${subs.indexOf(o)}`) }; }
     return null;
