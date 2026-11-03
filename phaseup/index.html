@@ -116,17 +116,19 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .lvl.done { background: var(--ok-bg); border-color: var(--ok); }
 .lvl.done .ln { color: var(--ok); }
 .lvl.next { background: var(--gold-soft); border-color: var(--gold-ink); }
-@media (max-width: 520px) { .levels { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .lvl { padding: 10px; } .lvl small { display: none; } .lvl b { font-size: 16px; } }
 .card { background: var(--surface); border: 1.5px solid var(--rule); }
 .chead { display: flex; align-items: baseline; gap: 4px 10px; flex-wrap: wrap; background: var(--band); color: var(--band-ink); padding: 9px 12px; }
 .chead h2 { margin: 0; font: 700 18px/1.1 var(--f-display); letter-spacing: .05em; text-transform: uppercase; }
 .chead .cnt { margin-left: auto; font: 500 12px/1 var(--f-mono); opacity: .75; }
 .tag { font: 600 12px/1 var(--f-mono); letter-spacing: .1em; color: var(--gold); }
 .note { margin: 0; padding: 9px 12px; border-top: 1px dashed var(--line); font-size: 13.5px; color: var(--muted); }
-.hook { display: grid; gap: 6px; }
-.hook label { font: 700 13px/1 var(--f-display); text-transform: uppercase; letter-spacing: .1em; }
-.hook textarea, .custom textarea { width: 100%; font: 400 16px/1.5 var(--f-body); color: var(--ink); background: var(--surface); border: 1.5px solid var(--rule); border-radius: 0; padding: 10px 12px; resize: vertical; outline: none; }
-.hook small, .custom small { color: var(--muted); font-size: 13px; }
+.tips { padding: 12px 14px; border-left: 4px solid var(--gold); background: var(--surface); }
+.tips ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; font-size: 15px; line-height: 1.5; }
+.custom { display: grid; gap: 6px; }
+.custom label { font: 700 13px/1 var(--f-display); text-transform: uppercase; letter-spacing: .1em; }
+.custom textarea { width: 100%; font: 400 16px/1.5 var(--f-body); color: var(--ink); background: var(--surface); border: 1.5px solid var(--rule); border-radius: 0; padding: 10px 12px; resize: vertical; outline: none; }
+.custom small { color: var(--muted); font-size: 13px; }
 .row2 { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* content rows (study + intro) */
@@ -160,6 +162,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .lesson { max-width: 660px; margin: 0 auto; padding-bottom: 170px; }
 .ltop { display: flex; align-items: center; gap: 12px; padding-block: 4px 18px; }
 .lx { width: 44px; height: 44px; border: 0; background: none; font: 400 30px/1 var(--f-body); color: var(--muted); cursor: pointer; }
+.lx.arm { width: auto; padding: 0 10px; font: 700 16px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1.5px solid var(--bad); }
 .lbar { flex: 1; height: 12px; background: var(--line); overflow: hidden; border-radius: 6px; }
 .lbar i { display: block; height: 100%; width: 0; background: var(--ok); border-radius: 6px; }
 .lcount { font-size: 13px; color: var(--muted); }
@@ -247,7 +250,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .dstats div { display: grid; gap: 2px; }
 .dstats b { font: 700 32px/1 var(--f-display); }
 .dstats span { font: 500 12px/1 var(--f-mono); color: var(--muted); }
-.done .lact { justify-content: center; }
+.done .dact { flex-direction: column; width: 100%; max-width: 380px; }
+.done .dact .btn { width: 100%; }
 .weak { list-style: none; margin: 0; padding: 0; text-align: left; width: 100%; max-width: 520px; border: 1.5px solid var(--rule); background: var(--surface); }
 .weak li { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 14px; }
 .weak li:first-child { border-top: 0; }
@@ -289,9 +293,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
      "|" after an answer = other accepted wording. Passages: "|" splits lines, {a/b} = either word. */
   const SECTIONS = [
     { id: 'honor', week: 1, title: 'OCS Honor Code', type: 'text',
+      tips: ['Three things you do, one thing you allow: lie, cheat, steal … or tolerate.',
+        'Picture three hands: one over a mouth (lie), one copying a test (cheat), one in a pocket (steal). The fourth hand is yours, and it does not look away (tolerate).'],
       text: 'An officer will not lie, cheat, steal, | or tolerate those who do.' },
     { id: 'coc', week: 1, title: 'Chain of Command', type: 'table', head: ['Position', 'Commander', 'NCO'],
       note: 'GEN LaNeve is the VCSA; there is no current CSA. Your note: LaNeve is said “la-nive”. SMA = Sergeant Major of the Army.',
+      tips: ['Go from big to small: the nation (3 civilians), the Army, T2COM, the post (MCoE), the school (USAIS), brigade, battalion, company.',
+        'The first three are civilians, so they have no NCO. From the Army Chief of Staff down, every commander has an NCO beside him.',
+        'The generals count down their stars: GEN LaNeve 4, LTG Brown 3, MG Tuley 2, BG Keirsey 1. Then COL, LTC, CPT.',
+        'Brigade is the double T: COL Trask and CSM Turkovich.'],
       rows: [
         ['Commander-in-Chief|cmdr in chief|commander in chief|cinc', 'President Donald J. Trump', ''],
         ['Secretary of War|sec of war|secwar', 'Hon. Pete Hegseth', ''],
@@ -305,47 +315,79 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
         ['B Company|b co|bravo company|bravo co', 'CPT Lux', '1SG Kuhns']
       ] },
     { id: 'values', week: 1, title: 'Army Values', tag: 'LDRSHIP',
+      tips: ['LDRSHIP is LEADERSHIP without the vowels E, A, E. Each remaining letter is one value, in order.',
+        'As a story: be loyal to the team, do your duty, respect others, put yourself last, keep your honor, act with integrity, and find the personal courage to do all of it.'],
       items: ['Loyalty', 'Duty', 'Respect', 'Selfless Service', 'Honor|honour', 'Integrity', 'Personal Courage'] },
 
     { id: 'cos', week: 2, title: 'Classes of Supply', unit: 'classes', labels: ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'],
       memo: 'Smart Chefs Prepare Creamy Alfredo Pasta Making Meals Really Memorable',
       note: 'The study guide calls Class III “Petroleum Fuel”; the cadre sheet says Petroleum, Oil, Lubricant. Both are accepted.',
+      tips: ['Each word of the sentence is one class, in Roman-numeral order: Smart = I, Chefs = II … Memorable = X.',
+        'Three groups: I–III you use up every day (food, clothes, fuel). IV builds and V shoots. VI–VII are personal items and the big end items. VIII–X fix people and gear (medical, repair parts), then everything else.',
+        'Class III is the gas station, Class V is the ammo point.'],
       items: ['Subsistence', 'Clothing', 'Petroleum, Oil, Lubricants|petroleum fuel|petroleum oil lubricant|petroleum oils and lubricants|pol|petroleum|fuel',
         'Construction Material|construction materials', 'Ammunition|ammo', 'Personal Demand Items|personal demands items', 'Major End Items',
         'Medical Supplies', 'Repair Parts', 'Miscellaneous Supplies|miscellaneous'] },
     { id: 'terrain', week: 2, title: 'Terrain Features', unit: 'features', groups: [[0, 'Major'], [5, 'Minor'], [8, 'Supplemental']],
+      tips: ['Count 5, 3, 2: five major, three minor, two supplemental.',
+        'Major (H V R S D): “Happy Very Rich Soldiers Dance.” Minor (D C S): “Dogs Chase Squirrels.”',
+        'Supplemental are man-made for roads: you cut through high ground and fill in low ground.',
+        'On your fist: a knuckle is a hill, the dip between two knuckles is a saddle, the row of knuckles is a ridge.'],
       items: ['Hill', 'Valley', 'Ridge', 'Saddle', 'Depression', 'Draw', 'Cliff', 'Spur', 'Cut', 'Fill'] },
     { id: 'wff', week: 2, title: 'Warfighting Functions', unit: 'functions', memo: 'Commanders Move Swiftly, Intel Protects Forces',
+      tips: ['A story in order: the commander takes charge (C2), moves the force (Movement and Maneuver), feeds it (Sustainment), finds the enemy (Intelligence), shields the force (Protection), then fires (Fires).',
+        'Command and Control comes first because it ties the other five together.'],
       items: ['Command and Control|c2', 'Movement and Maneuver', 'Sustainment', 'Intelligence', 'Protection', 'Fires'] },
     { id: 'tlp', week: 2, title: 'Troop Leading Procedures', unit: 'steps', memo: 'Receive Instructions, Make Initial Checks, Complete Important Steps',
       note: 'Your TLP class (W5D1) words step 8 as “Rehearse, Supervise, and Inspect”; that is accepted too.',
+      tips: ['Two “Issue” steps: the WARNO goes out early (2), the order goes out late (7).',
+        'Two “plan” steps: tentative plan (3), complete the plan (6). Step 3 takes the longest.',
+        'In between you move and look: initiate movement (4), conduct recon (5). Then it ends with supervise (8).'],
       items: ['Receive the Mission', 'Issue the WARNO|issue a warno|issue the warning order|issue a warning order', 'Make a Tentative Plan',
         'Initiate Movement', 'Conduct Recon|conduct reconnaissance', 'Complete the Plan', 'Issue the Order|issue the opord|issue the operations order|issue the operation order',
         'Supervise and Refine|rehearse supervise and inspect'] },
-    { id: 'tlpo', week: 2, title: 'TLP Outline', type: 'custom', ask: 'Paste the TLP outline from your handout, one step or sub-step per line.' },
-    { id: 'song', week: 2, title: 'Army Song', type: 'custom', ask: 'Paste the Army Song from your handout, one line per line.' },
+    { id: 'tlpo', week: 2, title: 'TLP Outline', type: 'custom', ask: 'Paste the TLP outline from your handout, one step or sub-step per line.',
+      tips: ['Hang each sub-step on its step number: say the step, then its sub-steps.'] },
+    { id: 'song', week: 2, title: 'Army Song', type: 'custom', ask: 'Paste the Army Song from your handout, one line per line.',
+      tips: ['Learn it two or three lines at a time, and hum the tune while you type: the melody carries the words.'] },
 
     { id: 'patrol', week: 3, title: 'Principles of Patrolling', unit: 'principles', memo: 'Please Remember Smart Choices Count',
+      tips: ['In the order a patrol happens: plan it, recon it, secure it, control it, and use common sense the whole way.'],
       items: ['Planning', 'Recon|reconnaissance', 'Security', 'Control', 'Common Sense'] },
     { id: 'opord', week: 3, title: '5 Paragraph OPORD', unit: 'paragraphs', memo: 'See My Execution, Sustain Command',
+      tips: ['Five questions in order: What is going on? (Situation) What do we do? (Mission) How? (Execution) What do we need? (Sustainment) Who is in charge and how do we talk? (Command and Signal)'],
       items: ['Situation', 'Mission', 'Execution', 'Sustainment', 'Command and Signal'] },
     { id: 'mettc', week: 3, title: 'Mission Variables', tag: 'METT-TC',
+      tips: ['Spell it out: M-E-T-T-T-C. Mission and Enemy first, then three T’s (Terrain and weather, Troops, Time), and the C is Civil considerations.',
+        'Mission variables are for one mission; operational variables (PMESII-PT) describe the whole environment.'],
       items: ['Mission', 'Enemy', 'Terrain and Weather', 'Troops|troops and support available|troops and support', 'Time|time available', 'Civil Considerations'] },
-    { id: 'off', week: 3, title: 'Characteristics of the Offense', tag: 'ACTS', items: ['Audacity', 'Concentration', 'Tempo', 'Surprise'] },
+    { id: 'off', week: 3, title: 'Characteristics of the Offense', tag: 'ACTS', items: ['Audacity', 'Concentration', 'Tempo', 'Surprise'],
+      tips: ['The offense ACTS.', 'Picture a raid: be bold (Audacity), mass at one point (Concentration), keep it fast (Tempo), hit when they do not expect it (Surprise).'] },
     { id: 'def', week: 3, title: 'Characteristics of the Defense', note: 'From the cadre sheet.',
+      tips: ['D F M P S: “Dug-in Forces Make Positions Safe.”',
+        'As a story: disrupt their attack, stay flexible, mass and concentrate where it counts, prepare the ground, keep it secure.',
+        'Concentration is in both: alone in the offense (ACTS), as “Mass and Concentration” in the defense.'],
       items: ['Disruption', 'Flexibility', 'Mass and Concentration', 'Preparation', 'Security'] },
     { id: 'oe', week: 3, title: 'Operational Environment', type: 'text',
       note: 'The study guide says “a composite … of that platoon or squad”; the cadre sheet says “the composite … of a platoon or squad”. Either is accepted.',
+      tips: ['Three nouns in a row, C, C, I: Conditions, Circumstances, and Influences.',
+        'Composite means everything mixed together. It ends with who it affects: the platoon or squad.'],
       text: '{The/A} composite of conditions, circumstances, and influences | affecting the employment of {a/that} platoon or squad.' },
 
     { id: 'opvar', week: 4, title: 'Operational Variables', tag: 'PMESII-PT',
+      tips: ['Say it as “P-MESS-II-PT”.', 'The two I’s go in alphabetical order: Information before Infrastructure.',
+        'The tail “PT” is the Physical environment and Time.'],
       items: ['Political', 'Military', 'Economic', 'Social', 'Information', 'Infrastructure', 'Physical Environment', 'Time'] },
 
     { id: 'pmc', week: 5, title: 'Principles of Mission Command', unit: 'principles', memo: 'Competent Soldiers Master Command, Discipline, and Risk',
       memoMap: ['Competent', 'Soldiers', 'Master', 'Command', null, 'Discipline', 'Risk'],
       note: 'Mission Orders has no word in the sentence: it comes right after Commander’s Intent (intent, then orders).',
+      tips: ['It builds like a team: be competent, share understanding, earn mutual trust. Then the commander gives intent and mission orders, subordinates take disciplined initiative, and leaders accept risk.',
+        'Intent first, orders second: Commander’s Intent (4), Mission Orders (5).'],
       items: ['Competence', 'Shared Understanding', 'Mutual Trust', 'Commander’s Intent', 'Mission Orders', 'Disciplined Initiative|disciplined initiatives', 'Risk Acceptance'] },
     { id: 'alrm', week: 5, title: 'Core Leader Competencies & Attributes', groups: [[0, 'Competencies'], [3, 'Attributes']], tag: 'LDA · CPI',
+      tips: ['Attributes are what a leader IS (Character, Presence, Intellect). Competencies are what a leader DOES: they are verbs (Leads, Develops, Achieves).',
+        'Competencies are a timeline: you lead, you develop people, you achieve the mission.'],
       items: ['Leads', 'Develops', 'Achieves', 'Character', 'Presence', 'Intellect'] }
   ];
   const KEY = 'phaseup-recall-v2';
@@ -366,8 +408,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   }
 
   /* ---------- progress, kept in this browser ---------- */
-  let P = (() => { try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && v.items) return v; } catch (e) {} return { items: {}, lv: {}, xp: 0, days: [], hooks: {}, custom: {} }; })();
-  ['lv', 'hooks', 'custom'].forEach(k => { P[k] = P[k] || {}; });
+  let P = (() => { try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && v.items) return v; } catch (e) {} return { items: {}, lv: {}, xp: 0, days: [], custom: {} }; })();
+  ['lv', 'custom'].forEach(k => { P[k] = P[k] || {}; });
   P.days = P.days || [];
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} };
   const seen = k => { if (!P.items[k]) P.items[k] = { b: 0, d: Date.now(), n: 0, c: 0 }; };
@@ -507,6 +549,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     }).join('');
   }
 
+  const tipsHTML = sec => sec.tips ? `<div class="tips"><p class="memo-l">Memory tips</p><ul>${sec.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : '';
+
   /* ---------- exercises ---------- */
   function hintFor(sec, i) { const mw = sec.memoWords && sec.memoWords[i]; return (mw ? `“${mw}” · ` : '') + initials(sec.items[i].text); }
   function askItem(sec, i, mode, show) {
@@ -626,7 +670,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     document.body.classList.add('lesson-on');
     app.innerHTML = `<div class="lesson" id="lesson"><div class="ltop"><button class="lx" id="lx" aria-label="Quit lesson">×</button><span class="lbar"><i></i></span><span class="lcount mono"></span></div><div class="lbody" id="lbody"></div></div>
       <div class="fbar" id="fbar" hidden><div class="wrap fin"><div class="fmsg" aria-live="polite"><span class="fgo"></span><div class="ftext"></div></div><button class="btn pri" id="fcont">Continue</button></div></div>`;
-    $('#lx').onclick = () => go(sec ? 'skill' : 'review', sec && sec.id);
+    const lx = $('#lx');
+    lx.onclick = () => {
+      if (lx.dataset.arm || !L) { go(sec ? 'skill' : 'review', sec && sec.id); return; }
+      lx.dataset.arm = '1'; lx.textContent = 'Quit?'; lx.classList.add('arm');
+      setTimeout(() => { if (lx.isConnected) { delete lx.dataset.arm; lx.textContent = '×'; lx.classList.remove('arm'); } }, 2500);
+    };
     $('#fcont').onclick = () => L && L.cont && L.cont();
     window.scrollTo(0, 0);
     nextEx();
@@ -680,11 +729,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
       <div class="dstats"><div><b class="mono">${acc}%</b><span>right first time</span></div><div><b class="mono">+${xp}</b><span>XP</span></div><div><b class="mono">${t}</b><span>time</span></div></div>
       ${low ? '<p class="sub">Lots of misses. Run this level once more before moving on.</p>' : ''}
       ${weak.length ? `<ul class="weak">${weak.map(w => { const [q, a] = w.split('|'); return `<li><small>${esc(q)}</small>${esc(a)}</li>`; }).join('')}</ul>` : ''}
-      <div class="lact">${low && sec ? `<button class="btn gold" id="again">Run it again</button>` : nextLv ? `<button class="btn gold" id="nextlv">Level ${nextLv}: ${LEVELS[nextLv - 1][0]}</button>` : ''}
-      <button class="btn${(low && sec) || nextLv ? '' : ' gold'}" data-go="${sec ? 'skill' : 'review'}" data-arg="${sec ? sec.id : ''}">${sec ? 'Back to skill' : 'Back to review'}</button><button class="btn" data-go="path">Path</button></div></div>`;
+      <div class="lact dact">${!sec ? '<button class="btn gold" id="again">Review again</button>' : low ? '<button class="btn gold" id="again">Run it again</button>' : nextLv ? `<button class="btn gold" id="nextlv">Next: Level ${nextLv} · ${LEVELS[nextLv - 1][0]}</button>` : ''}
+      <button class="btn${!sec || low || nextLv ? '' : ' gold'}" data-go="path">Back to path</button></div></div>`;
     $('.lcount').textContent = ''; $('.lbar i').style.width = '100%'; $('#fbar').hidden = true;
     const a = $('#again'), n = $('#nextlv');
-    if (a) a.onclick = () => startLesson(sec, lv);
+    if (a) a.onclick = () => startLesson(sec, sec ? lv : 0);
     if (n) n.onclick = () => startLesson(sec, nextLv);
     const f = a || n || $('.done [data-go]'); if (f) f.focus({ preventScroll: true });
   }
@@ -701,7 +750,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
       const s = ex.sec, idx = ex.idx, whole = s.type === 'list' ? idx.length === s.items.length : false;
       const title = isText(s) ? 'Read it out loud' : s.type === 'table' ? `Meet the chain: ${esc(s.rows[idx[0]].cue)} to ${esc(s.rows[idx[idx.length - 1]].cue)}`
         : whole ? `Learn all ${idx.length}` : `Learn ${label(s, idx[0])}–${label(s, idx[idx.length - 1])}`;
-      const hook = P.hooks[s.id] ? `<p class="ctx"><b>Your hook:</b> ${esc(P.hooks[s.id])}</p>` : '';
+      const hook = idx[0] === 0 ? tipsHTML(s) : '';
       const acro = !s.memo && s.type === 'list' && !s.tag ? `<p class="hint">First letters: ${idx.map(i => s.items[i].text[0]).join(' · ')}</p>` : s.tag ? `<p class="hint">${esc(s.tag)}</p>` : '';
       host.innerHTML = `<p class="eyebrow">New · ${esc(s.title)}</p><h2 class="lq">${title}</h2>${memoHTML(s, idx)}${acro}${hook}
         <div class="card"><div class="irows">${rowsHTML(s, idx)}</div>${s.note && !s.memo ? `<p class="note">${esc(s.note)}</p>` : ''}</div>
@@ -807,28 +856,31 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
         <div class="lact"><button class="btn ghost" data-a="hint">Hint</button><button class="btn ghost" data-a="show">Show it</button><button class="btn pri" data-a="enter">Enter</button></div>`;
       const lis = host.querySelectorAll('.rlist li'), inp = $('#ain', host), say = $('.say', host);
       const setRow = () => { inp.value = ''; rowMiss = 0; rowHint = !!rows[i].shown; inp.placeholder = rowHint ? rows[i].hint : ''; $('#rnum', host).textContent = rows[i].label; lis.forEach((li, k) => li.classList.toggle('cur', k === i)); };
+      const help = rows.map(() => false), shown = rows.some(r => r.shown);
       const accept = st => {
-        res[i] = st; lis[i].classList.remove('cur'); lis[i].classList.add(st === 'bad' ? 'bad' : st === 'close' ? 'close' : 'ok'); $('.sv', lis[i]).textContent = rows[i].text;
+        res[i] = st; help[i] = rowHint; lis[i].classList.remove('cur'); lis[i].classList.add(st); $('.sv', lis[i]).textContent = rows[i].text;
         i++;
         if (i < rows.length) { setRow(); say.textContent = ''; return; }
         fin = true; inp.blur();
         const bad = res.filter(x => x === 'bad').length, good = res.filter(x => x === 'ok').length;
-        const val = st2 => st2 === 'ok' ? 1 : st2 === 'bad' ? 0 : 0.5;
-        const keys = ex.key ? [[ex.key, bad ? 0 : res.every(x => x === 'ok') ? 1 : 0.5]] : rows.map((r, k) => [r.key, val(res[k])]);
-        done({ ok: bad === 0, msg: bad ? `${bad} you had to see. Read the list above once more.` : `${good === rows.length ? 'All' : good + ' of ' + rows.length} from memory.`, keys });
+        const val = k => res[k] === 'bad' ? 0 : res[k] === 'close' || help[k] ? 0.5 : 1;
+        const keys = ex.key ? [[ex.key, bad ? 0 : rows.every((_, k) => val(k) === 1) ? 1 : 0.5]] : rows.map((r, k) => [r.key, val(k)]);
+        done({ ok: bad === 0, msg: bad ? `${bad} you had to see. Read the list above once more.` : `${good === rows.length ? 'All' : good + ' of ' + rows.length} ${shown ? 'right first time' : 'from memory'}.`, keys });
       };
+      // Amber only for a miss, or a hint the level did not already give.
+      const mark = () => rowMiss || (rowHint && !rows[i].shown) ? 'close' : 'ok';
       const shake = () => { inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); };
       const enter = () => {
         if (fin) return;
         const v = inp.value; if (!v.trim()) { shake(); return; }
         const m = matchItem(v, rows[i].accepts, rows.filter((_, k) => k !== i).map(r => r.accepts));
-        if (m) { accept(!rowMiss && !rowHint ? 'ok' : 'close'); return; }
+        if (m) { accept(mark()); return; }
         const j = rows.findIndex((r, k) => k > i && matchItem(v, r.accepts));
         rowMiss++; shake();
         say.textContent = j > -1 ? `That one is #${rows[j].label}. What is #${rows[i].label}?` : rowMiss >= 2 ? '' : 'Not that one. Try again.';
         if (rowMiss >= 2 && j < 0) { say.textContent = ''; accept('bad'); }
       };
-      inp.addEventListener('input', () => { if (!fin && matchItem(inp.value, rows[i].accepts) === 'ok') accept(!rowMiss && !rowHint ? 'ok' : 'close'); });
+      inp.addEventListener('input', () => { if (!fin && matchItem(inp.value, rows[i].accepts) === 'ok') accept(mark()); });
       host.onclick = e => {
         const b = e.target.closest('[data-a]'); if (!b || fin) return;
         if (b.dataset.a === 'hint') { rowHint = true; inp.placeholder = rows[i].hint; inp.focus(); }
@@ -901,12 +953,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     const up = nextUp(), due = SECTIONS.filter(usable).reduce((a, s) => a + dueOf(s), 0);
     const mastered = SECTIONS.filter(s => lvOf(s) === 3).length;
     app.innerHTML = `<section class="phead"><div><p class="eyebrow">Phase up · weeks 1–5 study guide</p><h1>Learn it a few pieces at a time</h1>
-      <p class="sub">Each skill has three short levels: learn it with its memory sentence, practice with hints that fade, then master it from memory. Missed items come back in Review. Spelling never counts: the board is oral.</p></div>
+      <p class="sub">Three short levels per skill: learn, practice, master. Spelling never counts.</p></div>
       <div class="stats"><div><b class="mono">${streak()}</b><span>day streak</span></div><div><b class="mono">${P.xp || 0}</b><span>XP</span></div><div><b class="mono">${mastered}/${SECTIONS.length}</b><span>mastered</span></div></div></section>
-      <div class="cta">${up ? `<button class="btn gold" id="go-next">Continue: ${esc(up.title)} · Level ${lvOf(up) + 1}</button>` : ''}<button class="btn" data-go="review">Review${due ? ` · ${due} due` : ''}</button><button class="btn" data-go="sheet">Read the sheet</button></div>
+      <div class="cta">${up ? `<button class="btn gold" id="go-next">Continue: ${esc(up.title)} · Level ${lvOf(up) + 1}</button>` : ''}${due ? `<button class="btn" data-go="review">Review · ${due} due</button>` : ''}</div>
       <div class="weeks">${[1, 2, 3, 4, 5].map(w => `<section class="week"><h3>Week ${w}</h3><ol class="path">${SECTIONS.filter(s => s.week === w).map(s => {
         const lv = lvOf(s), d = dueOf(s), ready = usable(s);
-        const state = !ready ? 'Add the words to start' : lv === 3 ? 'Mastered' : lv ? `Level ${lv} of 3 done` : `${countLabel(s)} · new`;
+        const state = !ready ? 'Add the words to start' : lv === 3 ? 'Mastered' : lv ? `Next: ${LEVELS[lv][0]}` : `${countLabel(s)} · new`;
         return `<li><button class="node${up === s ? ' next' : ''}" data-skill="${s.id}"><span class="ring${lv === 3 ? ' full' : ''}" style="--p:${lv / 3}"><span class="core">${!ready ? '+' : lv === 3 ? '✓' : lv + 1}</span></span>
           <span class="nt"><b>${esc(s.title)}</b><small>${state}${d && ready ? ` · <span class="due">${d} due</span>` : ''}</small></span></button></li>`;
       }).join('')}</ol></section>`).join('')}</div>
@@ -914,7 +966,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     const n = $('#go-next'); if (n) n.onclick = () => startLesson(up, lvOf(up) + 1);
     const r = $('#reset');
     r.onclick = () => {
-      if (r.dataset.arm) { P = { items: {}, lv: {}, xp: 0, days: [], hooks: P.hooks, custom: P.custom }; save(); go('path'); return; }
+      if (r.dataset.arm) { P = { items: {}, lv: {}, xp: 0, days: [], custom: P.custom }; save(); go('path'); return; }
       r.dataset.arm = '1'; r.textContent = 'Tap again to erase your progress (pasted texts stay)';
       setTimeout(() => { if (r.isConnected) { delete r.dataset.arm; r.textContent = 'Reset progress'; } }, 4000);
     };
@@ -922,7 +974,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 
   function viewSkill(sec) {
     const lv = lvOf(sec), ready = usable(sec);
-    const custom = sec.type === 'custom' ? `<div class="custom hook"><label for="cust-${sec.id}">${ready ? 'The words' : 'Add the words'}</label>
+    const custom = sec.type === 'custom' ? `<div class="custom"><label for="cust-${sec.id}">${ready ? 'The words' : 'Add the words'}</label>
       <textarea id="cust-${sec.id}" rows="${ready ? 6 : 8}" placeholder="${esc(sec.ask)}">${esc(P.custom[sec.id] || '')}</textarea>
       <small>${esc(sec.ask)} It stays in this browser.</small><div class="row2"><button class="btn pri" id="cust-save">Save the words</button></div></div>` : '';
     app.innerHTML = `<div class="skill"><div><button class="btn ghost" data-go="path">‹ Path</button></div>
@@ -930,18 +982,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
       ${memoHTML(sec)}
       ${ready ? `<div class="levels">${LEVELS.map(([n, d], k) => `<button class="lvl${k < lv ? ' done' : k === lv ? ' next' : ''}" data-lv="${k + 1}"><span class="ln">LEVEL ${k + 1}${k < lv ? ' · DONE' : ''}</span><b>${n}</b><small>${d}</small></button>`).join('')}</div>
       <div class="row2"><button class="btn gold" data-lv="${Math.min(lv + 1, 3)}">${lv === 3 ? 'Run Master again' : `Start level ${lv + 1}: ${LEVELS[lv][0]}`}</button></div>
-      <div class="card"><header class="chead"><h2>The content</h2><span class="cnt">${countLabel(sec)}</span></header><div class="irows">${rowsHTML(sec)}</div>${sec.note ? `<p class="note">${esc(sec.note)}</p>` : ''}</div>
-      <div class="hook"><label for="hook-${sec.id}">Your own memory hook</label><textarea id="hook-${sec.id}" rows="2" placeholder="A sentence, picture or story that links them. Hooks you make up yourself stick best.">${esc(P.hooks[sec.id] || '')}</textarea><small>Shows up whenever this skill teaches something new.</small></div>` : ''}
+      ${tipsHTML(sec)}
+      <div class="card"><header class="chead"><h2>The content</h2><span class="cnt">${countLabel(sec)}</span></header><div class="irows">${rowsHTML(sec)}</div>${sec.note ? `<p class="note">${esc(sec.note)}</p>` : ''}</div>` : ''}
       ${custom}</div>`;
     app.querySelectorAll('[data-lv]').forEach(b => { b.onclick = () => startLesson(sec, +b.dataset.lv); });
-    const hk = $(`#hook-${sec.id}`); if (hk) hk.oninput = () => { const v = hk.value.trim(); if (v) P.hooks[sec.id] = v; else delete P.hooks[sec.id]; save(); };
     const cs = $('#cust-save');
     if (cs) cs.onclick = () => { const v = $(`#cust-${sec.id}`).value.trim(); if (v) P.custom[sec.id] = v; else delete P.custom[sec.id]; prep(sec); save(); viewSkill(sec); setTab('skill'); };
   }
 
   function viewReview() {
     const live = SECTIONS.filter(usable), due = live.reduce((a, s) => a + dueOf(s), 0), seenN = Object.keys(P.items).filter(k => exForKey(k)).length;
-    const weak = Object.keys(P.items).filter(k => exForKey(k) && P.items[k].n > 0).sort((a, b) => (P.items[a].c / P.items[a].n) - (P.items[b].c / P.items[b].n) || P.items[a].b - P.items[b].b).slice(0, 8);
+    const weak = Object.keys(P.items).filter(k => exForKey(k) && P.items[k].n > 0 && P.items[k].b === 0).slice(0, 8);
     const name = k => { const [id, rest] = k.split(':'), s = BY[id];
       if (s.type === 'table') { const [r, c] = rest.split('.').map(Number); return [s.title, `${s.rows[r].cue}: ${s.rows[r].cells[c]}`]; }
       if (isText(s)) return [s.title, s.lines[parseInt(rest, 10)].text];
@@ -949,7 +1000,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     app.innerHTML = `<div class="skill"><div><p class="eyebrow">Spaced review</p><h1>${due ? `${due} due now` : 'Review'}</h1>
       <p class="sub">Everything you have started comes back here on a schedule: missed items right away, then after 10 minutes, an hour, 5 hours, a day and 3 days as you keep getting them right.</p></div>
       ${seenN ? `<div class="row2"><button class="btn gold" id="rv">Start review · ${Math.min(12, Math.max(due, Math.min(8, seenN)))} questions</button></div>` : `<p class="ctx">Nothing to review yet. Finish a Learn level on the path first.</p><div class="row2"><button class="btn gold" data-go="path">Go to the path</button></div>`}
-      ${weak.length ? `<div class="card"><header class="chead"><h2>Your weakest items</h2></header><ul class="weak" style="border:0;max-width:none">${weak.map(k => { const [t, x] = name(k); return `<li><small>${esc(t)}</small>${esc(x)}</li>`; }).join('')}</ul></div>` : ''}</div>`;
+      ${weak.length ? `<div class="card"><header class="chead"><h2>Missed last time</h2></header><ul class="weak" style="border:0;max-width:none">${weak.map(k => { const [t, x] = name(k); return `<li><small>${esc(t)}</small>${esc(x)}</li>`; }).join('')}</ul></div>` : ''}</div>`;
     const b = $('#rv'); if (b) b.onclick = () => startLesson(null, 0);
   }
 
