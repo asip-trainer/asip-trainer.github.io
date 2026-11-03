@@ -209,6 +209,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .rlist li.close { background: var(--warn-bg); }
 .rlist li.bad { background: var(--bad-bg); } .rlist li.bad .sv { color: var(--bad); }
 .rlist li.cur { box-shadow: inset 3px 0 0 var(--gold); background: var(--gold-soft); }
+.acro { margin: 0; font: 700 36px/1 var(--f-display); letter-spacing: .16em; color: var(--muted); }
+.acro .on { color: var(--on-gold); background: var(--gold); padding: 0 .1em; }
 .rin { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; }
 .rin .num { border: 0; font-size: 16px; color: var(--ink); min-width: 2.5rem; }
 
@@ -328,7 +330,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
       items: ['Subsistence', 'Clothing', 'Petroleum, Oil, Lubricants|petroleum fuel|petroleum oil lubricant|petroleum oils and lubricants|pol|petroleum|fuel',
         'Construction Material|construction materials', 'Ammunition|ammo', 'Personal Demand Items|personal demands items', 'Major End Items',
         'Medical Supplies', 'Repair Parts', 'Miscellaneous Supplies|miscellaneous'] },
-    { id: 'terrain', week: 2, title: 'Terrain Features', unit: 'features', groups: [[0, 'Major'], [5, 'Minor'], [8, 'Supplemental']],
+    { id: 'terrain', week: 2, title: 'Terrain Features', unit: 'features', free: true, groups: [[0, 'Major'], [5, 'Minor'], [8, 'Supplemental']],
+      groupNoun: { Major: 'major terrain feature', Minor: 'minor terrain feature', Supplemental: 'supplemental terrain feature' },
       tips: ['Count 5, 3, 2: five major, three minor, two supplemental.',
         'Major (H V R S D): “Happy Very Rich Soldiers Dance.” Minor (D C S): “Dogs Chase Squirrels.”',
         'Supplemental are man-made for roads: you cut through high ground and fill in low ground.',
@@ -360,8 +363,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     { id: 'off', week: 3, title: 'Characteristics of the Offense', tag: 'ACTS', items: ['Audacity', 'Concentration', 'Tempo', 'Surprise'],
       tips: ['The offense ACTS.', 'Picture a raid: be bold (Audacity), mass at one point (Concentration), keep it fast (Tempo), hit when they do not expect it (Surprise).'] },
     { id: 'def', week: 3, title: 'Characteristics of the Defense', note: 'From the cadre sheet.',
-      tips: ['D F M P S: “Dug-in Forces Make Positions Safe.”',
-        'As a story: disrupt their attack, stay flexible, mass and concentrate where it counts, prepare the ground, keep it secure.',
+      memo: 'Dug-in Forces Make Positions Safe', memoMap: ['Dug-in', 'Forces', 'Make', 'Positions', 'Safe'],
+      tips: ['As a story: disrupt their attack, stay flexible, mass and concentrate where it counts, prepare the ground, keep it secure.',
         'Concentration is in both: alone in the offense (ACTS), as “Mass and Concentration” in the defense.'],
       items: ['Disruption', 'Flexibility', 'Mass and Concentration', 'Preparation', 'Security'] },
     { id: 'oe', week: 3, title: 'Operational Environment', type: 'text',
@@ -370,7 +373,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
         'Composite means everything mixed together. It ends with who it affects: the platoon or squad.'],
       text: '{The/A} composite of conditions, circumstances, and influences | affecting the employment of {a/that} platoon or squad.' },
 
-    { id: 'opvar', week: 4, title: 'Operational Variables', tag: 'PMESII-PT',
+    { id: 'opvar', week: 4, title: 'Operational Variables', tag: 'PMESII-PT', free: true,
       tips: ['Say it as “P-MESS-II-PT”.', 'The two I’s go in alphabetical order: Information before Infrastructure.',
         'The tail “PT” is the Physical environment and Time.'],
       items: ['Political', 'Military', 'Economic', 'Social', 'Information', 'Infrastructure', 'Physical Environment', 'Time'] },
@@ -381,8 +384,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
       tips: ['It builds like a team: be competent, share understanding, earn mutual trust. Then the commander gives intent and mission orders, subordinates take disciplined initiative, and leaders accept risk.',
         'Intent first, orders second: Commander’s Intent (4), Mission Orders (5).'],
       items: ['Competence', 'Shared Understanding', 'Mutual Trust', 'Commander’s Intent', 'Mission Orders', 'Disciplined Initiative|disciplined initiatives', 'Risk Acceptance'] },
-    { id: 'alrm', week: 5, title: 'Core Leader Competencies & Attributes', groups: [[0, 'Competencies'], [3, 'Attributes']], tag: 'LDA · CPI',
-      tips: ['Attributes are what a leader IS (Character, Presence, Intellect). Competencies are what a leader DOES: they are verbs (Leads, Develops, Achieves).',
+    { id: 'alrm', week: 5, title: 'Core Leader Competencies & Attributes', groups: [[0, 'Competencies'], [3, 'Attributes']], tag: 'LDA · CPI',      tips: ['Attributes are what a leader IS (Character, Presence, Intellect). Competencies are what a leader DOES: they are verbs (Leads, Develops, Achieves).',
         'Competencies are a timeline: you lead, you develop people, you achieve the mission.'],
       items: ['Leads', 'Develops', 'Achieves', 'Character', 'Presence', 'Intellect'] }
   ];
@@ -518,6 +520,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   const BY = Object.fromEntries(SECTIONS.map(s => [s.id, s]));
   const usable = s => s.type !== 'custom' || s.ready;
   const label = (sec, i) => sec.labels ? sec.labels[i] : String(i + 1);
+  // Lists are graded in order, except the ones marked free (terrain features, PMESII-PT), which may be said in any order.
+  const ordered = sec => !sec.free;
+  const acroOf = sec => { const l = (sec.tag || '').replace(/[^A-Z]/g, ''); return sec.items && l.length === sec.items.length ? l : ''; };
   const groupOf = (sec, i) => sec.groups.filter(g => g[0] <= i).pop()[1];
   const isText = s => s.type === 'text' || s.type === 'custom';
   const countLabel = s => isText(s) ? `${s.lines.length} lines` : s.type === 'table' ? `${s.keys.length} names` : `${s.items.length} ${s.unit || 'items'}`;
@@ -527,7 +532,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   /* ---------- content blocks (study + intro) ---------- */
   function memoHTML(sec, idx) {
     if (!sec.memo) return '';
-    const on = new Set((idx || []).map(i => sec.memoWords && sec.memoWords[i]).filter(Boolean));
+    const on = new Set((idx || []).map(i => sec.memoWords && sec.memoWords[i]).filter(Boolean).map(w => w.replace(/[^A-Za-z]/g, '')));
     return `<div><p class="memo-l">Memory sentence</p><p class="memo">${sec.memo.split(/\s+/).map(w => {
       const bare = w.replace(/[^A-Za-z]/g, '');
       return `<span class="mw${on.has(bare) ? ' on' : ''}"><b>${esc(w[0])}</b>${esc(w.slice(1))}</span>`;
@@ -541,7 +546,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     if (isText(sec)) return `<p class="ptext">${(idx || sec.lines.map((_, i) => i)).map(i => `<span>${esc(sec.lines[i].text)}</span>`).join('')}</p>`;
     return (idx || sec.items.map((_, i) => i)).map(i => {
       const it = sec.items[i], g = sec.groups && sec.groups.find(x => x[0] === i), mw = sec.memoWords && sec.memoWords[i];
-      return (g ? `<div class="grp">${esc(g[1])}</div>` : '') + `<div class="irow"><span class="num">${label(sec, i)}</span><div class="itx">${mw ? `<span class="mchip">${esc(mw)}</span>` : ''}<span>${firstUp(it.text)}</span>${it.sub ? `<ul class="subl">${it.sub.map(s => `<li>${esc(s.text)}</li>`).join('')}</ul>` : ''}</div></div>`;
+      return (g ? `<div class="grp">${esc(g[1])}</div>` : '') + `<div class="irow"><span class="num">${ordered(sec) ? label(sec, i) : '•'}</span><div class="itx">${mw ? `<span class="mchip">${esc(mw)}</span>` : ''}<span>${firstUp(it.text)}</span>${it.sub ? `<ul class="subl">${it.sub.map(s => `<li>${esc(s.text)}</li>`).join('')}</ul>` : ''}</div></div>`;
     }).join('');
   }
 
@@ -574,7 +579,37 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   const orderList = (sec, idx) => ({ t: 'order', sec, title: idx.length === sec.items.length ? 'Tap them in order' : `Tap ${label(sec, idx[0])}–${label(sec, idx[idx.length - 1])} in order`, items: idx.map(i => ({ text: sec.items[i].text, label: label(sec, i) })) });
   const orderPos = (sec, idx) => ({ t: 'order', sec, title: 'Put the chain in order, top to bottom', items: idx.map(ri => ({ text: sec.rows[ri].cue, label: String(ri + 1) })) });
 
+  // Cues for one item that do not depend on its position: memory sentence word, group + first letter, acronym letter, word shape.
+  function askCue(sec, i, show) {
+    const it = sec.items[i], base = { t: 'ask', sec, key: `${sec.id}:${i}`, accepts: it.accepts, others: sec.items.filter((_, j) => j !== i).map(x => x.accepts), answer: it.text, hint: hintFor(sec, i), show };
+    if (sec.memoWords && sec.memoWords[i]) return { ...base, q: `“${sec.memoWords[i]}” stands for …`, memoIdx: i };
+    if (sec.groups) return { ...base, q: `Name the ${sec.groupNoun[groupOf(sec, i)]} that starts with “${it.text[0]}”` };
+    if (acroOf(sec)) return { ...base, q: 'What does the highlighted letter stand for?', acroIdx: i };
+    return { ...base, q: `Which one looks like “${initials(it.text)}”?` };
+  }
+  // Lists where order does not matter: learn them a few at a time (by group if they have groups), then name them in any order.
+  function genFree(sec, lv) {
+    const n = sec.items.length, all = sec.items.map((_, i) => i), out = [];
+    const sets = sec.groups ? sec.groups.map(g => all.filter(i => groupOf(sec, i) === g[1])) : [all];
+    const recallAll = show => sets.forEach(ix => out.push({ t: 'recall', sec, idx: ix, show,
+      title: sec.groups ? `${groupOf(sec, ix[0])}: name all ${ix.length}, any order` : `Name all ${n}, any order` }));
+    if (lv === 1) {
+      (sec.groups ? sets : chunks(all, n <= 4 ? n : n <= 6 ? 3 : 4)).forEach(c => { out.push({ t: 'intro', sec, idx: c }); c.forEach(i => out.push(askCue(sec, i, true))); });
+      if (sec.groups) out.push({ t: 'sort', sec });
+      recallAll(true);
+    } else if (lv === 2) {
+      shuffle(all).forEach(i => out.push(askCue(sec, i, false)));
+      if (sec.groups) out.push({ t: 'sort', sec });
+      recallAll(false);
+    } else {
+      recallAll(false);
+      if (sec.groups) out.push({ t: 'sort', sec });
+      shuffle(all).slice(0, Math.min(3, n)).forEach(i => out.push(askCue(sec, i, false)));
+    }
+    return out;
+  }
   function genList(sec, lv) {
+    if (!ordered(sec)) return genFree(sec, lv);
     const n = sec.items.length, all = sec.items.map((_, i) => i), subs = all.filter(i => sec.items[i].sub), out = [];
     if (lv === 1) {
       let learned = [];
@@ -646,6 +681,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     if (isText(sec)) { if (!sec.lines[i]) return null; return { t: 'letters', sec, lis: [i], ghost: false, ctx: i ? sec.lines[i - 1].text : '', title: i ? 'What comes next?' : 'How does it start?' }; }
     if (!sec.items[i]) return null;
     if (rest.endsWith('s')) return sec.items[i].sub ? subEx(sec, i, false) : null;
+    if (!ordered(sec)) return askCue(sec, i, false);
     const modes = ['num', 'next'].concat(sec.memoWords && sec.memoWords[i] ? ['memo'] : [], sec.labels ? ['rev'] : []);
     return askItem(sec, i, modes[Math.floor(Math.random() * modes.length)], false);
   }
@@ -736,6 +772,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   const exQ = ex => ex.q || ex.title || (ex.t === 'build' ? 'Build the line' : 'Sort them');
   const exAnswer = ex => ex.answer || (ex.t === 'build' ? ex.sec.lines[ex.li].text : ex.t === 'letters' ? ex.lis.map(li => ex.sec.lines[li].text).join(' ')
     : ex.t === 'order' ? ex.items.map(x => x.text).join(' → ') : ex.t === 'recite' ? ex.rows.map(r => r.text).join(', ')
+    : ex.t === 'recall' ? ex.idx.map(i => ex.sec.items[i].text).join(', ')
     : ex.sec.groups.map(g => `${g[1]}: ${ex.sec.items.filter((_, i) => groupOf(ex.sec, i) === g[1]).map(it => it.text).join(', ')}`).join(' · '));
   document.addEventListener('keydown', e => { if (L && L.key) L.key(e); });
   window.PUR = { get L() { return L; }, BY, matchItem, matchName };
@@ -745,7 +782,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     intro(ex, host, done) {
       const s = ex.sec, idx = ex.idx, whole = s.type === 'list' ? idx.length === s.items.length : false;
       const title = isText(s) ? 'Read it out loud' : s.type === 'table' ? `Meet the chain: ${esc(s.rows[idx[0]].cue)} to ${esc(s.rows[idx[idx.length - 1]].cue)}`
-        : whole ? `Learn all ${idx.length}` : `Learn ${label(s, idx[0])}–${label(s, idx[idx.length - 1])}`;
+        : !ordered(s) && s.groups ? `Learn the ${groupOf(s, idx[0]).toLowerCase()} ones (${idx.length})`
+        : whole ? `Learn all ${idx.length}` : ordered(s) ? `Learn ${label(s, idx[0])}–${label(s, idx[idx.length - 1])}` : `Learn ${idx.length} of ${s.items.length}`;
       const hook = idx[0] === 0 ? tipsHTML(s) : '';
       const acro = !s.memo && s.type === 'list' && !s.tag ? `<p class="hint">First letters: ${idx.map(i => s.items[i].text[0]).join(' · ')}</p>` : s.tag ? `<p class="hint">${esc(s.tag)}</p>` : '';
       host.innerHTML = `<p class="eyebrow">New · ${esc(s.title)}</p><h2 class="lq">${title}</h2>${memoHTML(s, idx)}${acro}${hook}
@@ -818,7 +856,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 
     ask(ex, host, done) {
       let hinted = !!ex.show, fin = false;
-      const memo = ex.memoIdx !== undefined ? memoHTML(ex.sec, [ex.memoIdx]) : '';
+      let li = -1;
+      const memo = ex.memoIdx !== undefined ? memoHTML(ex.sec, [ex.memoIdx])
+        : ex.acroIdx !== undefined ? `<p class="acro">${[...ex.sec.tag].map(c => /[A-Z]/.test(c) && ++li === ex.acroIdx ? `<b class="on">${c}</b>` : esc(c)).join('')}</p>` : '';
       host.innerHTML = head(ex, esc(ex.q), true) + (ex.ctx ? `<p class="ctx">${ex.ctx}</p>` : '') + memo +
         `<p class="hint"${hinted ? '' : ' hidden'}>${esc(ex.hint)}</p>
         <input class="ain" id="ain" aria-label="Your answer" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
@@ -841,6 +881,48 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
       };
       L.key = e => { if (e.key === 'Enter' && document.activeElement === inp) { e.preventDefault(); check(); } };
       inp.focus({ preventScroll: true });
+    },
+
+    // Name every item in any order; each one you get drops into the next empty slot.
+    recall(ex, host, done) {
+      const s = ex.sec, idx = ex.idx, n = idx.length, state = new Map();
+      let hinted = !!ex.show, miss = 0, fin = false;
+      const others = i => s.items.filter((_, j) => j !== i).map(x => x.accepts);
+      host.innerHTML = head(ex, esc(ex.title)) + `<p class="say mono" id="rcount"></p><ol class="rlist">${idx.map((_, k) => `<li><span class="num">${k + 1}</span><span class="sv"></span></li>`).join('')}</ol>
+        <input class="ain" id="ain" aria-label="Type one" placeholder="Type one, any order" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="next">
+        <p class="say" aria-live="polite" id="rsay"></p><p class="hint" id="rleft"${hinted ? '' : ' hidden'}></p>
+        <div class="lact"><button class="btn ghost" data-a="hint"${hinted ? ' hidden' : ''}>Hint</button><button class="btn ghost" data-a="show">Show the rest</button><button class="btn pri" data-a="enter">Enter</button></div>`;
+      const lis = host.querySelectorAll('.rlist li'), inp = $('#ain', host), say = $('#rsay', host), left = $('#rleft', host);
+      const rest = () => idx.filter(i => !state.has(i));
+      const paint = () => { const r = rest(); $('#rcount', host).textContent = r.length ? `${r.length} to go` : `All ${n}`; left.textContent = r.length ? 'Still missing: ' + r.map(i => initials(s.items[i].text)).join('  ·  ') : ''; };
+      const place = (i, st) => { const li = lis[state.size]; state.set(i, st); li.classList.add(st === 'bad' ? 'bad' : st === 'help' && !ex.show ? 'close' : 'ok'); $('.sv', li).textContent = s.items[i].text; };
+      const finish = () => {
+        fin = true; inp.blur(); paint();
+        const shown = idx.filter(i => state.get(i) === 'bad');
+        done({ ok: !shown.length, msg: shown.length ? `You had to see: <b>${shown.map(i => esc(s.items[i].text)).join(', ')}</b>.` : `All ${n}${miss ? `, ${miss} wrong guess${miss > 1 ? 'es' : ''}` : ''}.`,
+          keys: idx.map(i => [`${s.id}:${i}`, state.get(i) === 'bad' ? 0 : state.get(i) === 'help' ? 0.5 : 1]) });
+      };
+      const got = i => { place(i, hinted ? 'help' : 'ok'); inp.value = ''; say.textContent = ''; paint(); if (!rest().length) finish(); };
+      const shake = () => { inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); };
+      const enter = () => {
+        if (fin) return;
+        const v = inp.value; if (!v.trim()) { shake(); return; }
+        const i = rest().find(k => matchItem(v, s.items[k].accepts, others(k)));
+        if (i !== undefined) { got(i); return; }
+        shake();
+        const j = s.items.findIndex((it, k) => matchItem(v, it.accepts, others(k)));
+        if (j > -1 && state.has(j)) say.textContent = 'You already have that one.';
+        else { miss++; say.textContent = j > -1 && s.groups ? `That one is ${groupOf(s, j)}, not ${groupOf(s, idx[0])}.` : 'Not on this list.'; }
+      };
+      inp.addEventListener('input', () => { if (fin) return; const i = rest().find(k => matchItem(inp.value, s.items[k].accepts, others(k)) === 'ok'); if (i !== undefined) got(i); });
+      host.onclick = e => {
+        const b = e.target.closest('[data-a]'); if (!b || fin) return;
+        if (b.dataset.a === 'hint') { hinted = true; left.hidden = false; b.hidden = true; inp.focus(); }
+        else if (b.dataset.a === 'show') { rest().forEach(i => place(i, 'bad')); finish(); }
+        else enter();
+      };
+      L.key = e => { if (e.key === 'Enter' && document.activeElement === inp) { e.preventDefault(); enter(); } };
+      paint(); inp.focus({ preventScroll: true });
     },
 
     recite(ex, host, done) {
