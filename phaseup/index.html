@@ -320,7 +320,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
         ['B Company|b co|bravo company|bravo co', 'CPT Lux', '1SG Kuhns'],
         ['B Co. Trainer|b company trainer|bravo company trainer|b co trainer|company trainer', '', 'SFC Rogers']
       ] },
-    { id: 'plt', week: 1, title: 'Platoon Trainers', unit: 'trainers', free: true, names: true,
+    { id: 'plt', week: 1, title: 'Platoon Trainers', unit: 'trainers', names: true,
       groups: [[0, '1st PLT'], [3, '2nd PLT'], [5, '3rd PLT']],
       groupNoun: { '1st PLT': '1st PLT trainer', '2nd PLT': '2nd PLT trainer', '3rd PLT': '3rd PLT trainer' },
       tips: ['One officer per platoon: 1LT Hagerman (1st), CPT Shiu (2nd), CPT McKinley (3rd). 1st PLT is the only one with a lieutenant.',
@@ -336,7 +336,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
         'As a story: be loyal to the team, do your duty, respect others, put yourself last, keep your honor, act with integrity, and find the personal courage to do all of it.'],
       items: ['Loyalty', 'Duty', 'Respect', 'Selfless Service', 'Honor|honour', 'Integrity', 'Personal Courage'] },
 
-    { id: 'cos', week: 2, title: 'Classes of Supply', unit: 'classes', labels: ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'],
+    { id: 'cos', week: 2, title: 'Classes of Supply', unit: 'classes', ordered: true, labels: ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'],
       memo: 'Smart Chefs Prepare Creamy Alfredo Pasta Making Meals Really Memorable',
       note: 'The study guide calls Class III “Petroleum Fuel”; the cadre sheet says Petroleum, Oil, Lubricant. Both are accepted.',
       tips: ['Each word of the sentence is one class, in Roman-numeral order: Smart = I, Chefs = II … Memorable = X.',
@@ -345,7 +345,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
       items: ['Subsistence', 'Clothing', 'Petroleum, Oil, Lubricants|petroleum fuel|petroleum oil lubricant|petroleum oils and lubricants|pol|petroleum|fuel',
         'Construction Material|construction materials', 'Ammunition|ammo', 'Personal Demand Items|personal demands items', 'Major End Items',
         'Medical Supplies', 'Repair Parts', 'Miscellaneous Supplies|miscellaneous'] },
-    { id: 'terrain', week: 2, title: 'Terrain Features', unit: 'features', free: true, groups: [[0, 'Major'], [5, 'Minor'], [8, 'Supplemental']],
+    { id: 'terrain', week: 2, title: 'Terrain Features', unit: 'features', groups: [[0, 'Major'], [5, 'Minor'], [8, 'Supplemental']],
       groupNoun: { Major: 'major terrain feature', Minor: 'minor terrain feature', Supplemental: 'supplemental terrain feature' },
       tips: ['Count 5, 3, 2: five major, three minor, two supplemental.',
         'Major (H V R S D): “Happy Very Rich Soldiers Dance.” Minor (D C S): “Dogs Chase Squirrels.”',
@@ -368,7 +368,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     { id: 'patrol', week: 3, title: 'Principles of Patrolling', unit: 'principles', memo: 'Please Remember Smart Choices Count',
       tips: ['In the order a patrol happens: plan it, recon it, secure it, control it, and use common sense the whole way.'],
       items: ['Planning', 'Recon|reconnaissance', 'Security', 'Control', 'Common Sense'] },
-    { id: 'opord', week: 3, title: '5 Paragraph OPORD', unit: 'paragraphs', memo: 'See My Execution, Sustain Command',
+    { id: 'opord', week: 3, title: '5 Paragraph OPORD', unit: 'paragraphs', ordered: true, memo: 'See My Execution, Sustain Command',
       tips: ['Five questions in order: What is going on? (Situation) What do we do? (Mission) How? (Execution) What do we need? (Sustainment) Who is in charge and how do we talk? (Command and Signal)'],
       items: ['Situation', 'Mission', 'Execution', 'Sustainment', 'Command and Signal'] },
     { id: 'mettc', week: 3, title: 'Mission Variables', tag: 'METT-TC',
@@ -388,7 +388,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
         'Composite means everything mixed together. It ends with who it affects: the platoon or squad.'],
       text: '{The/A} composite of conditions, circumstances, and influences | affecting the employment of {a/that} platoon or squad.' },
 
-    { id: 'opvar', week: 4, title: 'Operational Variables', tag: 'PMESII-PT', free: true,
+    { id: 'opvar', week: 4, title: 'Operational Variables', tag: 'PMESII-PT',
       tips: ['Say it as “P-MESS-II-PT”.', 'The two I’s go in alphabetical order: Information before Infrastructure.',
         'The tail “PT” is the Physical environment and Time.'],
       items: ['Political', 'Military', 'Economic', 'Social', 'Information', 'Infrastructure', 'Physical Environment', 'Time'] },
@@ -399,7 +399,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
       tips: ['It builds like a team: be competent, share understanding, earn mutual trust. Then the commander gives intent and mission orders, subordinates take disciplined initiative, and leaders accept risk.',
         'Intent first, orders second: Commander’s Intent (4), Mission Orders (5).'],
       items: ['Competence', 'Shared Understanding', 'Mutual Trust', 'Commander’s Intent', 'Mission Orders', 'Disciplined Initiative|disciplined initiatives', 'Risk Acceptance'] },
-    { id: 'alrm', week: 5, title: 'Core Leader Competencies & Attributes', groups: [[0, 'Competencies'], [3, 'Attributes']], tag: 'LDA · CPI',      tips: ['Attributes are what a leader IS (Character, Presence, Intellect). Competencies are what a leader DOES: they are verbs (Leads, Develops, Achieves).',
+    { id: 'alrm', week: 5, title: 'Core Leader Competencies & Attributes', groups: [[0, 'Competencies'], [3, 'Attributes']], tag: 'LDA · CPI',
+      groupNoun: { Competencies: 'core leader competency', Attributes: 'core leader attribute' },
+      tips: ['Attributes are what a leader IS (Character, Presence, Intellect). Competencies are what a leader DOES: they are verbs (Leads, Develops, Achieves).',
         'Competencies are a timeline: you lead, you develop people, you achieve the mission.'],
       items: ['Leads', 'Develops', 'Achieves', 'Character', 'Presence', 'Intellect'] },
 
@@ -450,6 +452,22 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   }
 
   /* ---------- progress, kept in this browser ---------- */
+  // The old address (asip-trainer.github.io/phaseup/) forwards here with #carry=<progress>. Take it unless this browser
+  // already has as much XP here; only numbers and dates are copied, so a crafted link cannot put markup on the page.
+  try {
+    const m = location.hash.match(/^#carry=(.+)$/);
+    if (m) {
+      history.replaceState(null, '', location.pathname + location.search);
+      const v = JSON.parse(decodeURIComponent(m[1])), cur = JSON.parse(localStorage.getItem(KEY) || 'null');
+      const num = x => typeof x === 'number' && isFinite(x) ? x : 0, obj = x => x && typeof x === 'object' ? x : {};
+      if (v && v.items && !(cur && cur.items && (cur.xp || 0) >= num(v.xp))) {
+        const c = { items: {}, lv: {}, xp: num(v.xp), days: (Array.isArray(v.days) ? v.days : []).filter(d => /^\d{4}-\d\d-\d\d$/.test(d)), custom: {} };
+        Object.entries(obj(v.items)).forEach(([k, s]) => { c.items[k] = {}; ['b', 'd', 'n', 'c', 'm'].forEach(f => { if (f in obj(s)) c.items[k][f] = num(s[f]); }); });
+        Object.entries(obj(v.lv)).forEach(([k, n]) => { c.lv[k] = num(n); });
+        localStorage.setItem(KEY, JSON.stringify(c));
+      }
+    }
+  } catch (e) {}
   let P = (() => { try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && v.items) return v; } catch (e) {} return { items: {}, lv: {}, xp: 0, days: [], custom: {} }; })();
   ['lv', 'custom'].forEach(k => { P[k] = P[k] || {}; });
   P.days = P.days || [];
@@ -568,8 +586,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   const BY = Object.fromEntries(SECTIONS.map(s => [s.id, s]));
   const usable = s => s.type !== 'custom' || s.ready;
   const label = (sec, i) => sec.labels ? sec.labels[i] : String(i + 1);
-  // Lists are graded in order, except the ones marked free (terrain features, PMESII-PT), which may be said in any order.
-  const ordered = sec => !sec.free;
+  // Lists may be said in any order, except the ones marked ordered (Classes of Supply, 5 Paragraph OPORD).
+  const ordered = sec => !!sec.ordered;
   const acroOf = sec => { const l = (sec.tag || '').replace(/[^A-Z]/g, ''); return sec.items && l.length === sec.items.length ? l : ''; };
   const groupOf = (sec, i) => sec.groups.filter(g => g[0] <= i).pop()[1];
   const isText = s => s.type === 'text' || s.type === 'custom';
@@ -1133,7 +1151,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
         return `<li><button class="node${up === s ? ' next' : ''}" data-skill="${s.id}"><span class="ring${fresh ? ' full' : ''}" style="--p:${mem.toFixed(3)}"><span class="core">${!ready ? '+' : done ? '✓' : lv + 1}</span></span>
           <span class="nt"><b>${esc(s.title)}</b><small>${state}${lv && ready ? ` · ${Math.round(mem * 100)}% remembered` : ''}${d && ready ? ` · <span class="due">${d} due</span>` : ''}</small></span></button></li>`;
       }).join('')}</ol></section>`).join('')}</div>
-      <footer class="foot"><span>Progress is saved in this browser only.</span><button class="link" id="reset">Reset progress</button></footer>`;
+      <footer class="foot"><span>Progress is saved in this browser only.</span><button class="link" id="reset">Reset progress</button>${/\/phaseup\/(index\.html)?$/.test(location.pathname) ? '<a class="link" href="../">All Bravo study tools</a>' : ''}</footer>`;
     const n = $('#go-next'); if (n) n.onclick = () => startLesson(up, lvOf(up) + 1);
     const gt = $('#go-trouble'); if (gt) gt.onclick = () => startLesson(null, 0, tr);
     const r = $('#reset');
