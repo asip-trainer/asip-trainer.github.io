@@ -108,7 +108,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .memo .mw b { color: var(--gold-ink); text-decoration: underline; text-underline-offset: 3px; }
 .memo .mw.on { background: var(--gold-soft); box-shadow: 0 0 0 3px var(--gold-soft); }
 .memo-l { font: 600 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
-.levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
 .lvl { display: grid; gap: 4px; align-content: start; text-align: left; padding: 12px; border: 1.5px solid var(--rule); background: var(--surface); cursor: pointer; min-width: 0; }
 .lvl b { font: 700 18px/1 var(--f-display); text-transform: uppercase; letter-spacing: .04em; }
 .lvl small { color: var(--muted); font-size: 13px; line-height: 1.35; }
@@ -404,17 +404,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     { id: 'oath', week: 6, title: 'Oath for Officers', type: 'text',
       tips: ['Four promises: support and defend the Constitution, bear true faith and allegiance to it, take the obligation freely, and do the job well.',
         'Enemies come in two kinds: foreign and domestic.', 'It ends: “on which I am about to enter, so help me God.”'],
-      text: 'I, ___, do solemnly swear (or affirm) | that I will support and defend the Constitution of the United States | against all enemies, foreign and domestic; | that I will bear true faith and allegiance to the same; | that I take this obligation freely, | without any mental reservation or purpose of evasion; | and that I will well and faithfully discharge the duties of the office | on which I am about to enter, | so help me God.' },
+      text: 'I, ___, do solemnly swear (or affirm) | that I will support and defend the Constitution of the United States | against all enemies, foreign and domestic; | that I will bear true faith and allegiance to the same; || that I take this obligation freely, | without any mental reservation or purpose of evasion; | and that I will well and faithfully discharge the duties of the office | on which I am about to enter, | so help me God.' },
     { id: 'preamble', week: 6, title: 'Preamble to the Constitution', type: 'text',
       tips: ['After “in Order to” come six goals, each starting with a verb: form, establish, insure, provide, promote, secure.',
         'The goals in order: a more perfect Union, Justice, domestic Tranquility, the common defense, the general Welfare, the Blessings of Liberty.'],
-      text: 'We the People of the United States, | in Order to form a more perfect Union, | establish Justice, | insure domestic Tranquility, | provide for the common defense, | promote the general Welfare, | and secure the Blessings of Liberty | to ourselves and our Posterity, | do ordain and establish this Constitution | for the United States of America.' },
+      text: 'We the People of the United States, | in Order to form a more perfect Union, | establish Justice, | insure domestic Tranquility, | provide for the common defense, || promote the general Welfare, | and secure the Blessings of Liberty | to ourselves and our Posterity, | do ordain and establish this Constitution | for the United States of America.' },
 
     { id: 'schofield', week: 7, title: 'Schofield’s Definition of Discipline', type: 'text',
       tips: ['Two halves. First: harsh treatment destroys an army; the right tone makes soldiers want to obey.',
         'Second: it all comes from the commander. Respect others and you get respect; show disrespect and you get hatred.',
         'It opens: “The discipline which makes the soldiers of a free country reliable in battle …”'],
-      text: 'The discipline which makes the soldiers of a free country reliable in battle | is not to be gained by harsh or tyrannical treatment. | On the contrary, such treatment is far more likely to destroy than to make an army. | It is possible to impart instruction and give commands | in such a manner and such a tone of voice | as to inspire in the soldier no feeling but an intense desire to obey, | while the opposite manner and tone of voice | cannot fail to excite strong resentment and a desire to disobey. | The one mode or the other in dealing with subordinates | springs from a corresponding spirit in the breast of the commander. | He who feels the respect which is due to others | cannot fail to inspire in them respect for himself; | while he who feels, and hence manifests, disrespect toward others, | especially his subordinates, | cannot fail to inspire hatred against himself.' },
+      text: 'The discipline which makes the soldiers of a free country reliable in battle | is not to be gained by harsh or tyrannical treatment. | On the contrary, such treatment is far more likely to destroy than to make an army. || It is possible to impart instruction and give commands | in such a manner and such a tone of voice | as to inspire in the soldier no feeling but an intense desire to obey, | while the opposite manner and tone of voice | cannot fail to excite strong resentment and a desire to disobey. || The one mode or the other in dealing with subordinates | springs from a corresponding spirit in the breast of the commander. | He who feels the respect which is due to others | cannot fail to inspire in them respect for himself; || while he who feels, and hence manifests, disrespect toward others, | especially his subordinates, | cannot fail to inspire hatred against himself.' },
     { id: 'eocmd', week: 7, title: 'Elements of Command', unit: 'elements', memo: 'Always Remember Decisive Leadership',
       tips: ['Command is about who decides: the authority to decide, the responsibility for the result, the decision itself, and the leadership to carry it out.',
         'Command = who decides (A R D L). Control = how it flows (D F I C).'],
@@ -553,7 +553,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     }
     if (sec.type === 'table' && !sec.prepped) sec.rows = sec.rows.map(r => { const a = split(r[0]); return { cue: a[0], accepts: a, cells: r.slice(1) }; });
     sec.prepped = true;
-    sec.lines = (sec.type === 'text' || sec.ready) ? split(sec.text).map(parseLine) : [];
+    // "||" splits a long passage into parts; "|" splits lines.
+    const partsRaw = (sec.type === 'text' || sec.ready) ? sec.text.split('||').map(p => split(p).filter(Boolean)) : [];
+    sec.lines = partsRaw.flat().map(parseLine);
+    let at = 0;
+    sec.parts = partsRaw.map(p => p.map(() => at++));
     sec.keys = sec.type === 'list' ? sec.items.flatMap((it, i) => it.sub ? [`${sec.id}:${i}`, `${sec.id}:${i}s`] : [`${sec.id}:${i}`])
       : sec.type === 'table' ? sec.rows.flatMap((r, ri) => r.cells.map((c, ci) => c ? `${sec.id}:${ri}.${ci}` : null).filter(Boolean))
       : sec.lines.map((_, i) => `${sec.id}:${i}`);
@@ -569,6 +573,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   const isText = s => s.type === 'text' || s.type === 'custom';
   const countLabel = s => isText(s) ? `${s.lines.length} lines` : s.type === 'table' ? `${s.keys.length} names` : `${s.items.length} ${s.unit || 'items'}`;
   const lvOf = s => P.lv[s.id] || 0;
+  // A passage split into parts gets one level per part plus "All together"; everything else has Learn / Practice / Master.
+  const multi = s => !!(s.parts && s.parts.length > 1);
+  const levelsOf = s => multi(s) ? s.parts.length + 1 : 3;
+  const levelNames = s => multi(s) ? s.parts.map((p, k) => [`Part ${k + 1}`, `Lines ${p[0] + 1}–${p[p.length - 1] + 1}, one line at a time`])
+    .concat([['All together', 'Every part in a row, each picking up where the last one ended']]) : LEVELS;
+  const levelTitle = (s, lv) => multi(s) ? levelNames(s)[lv - 1][0] : `Level ${lv} · ${LEVELS[lv - 1][0]}`;
   const dueOf = s => s.keys.filter(isDue).length;
 
   /* ---------- content blocks (study + intro) ---------- */
@@ -701,18 +711,28 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     }
     return out;
   }
+  // Passages: a long one is learned one part per level, and inside a part one line at a time:
+  // read the line, build it, then type it after the lines before it (the new line half shown).
   function genText(sec, lv) {
-    const n = sec.lines.length, all = sec.lines.map((_, i) => i), ch = chunks(all, 3), long = n > 6, half = long ? Math.ceil(ch.length / 2) : ch.length, out = [];
-    const learn = cs => cs.forEach(c => {
-      out.push({ t: 'intro', sec, idx: c });
-      c.forEach(li => out.push({ t: 'build', sec, li }));
-      out.push({ t: 'letters', sec, lis: c, ghost: true, title: 'Type along: the first letter of each word' });
-    });
-    const cold = cs => cs.forEach(c => out.push({ t: 'letters', sec, lis: c, ghost: false, title: 'From memory: first letter of each word' }));
-    const nexts = k => shuffle(all.slice(1)).slice(0, k).forEach(li => out.push({ t: 'letters', sec, lis: [li], ghost: false, ctx: sec.lines[li - 1].text, title: 'What comes next?' }));
-    if (lv === 1) { learn(ch.slice(0, half)); if (!long) out.push({ t: 'letters', sec, lis: all, ghost: false, title: 'Now without the words' }); }
-    else if (lv === 2) { if (long) { cold(ch.slice(0, half)); learn(ch.slice(half)); } else { cold(ch); nexts(Math.min(3, n - 1)); } }
-    else { out.push({ t: 'letters', sec, lis: all, ghost: false, title: 'The whole thing, from memory' }); nexts(Math.min(3, n - 1)); }
+    const out = [], all = sec.lines.map((_, i) => i), parts = multi(sec) ? sec.parts : [all];
+    const prev = li => li ? sec.lines[li - 1].text : '';
+    const cold = (lis, title) => out.push({ t: 'letters', sec, lis, title, ctx: prev(lis[0]) });
+    const nexts = lis => lis.forEach(li => cold([li], li ? 'What comes next?' : 'How does it start?'));
+    const learn = part => {
+      part.forEach((li, k) => {
+        out.push({ t: 'intro', sec, idx: [li], ctx: prev(li) });
+        out.push({ t: 'build', sec, li });
+        out.push({ t: 'letters', sec, lis: part.slice(0, k + 1), ctx: prev(part[0]), fade: part.slice(0, k + 1).map((_, j) => j === k ? 'half' : 'none'),
+          title: k ? 'From the top: the new line is half shown' : 'Type it: half the words are shown' });
+      });
+      if (part.length > 1) cold(part, 'The whole part, from memory');
+    };
+    if (multi(sec)) {
+      if (lv <= parts.length) { if (lv > 1) cold(parts[lv - 2], 'Warm up: the part before'); learn(parts[lv - 1]); }
+      else parts.forEach((part, k) => cold(part, `Part ${k + 1} of ${parts.length}, from memory`));
+    } else if (lv === 1) learn(all);
+    else if (lv === 2) { nexts(shuffle(all)); cold(all, 'The whole thing, from memory'); }
+    else { cold(all, 'The whole thing, from memory'); nexts(shuffle(all.slice(1)).slice(0, 2)); }
     return out;
   }
   const gen = (sec, lv) => sec.type === 'table' ? genTable(sec, lv) : isText(sec) ? genText(sec, lv) : genList(sec, lv);
@@ -722,7 +742,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     if (!sec || !usable(sec)) return null;
     if (sec.type === 'table') { const [r, c] = rest.split('.').map(Number); if (!sec.rows[r] || !sec.rows[r].cells[c]) return null; return Math.random() < 0.25 && r >= 4 ? askPos(sec, r, c) : askCell(sec, r, c, false); }
     const i = parseInt(rest, 10);
-    if (isText(sec)) { if (!sec.lines[i]) return null; return { t: 'letters', sec, lis: [i], ghost: false, ctx: i ? sec.lines[i - 1].text : '', title: i ? 'What comes next?' : 'How does it start?' }; }
+    if (isText(sec)) { if (!sec.lines[i]) return null; return { t: 'letters', sec, lis: [i], ctx: i ? sec.lines[i - 1].text : '', title: i ? 'What comes next?' : 'How does it start?' }; }
     if (!sec.items[i]) return null;
     if (rest.endsWith('s')) return sec.items[i].sub ? subEx(sec, i, false) : null;
     if (!ordered(sec)) return askCue(sec, i, false);
@@ -796,16 +816,16 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     if (sec && lv > lvOf(sec)) P.lv[sec.id] = lv;
     save();
     const t = mmss(Date.now() - L.t0), weak = [...new Set(L.misses.map(m => m.sec.title + ' · ' + exQ(m) + '|' + exAnswer(m)))].slice(0, 8);
-    const nextLv = sec && lv < 3 ? lv + 1 : 0;
+    const nextLv = sec && lv < levelsOf(sec) ? lv + 1 : 0;
     L = null;
     document.body.classList.remove('lesson-on');
     $('#lesson').classList.remove('typing');
     $('#lbody').innerHTML = `<div class="done"><div class="stamp${low ? ' retrain' : ''}">${low ? 'RETRAIN' : 'GO'}</div>
-      <h2 class="lq">${sec ? `Level ${lv} · ${LEVELS[lv - 1][0]} complete` : 'Review done'}</h2><p class="sub">${sec ? esc(sec.title) : 'Mixed review across the whole sheet'}</p>
+      <h2 class="lq">${sec ? `${levelTitle(sec, lv)} complete` : 'Review done'}</h2><p class="sub">${sec ? esc(sec.title) : 'Mixed review across the whole sheet'}</p>
       <div class="dstats"><div><b class="mono">${acc}%</b><span>right first time</span></div><div><b class="mono">+${xp}</b><span>XP</span></div><div><b class="mono">${t}</b><span>time</span></div></div>
       ${low ? '<p class="sub">Lots of misses. Run this level once more before moving on.</p>' : ''}
       ${weak.length ? `<ul class="weak">${weak.map(w => { const [q, a] = w.split('|'); return `<li><small>${esc(q)}</small>${esc(a)}</li>`; }).join('')}</ul>` : ''}
-      <div class="lact dact">${!sec ? '<button class="btn gold" id="again">Review again</button>' : low ? '<button class="btn gold" id="again">Run it again</button>' : nextLv ? `<button class="btn gold" id="nextlv">Next: Level ${nextLv} · ${LEVELS[nextLv - 1][0]}</button>` : ''}
+      <div class="lact dact">${!sec ? '<button class="btn gold" id="again">Review again</button>' : low ? '<button class="btn gold" id="again">Run it again</button>' : nextLv ? `<button class="btn gold" id="nextlv">Next: ${levelTitle(sec, nextLv)}</button>` : ''}
       <button class="btn${!sec || low || nextLv ? '' : ' gold'}" data-go="path">Back to path</button></div></div>`;
     $('.lcount').textContent = ''; $('.lbar i').style.width = '100%'; $('#fbar').hidden = true;
     const a = $('#again'), n = $('#nextlv');
@@ -819,19 +839,19 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     : ex.t === 'recall' ? ex.idx.map(i => ex.sec.items[i].text).join(', ')
     : ex.sec.groups.map(g => `${g[1]}: ${ex.sec.items.filter((_, i) => groupOf(ex.sec, i) === g[1]).map(it => it.text).join(', ')}`).join(' · '));
   document.addEventListener('keydown', e => { if (L && L.key) L.key(e); });
-  window.PUR = { get L() { return L; }, BY, matchItem, matchName };
+  window.PUR = { get L() { return L; }, BY, matchItem, matchName, levels: id => levelsOf(BY[id]) };
 
   const head = (ex, q, plain) => `<p class="eyebrow">${esc(ex.sec.title)}</p><h2 class="lq${plain ? ' plain' : ''}">${q}</h2>`;
   const RENDER = {
     intro(ex, host, done) {
       const s = ex.sec, idx = ex.idx, whole = s.type === 'list' ? idx.length === s.items.length : false;
-      const title = isText(s) ? 'Read it out loud' : s.type === 'table' ? `Meet the chain: ${esc(s.rows[idx[0]].cue)} to ${esc(s.rows[idx[idx.length - 1]].cue)}`
+      const title = isText(s) ? (idx.length === 1 ? 'New line: read it out loud' : 'Read it out loud') : s.type === 'table' ? `Meet the chain: ${esc(s.rows[idx[0]].cue)} to ${esc(s.rows[idx[idx.length - 1]].cue)}`
         : !ordered(s) && s.groups ? `Learn: ${groupOf(s, idx[0])} (${idx.length})`
         : whole ? `Learn all ${idx.length}` : ordered(s) ? `Learn ${label(s, idx[0])}–${label(s, idx[idx.length - 1])}` : `Learn ${idx.length} of ${s.items.length}`;
       const hook = idx[0] === 0 ? tipsHTML(s) : '';
       const acro = !s.memo && s.type === 'list' && !s.tag ? `<p class="hint">First letters: ${idx.map(i => s.items[i].text[0]).join(' · ')}</p>` : s.tag ? `<p class="hint">${esc(s.tag)}</p>` : '';
       host.innerHTML = `<p class="eyebrow">New · ${esc(s.title)}</p><h2 class="lq">${title}</h2>${memoHTML(s, idx)}${acro}${hook}
-        <div class="card"><div class="irows">${rowsHTML(s, idx)}</div>${s.note && !s.memo ? `<p class="note">${esc(s.note)}</p>` : ''}</div>
+        ${ex.ctx ? `<p class="ctx">After: ${esc(ex.ctx)}</p>` : ''}<div class="card"><div class="irows">${rowsHTML(s, idx)}</div>${s.note && !s.memo ? `<p class="note">${esc(s.note)}</p>` : ''}</div>
         <div class="lact"><button class="btn pri" data-a="ok">Got it</button></div>`;
       if (s.type === 'list') idx.forEach(i => { seen(`${s.id}:${i}`); if (s.items[i].sub) seen(`${s.id}:${i}s`); });
       else if (s.type === 'table') idx.forEach(ri => s.rows[ri].cells.forEach((c, ci) => { if (c) seen(`${s.id}:${ri}.${ci}`); }));
@@ -1017,10 +1037,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 
     letters(ex, host, done) {
       const s = ex.sec, slots = [];
-      const html = ex.lis.map(li => `<p>${s.lines[li].toks.map((t, ti) => {
+      // fade per line: 'half' shows every other word faintly, 'none' shows only the blanks.
+      const mode = j => ex.fade ? ex.fade[j] : 'none';
+      const html = ex.lis.map((li, j) => { let w = 0; return `<p>${s.lines[li].toks.map(t => {
         if (!t.k.length) return `<span class="wd free">${esc(t.w)}</span>`;
-        slots.push({ li, t }); return `<span class="wd${ex.ghost ? ' ghost' : ''}" data-s="${slots.length - 1}">${esc(t.w)}</span>`;
-      }).join(' ')}</p>`).join('');
+        const show = mode(j) === 'half' && w++ % 2 === 0;
+        slots.push({ li, t }); return `<span class="wd${show ? ' ghost' : ''}" data-s="${slots.length - 1}">${esc(t.w)}</span>`;
+      }).join(' ')}</p>`; }).join('');
       host.innerHTML = head(ex, esc(ex.title)) + (ex.ctx ? `<p class="ctx">${esc(ex.ctx)}</p>` : '') + `<div class="ltext">${html}</div>
         <div class="kbd" aria-hidden="true">${['qwertyuiop', 'asdfghjkl', 'zxcvbnm'].map(r => `<div>${[...r].map(c => `<button data-k="${c}" tabindex="-1">${c}</button>`).join('')}</div>`).join('')}</div>
         <div class="lact"><button class="btn ghost" data-a="skip">Show this word</button></div>`;
@@ -1033,7 +1056,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
         if (i < slots.length) { mark(); return; }
         fin = true;
         const bad = stat.filter(x => x === 'bad').length, slip = stat.filter(x => x === 'slip').length, first = stat.filter(x => x === 'ok').length;
-        const keys = ex.lis.map(li => { const st = stat.filter((_, k) => slots[k].li === li); return [`${s.id}:${li}`, st.includes('bad') ? 0 : st.includes('slip') ? 0.5 : (ex.ghost ? 0.5 : 1)]; });
+        const keys = ex.lis.map((li, j) => { const st = stat.filter((_, k) => slots[k].li === li); return [`${s.id}:${li}`, st.includes('bad') ? 0 : st.includes('slip') || mode(j) !== 'none' ? 0.5 : 1]; });
         const ok = bad === 0 && slip <= Math.max(1, Math.round(slots.length * 0.1));
         done({ ok, msg: `${first} of ${slots.length} words right first time${bad ? `, ${bad} shown` : ''}.`, keys });
       };
@@ -1071,19 +1094,19 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go, g.dataset.arg); return; }
     const s = e.target.closest('[data-skill]'); if (s) go('skill', s.dataset.skill);
   });
-  const nextUp = () => SECTIONS.find(s => usable(s) && lvOf(s) < 3);
+  const nextUp = () => SECTIONS.find(s => usable(s) && lvOf(s) < levelsOf(s));
 
   function viewPath() {
     const up = nextUp(), due = SECTIONS.filter(usable).reduce((a, s) => a + dueOf(s), 0);
-    const mastered = SECTIONS.filter(s => lvOf(s) === 3).length;
+    const mastered = SECTIONS.filter(s => lvOf(s) >= levelsOf(s)).length;
     app.innerHTML = `<section class="phead"><div><p class="eyebrow">Phase up · cadre knowledge sheet</p><h1>Learn it a few pieces at a time</h1>
-      <p class="sub">Three short levels per skill: learn, practice, master. Spelling never counts.</p></div>
+      <p class="sub">Short levels per skill: learn, practice, master. Long passages go one part and one line at a time. Spelling never counts.</p></div>
       <div class="stats"><div><b class="mono">${streak()}</b><span>day streak</span></div><div><b class="mono">${P.xp || 0}</b><span>XP</span></div><div><b class="mono">${mastered}/${SECTIONS.length}</b><span>mastered</span></div></div></section>
-      <div class="cta">${up ? `<button class="btn gold" id="go-next">Continue: ${esc(up.title)} · Level ${lvOf(up) + 1}</button>` : ''}${due ? `<button class="btn" data-go="review">Review · ${due} due</button>` : ''}</div>
+      <div class="cta">${up ? `<button class="btn gold" id="go-next">Continue: ${esc(up.title)} · ${esc(levelTitle(up, lvOf(up) + 1))}</button>` : ''}${due ? `<button class="btn" data-go="review">Review · ${due} due</button>` : ''}</div>
       <div class="weeks">${WEEKS.map(([w, wname]) => `<section class="week"><h3>${esc(wname)}</h3><ol class="path">${SECTIONS.filter(s => s.week === w).map(s => {
-        const lv = lvOf(s), d = dueOf(s), ready = usable(s);
-        const state = !ready ? 'Add the words to start' : lv === 3 ? 'Mastered' : lv ? `Next: ${LEVELS[lv][0]}` : `${countLabel(s)} · new`;
-        return `<li><button class="node${up === s ? ' next' : ''}" data-skill="${s.id}"><span class="ring${lv === 3 ? ' full' : ''}" style="--p:${lv / 3}"><span class="core">${!ready ? '+' : lv === 3 ? '✓' : lv + 1}</span></span>
+        const lv = lvOf(s), d = dueOf(s), ready = usable(s), max = levelsOf(s), done = lv >= max;
+        const state = !ready ? 'Add the words to start' : done ? 'Mastered' : lv ? `Next: ${levelNames(s)[lv][0]}` : `${countLabel(s)} · new`;
+        return `<li><button class="node${up === s ? ' next' : ''}" data-skill="${s.id}"><span class="ring${done ? ' full' : ''}" style="--p:${Math.min(lv / max, 1)}"><span class="core">${!ready ? '+' : done ? '✓' : lv + 1}</span></span>
           <span class="nt"><b>${esc(s.title)}</b><small>${state}${d && ready ? ` · <span class="due">${d} due</span>` : ''}</small></span></button></li>`;
       }).join('')}</ol></section>`).join('')}</div>
       <footer class="foot"><span>Progress is saved in this browser only.</span><button class="link" id="reset">Reset progress</button></footer>`;
@@ -1104,8 +1127,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     app.innerHTML = `<div class="skill"><div><button class="btn ghost" data-go="path">‹ Path</button></div>
       <div><p class="eyebrow">Week ${sec.week}${ready ? ' · ' + countLabel(sec) : ''}</p><h1>${esc(sec.title)}</h1>${sec.tag ? `<p class="hint">${esc(sec.tag)}</p>` : ''}</div>
       ${memoHTML(sec)}
-      ${ready ? `<div class="levels">${LEVELS.map(([n, d], k) => `<button class="lvl${k < lv ? ' done' : k === lv ? ' next' : ''}" data-lv="${k + 1}"><span class="ln">LEVEL ${k + 1}${k < lv ? ' · DONE' : ''}</span><b>${n}</b><small>${d}</small></button>`).join('')}</div>
-      <div class="row2"><button class="btn gold" data-lv="${Math.min(lv + 1, 3)}">${lv === 3 ? 'Run Master again' : `Start level ${lv + 1}: ${LEVELS[lv][0]}`}</button></div>
+      ${ready ? `<div class="levels">${levelNames(sec).map(([n, d], k) => `<button class="lvl${k < lv ? ' done' : k === lv ? ' next' : ''}" data-lv="${k + 1}"><span class="ln">${multi(sec) ? (k < lv ? 'DONE' : '&nbsp;') : `LEVEL ${k + 1}${k < lv ? ' · DONE' : ''}`}</span><b>${n}</b><small>${d}</small></button>`).join('')}</div>
+      <div class="row2"><button class="btn gold" data-lv="${Math.min(lv + 1, levelsOf(sec))}">${lv >= levelsOf(sec) ? `Run ${levelNames(sec)[levelsOf(sec) - 1][0]} again` : `Start ${multi(sec) ? levelNames(sec)[lv][0] : `level ${lv + 1}: ${LEVELS[lv][0]}`}`}</button></div>
       ${tipsHTML(sec)}
       <div class="card"><header class="chead"><h2>The content</h2><span class="cnt">${countLabel(sec)}</span></header><div class="irows">${rowsHTML(sec)}</div>${sec.note ? `<p class="note">${esc(sec.note)}</p>` : ''}</div>` : ''}
       ${custom}</div>`;
