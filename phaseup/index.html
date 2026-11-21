@@ -159,7 +159,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .ptext span { display: block; }
 
 /* lesson */
-.lesson { max-width: 660px; margin: 0 auto; padding-bottom: 170px; }
+.lesson { max-width: 660px; margin: 0 auto; padding-bottom: 260px; }
+.fcue { display: grid; gap: 3px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 13.5px; line-height: 1.4; }
+.fcue .memo-l { margin: 0; }
 .ltop { display: flex; align-items: center; gap: 12px; padding-block: 4px 18px; }
 .lx { width: 44px; height: 44px; border: 0; background: none; font: 400 30px/1 var(--f-body); color: var(--muted); cursor: pointer; }
 .lx.arm { width: auto; padding: 0 10px; font: 700 16px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1.5px solid var(--bad); }
@@ -457,7 +459,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   function grade(k, v) {
     const s = P.items[k] || (P.items[k] = { b: 0, d: 0, n: 0, c: 0 });
     s.n++;
-    if (v >= 1) { s.c++; s.b = Math.min(s.b + 1, INT.length - 1); } else if (v > 0) s.b = Math.max(s.b, 1); else s.b = 0;
+    if (v >= 1) { s.c++; s.b = Math.min(s.b + 1, INT.length - 1); } else if (v > 0) s.b = Math.max(s.b, 1); else { s.b = 0; s.m = (s.m || 0) + 1; }
     s.d = Date.now() + INT[s.b];
   }
   const isDue = k => P.items[k] && P.items[k].d <= Date.now();
@@ -580,6 +582,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     .concat([['All together', 'Every part in a row, each picking up where the last one ended']]) : LEVELS;
   const levelTitle = (s, lv) => multi(s) ? levelNames(s)[lv - 1][0] : `Level ${lv} · ${LEVELS[lv - 1][0]}`;
   const dueOf = s => s.keys.filter(isDue).length;
+  // Remembered now = got right before and not due again yet, so it shrinks as items come due.
+  const remembered = k => { const s = P.items[k]; return !!s && s.b >= 1 && s.d > Date.now(); };
+  const memOf = s => s.keys.length ? s.keys.filter(remembered).length / s.keys.length : 0;
 
   /* ---------- content blocks (study + intro) ---------- */
   function memoHTML(sec, idx) {
@@ -603,6 +608,19 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   }
 
   const tipsHTML = sec => sec.tips ? `<div class="tips"><p class="memo-l">Memory tips</p><ul>${sec.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : '';
+  // Memory cue for the NO-GO bar: the item's word in the memory sentence, its acronym letter or group, and a tip that names it.
+  const CUE_SKIP = new Set(['the', 'and', 'for', 'with', 'from', 'that', 'this', 'which', 'will', 'your', 'their', 'there', 'other', 'into', 'are', 'not', 'all', 'one', 'who', 'his', 'him', 'them', 'such']);
+  function cueFor(ex) {
+    const s = ex.sec, out = [], ac = acroOf(s);
+    const one = s.type === 'list' && ex.key && !ex.key.endsWith('s') ? parseInt(ex.key.split(':')[1], 10) : -1;
+    if (s.memo) out.push(`Memory sentence: <b>${esc(s.memo)}</b>${one >= 0 && s.memoWords && s.memoWords[one] ? ` (“${esc(s.memoWords[one])}” = ${esc(s.items[one].text)})` : ''}`);
+    else if (ac) out.push(`<b>${esc(s.tag)}</b>${one >= 0 ? `: letter ${one + 1} is <b>${ac.charAt(one)}</b>` : ''}`);
+    if (s.groups && one >= 0) out.push(`${esc(s.items[one].text)} is <b>${esc(groupOf(s, one))}</b>.`);
+    const words = (exAnswer(ex) + ' ' + (s.groups && one >= 0 ? groupOf(s, one) : '')).toLowerCase().match(/[a-z]{3,}/g) || [];
+    const tip = (s.tips || []).find(t => words.some(w => !CUE_SKIP.has(w) && new RegExp(`\\b${w}`, 'i').test(t)));
+    if (tip) out.push(esc(tip));
+    return out.length ? `<div class="fcue"><span class="memo-l">Memory cue</span>${out.map(x => `<div>${x}</div>`).join('')}</div>` : '';
+  }
 
   /* ---------- exercises ---------- */
   const shape = (sec, t) => sec.names ? nameHint(t) : initials(t);
@@ -749,6 +767,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     const modes = ['num', 'next'].concat(sec.memoWords && sec.memoWords[i] ? ['memo'] : [], sec.labels ? ['rev'] : []);
     return askItem(sec, i, modes[Math.floor(Math.random() * modes.length)], false);
   }
+  // Trouble spots: the 10 most-missed items (a miss = wrong, or the answer had to be shown).
+  const trouble = () => Object.keys(P.items).filter(k => (P.items[k].m || 0) > 0 && exForKey(k))
+    .sort((a, b) => P.items[b].m - P.items[a].m || P.items[a].b - P.items[b].b).slice(0, 10);
   function genReview() {
     const now = Date.now(), known = Object.keys(P.items).filter(k => exForKey(k));
     let keys = known.filter(k => P.items[k].d <= now).sort((a, b) => P.items[a].b - P.items[b].b || P.items[a].d - P.items[b].d);
@@ -759,10 +780,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   /* ---------- lesson engine ---------- */
   const app = $('#app');
   let L = null;
-  function startLesson(sec, lv) {
-    const queue = sec ? gen(sec, lv) : genReview();
+  // keys = a trouble drill on exactly those items; no sec and no keys = spaced review.
+  function startLesson(sec, lv, keys) {
+    const queue = sec ? gen(sec, lv) : keys ? keys.map(exForKey).filter(Boolean) : genReview();
     if (!queue.length) return;
-    L = { sec, lv, queue, done: 0, graded: 0, right: 0, t0: Date.now(), key: null, cont: null, misses: [] };
+    L = { sec, lv, drill: !!keys, queue, done: 0, graded: 0, right: 0, t0: Date.now(), key: null, cont: null, misses: [] };
     document.body.classList.add('lesson-on');
     app.innerHTML = `<div class="lesson" id="lesson"><div class="ltop"><button class="lx" id="lx" aria-label="Quit lesson">×</button><span class="lbar"><i></i></span><span class="lcount mono"></span></div><div class="lbody" id="lbody"></div></div>
       <div class="fbar" id="fbar" hidden><div class="wrap fin"><div class="fmsg" aria-live="polite"><span class="fgo"></span><div class="ftext"></div></div><button class="btn pri" id="fcont">Continue</button></div></div>`;
@@ -799,17 +821,18 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     const fb = $('#fbar');
     fb.hidden = false; fb.classList.toggle('no', !res.ok);
     $('.fgo', fb).textContent = res.ok ? 'GO' : 'NO-GO';
-    $('.ftext', fb).innerHTML = res.msg || '';
+    $('.ftext', fb).innerHTML = (res.msg || '') + (res.ok ? '' : cueFor(ex));
     L.cont = () => {
       L.queue.shift(); L.done++;
-      if (!res.ok && !ex.again) L.queue.push({ ...ex, again: true });
+      // A miss comes back two questions later, not at the very end.
+      if (!res.ok && !ex.again) L.queue.splice(Math.min(2, L.queue.length), 0, { ...ex, again: true });
       nextEx();
     };
     L.key = e => { if (e.key === 'Enter') { e.preventDefault(); L.cont(); } };
     $('#fcont').focus({ preventScroll: true });
   }
   function complete() {
-    const sec = L.sec, lv = L.lv, acc = L.graded ? Math.round(L.right / L.graded * 100) : 100, low = acc < 60;
+    const sec = L.sec, lv = L.lv, drill = L.drill, acc = L.graded ? Math.round(L.right / L.graded * 100) : 100, low = acc < 60;
     const xp = 10 + (acc === 100 ? 5 : 0);
     P.xp = (P.xp || 0) + xp;
     if (!P.days.includes(today())) P.days.push(today());
@@ -821,15 +844,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
     document.body.classList.remove('lesson-on');
     $('#lesson').classList.remove('typing');
     $('#lbody').innerHTML = `<div class="done"><div class="stamp${low ? ' retrain' : ''}">${low ? 'RETRAIN' : 'GO'}</div>
-      <h2 class="lq">${sec ? `${levelTitle(sec, lv)} complete` : 'Review done'}</h2><p class="sub">${sec ? esc(sec.title) : 'Mixed review across the whole sheet'}</p>
+      <h2 class="lq">${sec ? `${levelTitle(sec, lv)} complete` : drill ? 'Trouble drill done' : 'Review done'}</h2><p class="sub">${sec ? esc(sec.title) : drill ? 'Your most-missed items' : 'Mixed review across the whole sheet'}</p>
       <div class="dstats"><div><b class="mono">${acc}%</b><span>right first time</span></div><div><b class="mono">+${xp}</b><span>XP</span></div><div><b class="mono">${t}</b><span>time</span></div></div>
       ${low ? '<p class="sub">Lots of misses. Run this level once more before moving on.</p>' : ''}
       ${weak.length ? `<ul class="weak">${weak.map(w => { const [q, a] = w.split('|'); return `<li><small>${esc(q)}</small>${esc(a)}</li>`; }).join('')}</ul>` : ''}
-      <div class="lact dact">${!sec ? '<button class="btn gold" id="again">Review again</button>' : low ? '<button class="btn gold" id="again">Run it again</button>' : nextLv ? `<button class="btn gold" id="nextlv">Next: ${levelTitle(sec, nextLv)}</button>` : ''}
+      <div class="lact dact">${!sec ? `<button class="btn gold" id="again">${drill ? 'Drill again' : 'Review again'}</button>` : low ? '<button class="btn gold" id="again">Run it again</button>' : nextLv ? `<button class="btn gold" id="nextlv">Next: ${levelTitle(sec, nextLv)}</button>` : ''}
       <button class="btn${!sec || low || nextLv ? '' : ' gold'}" data-go="path">Back to path</button></div></div>`;
     $('.lcount').textContent = ''; $('.lbar i').style.width = '100%'; $('#fbar').hidden = true;
     const a = $('#again'), n = $('#nextlv');
-    if (a) a.onclick = () => startLesson(sec, sec ? lv : 0);
+    if (a) a.onclick = () => sec ? startLesson(sec, lv) : !drill ? startLesson(null, 0) : trouble().length ? startLesson(null, 0, trouble()) : go('review');
     if (n) n.onclick = () => startLesson(sec, nextLv);
     const f = a || n || $('.done [data-go]'); if (f) f.focus({ preventScroll: true });
   }
@@ -1098,19 +1121,21 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 
   function viewPath() {
     const up = nextUp(), due = SECTIONS.filter(usable).reduce((a, s) => a + dueOf(s), 0);
-    const mastered = SECTIONS.filter(s => lvOf(s) >= levelsOf(s)).length;
+    const all = SECTIONS.filter(usable).flatMap(s => s.keys), memAll = all.length ? Math.round(all.filter(remembered).length / all.length * 100) : 0, tr = trouble();
     app.innerHTML = `<section class="phead"><div><p class="eyebrow">Phase up · cadre knowledge sheet</p><h1>Learn it a few pieces at a time</h1>
       <p class="sub">Short levels per skill: learn, practice, master. Long passages go one part and one line at a time. Spelling never counts.</p></div>
-      <div class="stats"><div><b class="mono">${streak()}</b><span>day streak</span></div><div><b class="mono">${P.xp || 0}</b><span>XP</span></div><div><b class="mono">${mastered}/${SECTIONS.length}</b><span>mastered</span></div></div></section>
-      <div class="cta">${up ? `<button class="btn gold" id="go-next">Continue: ${esc(up.title)} · ${esc(levelTitle(up, lvOf(up) + 1))}</button>` : ''}${due ? `<button class="btn" data-go="review">Review · ${due} due</button>` : ''}</div>
+      <div class="stats"><div><b class="mono">${streak()}</b><span>day streak</span></div><div><b class="mono">${P.xp || 0}</b><span>XP</span></div><div><b class="mono">${memAll}%</b><span>remembered now</span></div></div></section>
+      <div class="cta">${up ? `<button class="btn gold" id="go-next">Continue: ${esc(up.title)} · ${esc(levelTitle(up, lvOf(up) + 1))}</button>` : ''}${due ? `<button class="btn" data-go="review">Review · ${due} due</button>` : ''}${tr.length >= 3 ? `<button class="btn" id="go-trouble">Trouble spots · ${tr.length}</button>` : ''}</div>
       <div class="weeks">${WEEKS.map(([w, wname]) => `<section class="week"><h3>${esc(wname)}</h3><ol class="path">${SECTIONS.filter(s => s.week === w).map(s => {
-        const lv = lvOf(s), d = dueOf(s), ready = usable(s), max = levelsOf(s), done = lv >= max;
-        const state = !ready ? 'Add the words to start' : done ? 'Mastered' : lv ? `Next: ${levelNames(s)[lv][0]}` : `${countLabel(s)} · new`;
-        return `<li><button class="node${up === s ? ' next' : ''}" data-skill="${s.id}"><span class="ring${done ? ' full' : ''}" style="--p:${Math.min(lv / max, 1)}"><span class="core">${!ready ? '+' : done ? '✓' : lv + 1}</span></span>
-          <span class="nt"><b>${esc(s.title)}</b><small>${state}${d && ready ? ` · <span class="due">${d} due</span>` : ''}</small></span></button></li>`;
+        // The ring shows how much is remembered right now, so it shrinks as items come due.
+        const lv = lvOf(s), d = dueOf(s), ready = usable(s), max = levelsOf(s), done = lv >= max, mem = memOf(s), fresh = done && mem >= 0.9;
+        const state = !ready ? 'Add the words to start' : done ? (fresh ? 'Mastered' : 'Mastered, fading') : lv ? `Next: ${levelNames(s)[lv][0]}` : `${countLabel(s)} · new`;
+        return `<li><button class="node${up === s ? ' next' : ''}" data-skill="${s.id}"><span class="ring${fresh ? ' full' : ''}" style="--p:${mem.toFixed(3)}"><span class="core">${!ready ? '+' : done ? '✓' : lv + 1}</span></span>
+          <span class="nt"><b>${esc(s.title)}</b><small>${state}${lv && ready ? ` · ${Math.round(mem * 100)}% remembered` : ''}${d && ready ? ` · <span class="due">${d} due</span>` : ''}</small></span></button></li>`;
       }).join('')}</ol></section>`).join('')}</div>
       <footer class="foot"><span>Progress is saved in this browser only.</span><button class="link" id="reset">Reset progress</button></footer>`;
     const n = $('#go-next'); if (n) n.onclick = () => startLesson(up, lvOf(up) + 1);
+    const gt = $('#go-trouble'); if (gt) gt.onclick = () => startLesson(null, 0, tr);
     const r = $('#reset');
     r.onclick = () => {
       if (r.dataset.arm) { P = { items: {}, lv: {}, xp: 0, days: [], custom: P.custom }; save(); go('path'); return; }
@@ -1139,16 +1164,18 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 
   function viewReview() {
     const live = SECTIONS.filter(usable), due = live.reduce((a, s) => a + dueOf(s), 0), seenN = Object.keys(P.items).filter(k => exForKey(k)).length;
-    const weak = Object.keys(P.items).filter(k => exForKey(k) && P.items[k].n > 0 && P.items[k].b === 0).slice(0, 8);
+    const tr = trouble();
     const name = k => { const [id, rest] = k.split(':'), s = BY[id];
       if (s.type === 'table') { const [r, c] = rest.split('.').map(Number); return [s.title, `${s.rows[r].cue}: ${s.rows[r].cells[c]}`]; }
       if (isText(s)) return [s.title, s.lines[parseInt(rest, 10)].text];
-      const it = s.items[parseInt(rest, 10)]; return [s.title, rest.endsWith('s') ? `${it.text}: ${it.sub.map(x => x.text).join(', ')}` : `${label(s, parseInt(rest, 10))}. ${it.text}`]; };
+      const it = s.items[parseInt(rest, 10)]; return [s.title, rest.endsWith('s') ? `${it.text}: ${it.sub.map(x => x.text).join(', ')}` : `${ordered(s) ? label(s, parseInt(rest, 10)) + '. ' : ''}${it.text}`]; };
     app.innerHTML = `<div class="skill"><div><p class="eyebrow">Spaced review</p><h1>${due ? `${due} due now` : 'Review'}</h1>
       <p class="sub">Everything you have started comes back here on a schedule: missed items right away, then after 10 minutes, an hour, 5 hours, a day and 3 days as you keep getting them right.</p></div>
       ${seenN ? `<div class="row2"><button class="btn gold" id="rv">Start review · ${Math.min(12, Math.max(due, Math.min(8, seenN)))} questions</button></div>` : `<p class="ctx">Nothing to review yet. Finish a Learn level on the path first.</p><div class="row2"><button class="btn gold" data-go="path">Go to the path</button></div>`}
-      ${weak.length ? `<div class="card"><header class="chead"><h2>Missed last time</h2></header><ul class="weak" style="border:0;max-width:none">${weak.map(k => { const [t, x] = name(k); return `<li><small>${esc(t)}</small>${esc(x)}</li>`; }).join('')}</ul></div>` : ''}</div>`;
+      ${tr.length ? `<div class="card"><header class="chead"><h2>Trouble spots</h2><span class="cnt">most missed first</span></header><ul class="weak" style="border:0;max-width:none">${tr.map(k => { const [t, x] = name(k); return `<li><small>${esc(t)} · missed ${P.items[k].m}×</small>${esc(x)}</li>`; }).join('')}</ul>
+        <div class="row2" style="padding:0 12px 12px"><button class="btn gold" id="drill">Drill these ${tr.length}</button></div></div>` : ''}</div>`;
     const b = $('#rv'); if (b) b.onclick = () => startLesson(null, 0);
+    const dr = $('#drill'); if (dr) dr.onclick = () => startLesson(null, 0, tr);
   }
 
   function viewSheet() {
